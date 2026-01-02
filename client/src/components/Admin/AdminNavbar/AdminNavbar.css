@@ -1,0 +1,38 @@
+.admin-navbar {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Default (desktop) */
+.adminlogo {
+  height: 60px;
+  width: 60px;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+/* Tablets */
+@media (max-width: 768px) {
+  .adminlogo {
+    height: 50px;
+    width: 50px;
+  }
+
+  .admin-navbar {
+    padding: 8px 12px;
+  }
+}
+
+/* Mobile devices */
+@media (max-width: 480px) {
+  .adminlogo {
+    height: 40px;
+    width: 40px;
+  }
+
+  .admin-navbar {
+    padding: 6px 10px;
+  }
+}

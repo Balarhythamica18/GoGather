@@ -1,0 +1,165 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* NAVBAR */
+.navbar-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 100%;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.97);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* LOGO */
+.nav-logo {
+  width: 56px;
+}
+
+/* DESKTOP LINKS */
+.nav-center {
+  display: none;
+}
+
+.nav-links-list {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+
+.nav-link-item {
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  color: #222;
+  transition: color 0.3s;
+}
+
+.nav-link-item:hover {
+  color: #ff007a;
+}
+
+/* RIGHT */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* LOGIN */
+.login-btn {
+  background: #ff007a;
+  color: #fff;
+  border: none;
+  padding: 8px 22px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* HAMBURGER */
+.menu-icon {
+  width: 26px;
+  height: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.menu-icon span {
+  height: 3px;
+  background: #222;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Animate hamburger */
+.menu-icon.open span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.menu-icon.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-icon.open span:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* MOBILE MENU */
+.mobile-menu {
+  position: fixed;
+  top: 70px;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 70px);
+  background: #fff;
+  transform: translateY(-100%);
+  transition: transform 0.35s ease-in-out;
+  z-index: 99;
+  padding-top: 40px;
+}
+
+.mobile-menu.show {
+  transform: translateY(0);
+}
+
+.mobile-menu ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.mobile-menu a {
+  text-decoration: none;
+  font-size: 20px;
+  font-weight: 600;
+  color: #222;
+}
+
+/* TABLET */
+@media (min-width: 768px) {
+  .navbar-container {
+    padding: 0 40px;
+  }
+}
+
+/* DESKTOP */
+@media (min-width: 1024px) {
+  .navbar-container {
+    padding: 0 100px;
+  }
+
+  .nav-center {
+    display: block;
+  }
+
+  .menu-icon {
+    display: none;
+  }
+
+  .mobile-menu {
+    display: none;
+  }
+}
+
+/* LARGE SCREENS */
+@media (min-width: 1440px) {
+  .navbar-container {
+    padding: 0 160px;
+  }
+}

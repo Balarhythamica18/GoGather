@@ -1,0 +1,50 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
+
+/* =========================
+   CSS RESET & GLOBAL RULES
+========================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  font-family: "Outfit", sans-serif;
+}
+
+/* Scrollbar (Firefox) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #787777 #1e1e1e;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+
+/* =========================
+   BODY
+========================= */
+body {
+  background-color: #ffffff;
+  color: #222;
+  line-height: 1.4;
+}
+
+/* =========================
+   APP LAYOUT
+========================= */
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Push content below fixed navbar */
+.main-content {
+  flex: 1;
+  padding-top: var(--navbar-height);
+}
+

@@ -1,0 +1,200 @@
+[
+  {
+    "id": 1,
+    "month": "APR",
+    "date": "14",
+    "title": "Taste of the Town – Ultimate Food Fest 2026",
+    "description": "Enjoy delicious food from top chefs, street-food makers, and global cuisines all in one place.",
+    "image": "/upcoming/upcoming1.jpeg",
+    "location": "chennai",
+    "address": "City Expo Grounds, Nungambakkam, Chennai, Tamil Nadu",
+    "category": "Food & Culinary",
+    "declaration": "This is an upcoming event. Event details and schedules are subject to change.",
+
+    "aboutEvent": "Taste of the Town – Ultimate Food Fest 2026 is a grand culinary celebration bringing together renowned chefs, popular food brands, and local street-food legends. The event offers a vibrant atmosphere filled with flavors, live cooking demos, and interactive food experiences.",
+
+    "keyHighlights": [
+      "Multi-cuisine food stalls",
+      "Live cooking demonstrations",
+      "Celebrity chef appearances",
+      "Family-friendly food zones",
+      "Music and entertainment"
+    ],
+
+    "organizerDetails": {
+      "name": "TownTaste Events",
+      "description": "TownTaste Events specializes in large-scale food festivals and culinary experiences across major cities.",
+      "contactEmail": "support@towntaste.in",
+      "contactPhone": "+91 91111 00001",
+      "socialLinks": {
+        "instagram": "@towntasteevents",
+        "facebook": "TownTasteEvents"
+      }
+    }
+  },
+  {
+    "id": 2,
+    "month": "APR",
+    "date": "26",
+    "title": "The Half Brick - Raw Stories 2026",
+    "description": "Come and Experience 1000 years of life Journeys. Journey through inspiring stories that touch your courage, struggle and triumph.",
+    "image": "/upcoming/upcoming2.png",
+    "location": "chennai",
+    "address": "Intimate Theatre, Mount Road, Chennai, Tamil Nadu",
+    "category": "Storytelling & Spoken Word",
+    "declaration": "This is an upcoming event. Event details and schedules are subject to change.",
+
+    "aboutEvent": "The Half Brick - Raw Stories is a deeply moving storytelling experience where performers share raw, real-life journeys of courage, loss, growth, and triumph. The event creates a powerful emotional connection between storytellers and the audience.",
+
+    "keyHighlights": [
+      "Live storytelling performances",
+      "Emotion-driven narratives",
+      "Intimate theatre setup",
+      "Audience connection moments",
+      "Thought-provoking content"
+    ],
+
+    "organizerDetails": {
+      "name": "Raw Tales Collective",
+      "description": "Raw Tales Collective curates storytelling and spoken-word events focused on authentic human experiences.",
+      "contactEmail": "info@rawtales.in",
+      "contactPhone": "+91 91111 00002",
+      "socialLinks": {
+        "instagram": "@rawtalescollective",
+        "youtube": "Raw Tales"
+      }
+    }
+  },
+  {
+    "id": 3,
+    "month": "APR",
+    "date": "20",
+    "title": "20 Stars Live – Mega Music Concert 2026",
+    "description": "Enjoy a thrilling night with 20+ singers performing live with nonstop music and unforgettable moments",
+    "image": "/upcoming/upcoming3.jpeg",
+    "location": "coimbatore",
+    "address": "Grand Arena, Avinashi Road, Coimbatore, Tamil Nadu",
+    "category": "Music & Concert",
+    "declaration": "This is an upcoming event. Event details and schedules are subject to change.",
+
+    "aboutEvent": "20 Stars Live – Mega Music Concert 2026 is a spectacular musical extravaganza featuring over 20 popular singers performing chart-topping hits. Designed for music lovers, the concert promises high-energy performances and a stadium-like experience.",
+
+    "keyHighlights": [
+      "20+ live performers",
+      "Multiple music genres",
+      "High-energy stage production",
+      "Large crowd experience",
+      "Professional sound and lighting"
+    ],
+
+    "organizerDetails": {
+      "name": "StarWave Entertainment",
+      "description": "StarWave Entertainment produces large-scale live music concerts featuring top artists and performers.",
+      "contactEmail": "events@starwave.in",
+      "contactPhone": "+91 91111 00003",
+      "socialLinks": {
+        "instagram": "@starwaveentertainment",
+        "twitter": "@starwave_live"
+      }
+    }
+  },
+  {
+    "id": 4,
+    "month": "APR",
+    "date": "22",
+    "title": "10+ Artist - Creative Arts Festival 2026",
+    "description": "Enjoy a collection of beautiful artworks from talented artists in one creative space.",
+    "image": "/upcoming/upcoming4.jpeg",
+    "location": "chennai",
+    "address": "Creative Arts Center, Anna Salai, Chennai, Tamil Nadu",
+    "category": "Art & Exhibition",
+    "declaration": "This is an upcoming event. Event details and schedules are subject to change.",
+
+    "aboutEvent": "The Creative Arts Festival 2026 is a curated exhibition featuring artworks from more than 10 talented artists. Visitors can explore paintings, sculptures, and mixed-media art in a thoughtfully designed creative environment.",
+
+    "keyHighlights": [
+      "Artwork from 10+ artists",
+      "Multiple art styles",
+      "Artist meet-and-greet sessions",
+      "Creative workshops",
+      "Inspiration-driven atmosphere"
+    ],
+
+    "organizerDetails": {
+      "name": "ArtSphere Collective",
+      "description": "ArtSphere Collective organizes exhibitions and cultural festivals supporting independent artists.",
+      "contactEmail": "connect@artsphere.in",
+      "contactPhone": "+91 91111 00004",
+      "socialLinks": {
+        "instagram": "@artspherecollective",
+        "facebook": "ArtSphere Collective"
+      }
+    }
+  },
+  {
+    "id": 5,
+    "month": "MAY",
+    "date": "01",
+    "title": "Stage of Stories Live Performance 2026",
+    "description": "A powerful theatre drama filled with emotion, storytelling, and unforgettable performances.",
+    "image": "/upcoming/upcoming5.jpeg",
+    "location": "Bangalore",
+    "address": "Grand Theatre Hall, MG Road, Bangalore, Karnataka",
+    "category": "Theatre & Drama",
+    "declaration": "This is an upcoming event. Event details and schedules are subject to change.",
+
+    "aboutEvent": "Stage of Stories Live Performance is an immersive theatre experience combining strong narratives, expressive performances, and powerful stagecraft. The show explores human emotions through compelling storytelling.",
+
+    "keyHighlights": [
+      "Live theatrical performances",
+      "Emotion-driven storytelling",
+      "Professional stage design",
+      "Talented theatre artists",
+      "Cultural experience"
+    ],
+
+    "organizerDetails": {
+      "name": "StageCraft Theatre Group",
+      "description": "StageCraft Theatre Group produces original theatre performances and live stage shows.",
+      "contactEmail": "theatre@stagecraft.in",
+      "contactPhone": "+91 91111 00005",
+      "socialLinks": {
+        "instagram": "@stagecrafttheatre",
+        "linkedin": "StageCraft Theatre"
+      }
+    }
+  },
+  {
+    "id": 6,
+    "month": "MAY",
+    "date": "05",
+    "title": "City Marathon 2026 - Run for a Cause",
+    "description": "Join runners of all levels for an exciting marathon filled with energy, endurance, and community spirit",
+    "image": "/upcoming/upcoming6.jpeg",
+    "location": "Trichy",
+    "address": "Trichy Central Park, Trichy, Tamil Nadu",
+    "category": "Sports & Fitness",
+    "declaration": "This is an upcoming event. Event details and schedules are subject to change.",
+
+    "aboutEvent": "City Marathon 2026 - Run for a Cause is a community-driven fitness event encouraging health, endurance, and social impact. Participants of all skill levels can take part while supporting a meaningful cause.",
+
+    "keyHighlights": [
+      "Multiple race categories",
+      "Cause-driven initiative",
+      "Certified marathon route",
+      "Medical and hydration support",
+      "Community participation"
+    ],
+
+    "organizerDetails": {
+      "name": "RunForLife Foundation",
+      "description": "RunForLife Foundation organizes fitness and marathon events focused on health awareness and social causes.",
+      "contactEmail": "support@runforlife.in",
+      "contactPhone": "+91 91111 00006",
+      "socialLinks": {
+        "instagram": "@runforlifefoundation",
+        "twitter": "@runforlife_org"
+      }
+    }
+  }
+]

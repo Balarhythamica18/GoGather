@@ -1,0 +1,280 @@
+/* MAIN LAYOUT */
+.edp-wrapper {
+  display: flex;
+  gap: 50px;
+  padding: 120px;
+  background: #fafafa;
+}
+
+/* LEFT SIDE */
+.edp-left {
+  flex: 1.2;
+}
+
+/* IMAGE */
+.edp-image-box img {
+  width: 100%;
+  height: 380px;
+  object-fit: cover;
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  margin-bottom: 40px;
+}
+
+/* CONTENT BELOW IMAGE */
+.edp-section {
+  background: #ffffff;
+  padding: 28px;
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+}
+
+.edp-section h2 {
+  font-size: 22px;
+  margin-bottom: 12px;
+  color: #111;
+}
+
+.edp-section p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #555;
+}
+
+.edp-highlights {
+  padding-left: 18px;
+}
+
+.edp-highlights li {
+  margin-bottom: 8px;
+  list-style: disc;
+}
+
+/* RIGHT SIDE */
+.edp-right {
+  flex: 0.9;
+}
+
+/* STICKY EVENT INFO BOX */
+.edp-sticky-box {
+  position: sticky;
+  top: 120px;
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* TITLE */
+.edp-title {
+  font-size: 30px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #111;
+}
+
+/* INFO TEXT */
+.edp-info p {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #666;
+}
+
+/* DESCRIPTION */
+.edp-description {
+  margin-top: 18px;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #444;
+}
+
+/* ACTION BUTTONS */
+.edp-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+/* BOOK NOW - MATCHING YOUR THEME */
+.edp-book-btn {
+  flex: 1;
+  padding: 14px;
+  background:#ff007a;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.edp-book-btn:hover {
+  background: #e6005c;
+}
+
+/* FAVORITE HEART */
+.edp-fav-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  background: #ffffff;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edp-fav-btn.active {
+  background: #ffe6ef;
+  border-color: #ff0066;
+}
+
+/* DECLARATION */
+.edp-declaration {
+  margin-top: 18px;
+  padding: 14px;
+  background: #fff3cd;
+  border-left: 4px solid #ff9800;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.edp-upcoming-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 14px;
+  background-color: #2ecc71;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.edp-price {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  color:#777;
+}
+
+.edp-price-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #777;
+}
+
+.edp-onwards {
+  font-size: 12px;
+  color: #777;
+  position: relative;
+  top: 2px; /* slight visual alignment */
+}
+
+/* ===================== RESPONSIVE STYLES ===================== */
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .edp-wrapper {
+    flex-direction: column; /* LEFT on top, RIGHT below */
+    padding: 80px 40px;
+  }
+
+  .edp-left, .edp-right {
+    flex: 1;
+  }
+
+  .edp-sticky-box {
+    position: relative; /* remove sticky */
+    top: 0;
+    margin-top: 30px; /* spacing between left and right */
+  }
+
+  .edp-image-box img {
+    height: 320px;
+  }
+}
+
+/* Small Tablets / Large Phones */
+@media (max-width: 768px) {
+  .edp-wrapper {
+    padding: 60px 30px;
+    gap: 30px;
+  }
+
+  .edp-title {
+    font-size: 26px;
+  }
+
+  .edp-section h2 {
+    font-size: 20px;
+  }
+
+  .edp-section p, .edp-info p {
+    font-size: 14px;
+  }
+
+  .edp-image-box img {
+    height: 280px;
+  }
+
+  .edp-book-btn {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .edp-fav-btn {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* Mobile Phones */
+@media (max-width: 480px) {
+  .edp-wrapper {
+    padding: 90px 20px;
+    gap: 20px;
+  }
+
+  .edp-title {
+    font-size: 22px;
+  }
+
+  .edp-section h2 {
+    font-size: 18px;
+  }
+
+  .edp-section p, .edp-info p {
+    font-size: 13px;
+  }
+
+  .edp-description {
+    font-size: 15px;
+  }
+
+  .edp-image-box img {
+    height: 220px;
+  }
+
+  .edp-book-btn {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  .edp-fav-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .edp-price-value {
+    font-size: 15px;
+  }
+
+  .edp-onwards {
+    font-size: 11px;
+  }
+}

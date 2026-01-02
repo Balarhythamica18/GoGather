@@ -1,0 +1,24 @@
+.favorite-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #ddd;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+.favorite-card img {
+  width: 20px;
+  height: 20px;
+  object-fit: cover;
+}
+
+.favorite-card p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.favorite-card button {
+  font-size: 12px;
+  margin-left: auto;
+}

@@ -1,0 +1,12 @@
+.discount-offer-container {
+  width: 100%;
+  display: flex;
+  justify-content: center; /* centers horizontally */
+}
+
+.discount-offer-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}

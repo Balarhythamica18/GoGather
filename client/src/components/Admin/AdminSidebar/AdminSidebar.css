@@ -1,0 +1,117 @@
+/* SIDEBAR */
+.admin-sidebar {
+  width: 260px;
+  height: 100vh;
+  background-color: black;
+  color: #ffffff;
+  padding: 20px;
+  box-sizing: border-box;
+  border-right: 1px solid #ccc;
+  position: fixed;
+  top: 0;
+  left: 0;
+  transition: transform 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+/* ADMIN INFO */
+.admin-sidebar__info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.admin-sidebar__info h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.admin-sidebar__user-image {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+/* NAV */
+.admin-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* LINKS */
+.admin-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: #d1d5db;
+  padding: 10px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.admin-sidebar__link:hover {
+  background-color: #ff007a;
+  color: #ffffff;
+}
+
+.admin-sidebar__link.active {
+  background-color: #e6005c;
+  color: #ffffff;
+}
+
+/* ICON */
+.admin-sidebar__icon {
+  width: 20px;
+  height: 20px;
+  stroke-width: 1.8;
+}
+
+/* HAMBURGER */
+.admin-sidebar__hamburger {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  background: black;
+  border: none;
+  color: white;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 1100;
+  display: none;
+}
+
+.admin-sidebar__hamburger svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* BACKDROP */
+.admin-sidebar__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 900;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .admin-sidebar__hamburger {
+    display: block;
+  }
+}
