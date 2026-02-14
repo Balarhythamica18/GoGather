@@ -1,25 +1,30 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
-import upcoming from "../../data/events.json";
-import top from "../../data/topevent.json";
-import comedy from "../../data/comedy.json";
+import { useParams, useNavigate } from "react-router-dom";
+import { allEvents } from "../../data/assets";
 import "./EventDetailPage.css";
-import { useNavigate } from "react-router-dom";
 
 const EventDetailPage = () => {
   const { id, category } = useParams();
   const [isFav, setIsFav] = useState(false);
-
-  const isUpcoming = category === "upcoming";
-
   const navigate = useNavigate();
 
-  let data = [];
-  if (category === "upcoming") data = upcoming;
-  if (category === "top") data = top;
-  if (category === "comedy") data = comedy;
+  // ✅ Find event directly from master array
+  const event = allEvents.find(
+    (e) =>
+      e.id === Number(id) &&
+      (
+        category === "upcoming"
+          ? e.declaration
+          : category === "comedy"
+          ? e.category?.toLowerCase() === "comedy"
+          : category === "top"
+          ? !e.declaration &&
+            e.category?.toLowerCase() !== "comedy"
+          : true
+      )
+  );
 
-  const event = data.find(e => e.id === Number(id));
+  const isUpcoming = category === "upcoming";
 
   if (!event) return <h2>Event Not Found</h2>;
 
@@ -32,7 +37,7 @@ const EventDetailPage = () => {
           <img src={event.image} alt={event.title} />
         </div>
 
-        {/* BELOW IMAGE CONTENT */}
+        {/* About Section */}
         {event.aboutEvent && (
           <div className="edp-section">
             <h2>About the Event</h2>
@@ -40,6 +45,7 @@ const EventDetailPage = () => {
           </div>
         )}
 
+        {/* Highlights */}
         {event.keyHighlights && (
           <div className="edp-section">
             <h2>Key Highlights</h2>
@@ -51,6 +57,7 @@ const EventDetailPage = () => {
           </div>
         )}
 
+        {/* Organizer */}
         {event.organizerDetails && (
           <div className="edp-section">
             <h2>Organizer</h2>
@@ -70,7 +77,7 @@ const EventDetailPage = () => {
         )}
       </div>
 
-      {/* RIGHT SIDE - STICKY INFO BOX */}
+      {/* RIGHT SIDE */}
       <div className="edp-right">
         <div className="edp-sticky-box">
           <h1 className="edp-title">{event.title}</h1>
@@ -86,32 +93,40 @@ const EventDetailPage = () => {
               <strong>Category:</strong> {event.category}
             </p>
 
-            {/* PRICE OR UPCOMING BADGE */}
-           {/* PRICE OR UPCOMING BADGE */}
-{isUpcoming ? (
-  <span className="edp-upcoming-badge">Upcoming</span>
-) : (
-  <div className="edp-price">
-    <strong>Price:</strong>
-    <span className="edp-price-value">{event.price}</span>
-    <span className="edp-onwards">onwards</span>
-  </div>
-)}
+            {/* Price or Upcoming Badge */}
+            {isUpcoming ? (
+              <span className="edp-upcoming-badge">Upcoming</span>
+            ) : (
+              <div className="edp-price">
+                <strong>Price:</strong>
+                <span className="edp-price-value">
+                  {event.price}
+                </span>
+                <span className="edp-onwards">onwards</span>
+              </div>
+            )}
           </div>
-          <p className="edp-description">{event.description}</p>
 
-          {/* ACTIONS - HIDDEN FOR UPCOMING */}
+          <p className="edp-description">
+            {event.description}
+          </p>
+
+          {/* Actions hidden for upcoming */}
           {!isUpcoming && (
             <div className="edp-actions">
               <button
-  className="edp-book-btn"
-  onClick={() => navigate(`/seats/${category}/${id}`)}
->
-  Book Now
-</button>
+                className="edp-book-btn"
+                onClick={() =>
+                  navigate(`/seats/${category}/${id}`)
+                }
+              >
+                Book Now
+              </button>
 
               <button
-                className={`edp-fav-btn ${isFav ? "active" : ""}`}
+                className={`edp-fav-btn ${
+                  isFav ? "active" : ""
+                }`}
                 onClick={() => setIsFav(!isFav)}
                 aria-label="Add to favourites"
               >
@@ -121,7 +136,9 @@ const EventDetailPage = () => {
           )}
 
           {event.declaration && (
-            <p className="edp-declaration">{event.declaration}</p>
+            <p className="edp-declaration">
+              {event.declaration}
+            </p>
           )}
         </div>
       </div>

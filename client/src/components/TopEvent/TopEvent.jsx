@@ -1,11 +1,20 @@
 import React, { useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { topevents } from "../../data/assets";
+import { allEvents } from "../../data/assets";
 import "./TopEvent.css";
 
 const TopEvent = () => {
   const scrollRef = useRef(null);
   const navigate = useNavigate();
+
+  // ✅ Exclude comedy & upcoming
+  const topEventsData = allEvents
+    .filter(
+      (event) =>
+        event.category?.toLowerCase() !== "comedy" &&
+        !event.declaration
+    )
+    .slice(0, 10); // only first 10
 
   const scrollLeft = () => {
     scrollRef.current.scrollBy({ left: -320, behavior: "smooth" });
@@ -18,7 +27,7 @@ const TopEvent = () => {
   return (
     <section className="top-events">
       <div className="top-events__header">
-        <h2>Top Events-2026</h2>
+        <h2>Top Events 2026</h2>
       </div>
 
       <button className="scroll-btn left" onClick={scrollLeft}>
@@ -26,7 +35,7 @@ const TopEvent = () => {
       </button>
 
       <div className="top-events__grid" ref={scrollRef}>
-        {topevents.map((ev) => (
+        {topEventsData.map((ev) => (
           <article key={ev.id} className="card">
             <div className="card__image">
               <img

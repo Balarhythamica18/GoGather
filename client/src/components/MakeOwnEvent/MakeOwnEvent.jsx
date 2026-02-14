@@ -1,7 +1,10 @@
 import React from "react";
 import "./MakeOwnEvent.css";
+import { useNavigate } from "react-router-dom";
+
 
 const MakeOwnEvent = () => {
+  const navigate = useNavigate();
   return (
     <section className="make-event">
       <div className="make-event__container">
@@ -20,12 +23,11 @@ const MakeOwnEvent = () => {
             Concerts, meetups, workshops, or conferences — we’ve got you covered.
           </p>
 
-          <a
-            href="mailto:events@gogather.com?subject=Event Ticket Listing Request"
-            className="make-event__button"
-          >
-            Contact Us
-          </a>
+         <button onClick={() => navigate("/login")}>
+  Create Event
+</button>
+
+         
         </div>
 
       </div>

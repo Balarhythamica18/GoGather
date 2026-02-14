@@ -1,11 +1,16 @@
 import React, { useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { comedyEvents } from "../../data/assets";
+import { allEvents } from "../../data/assets";
 import "./ComedyShow.css";
 
 const ComedyShow = () => {
   const scrollRef = useRef(null);
   const navigate = useNavigate();
+
+  // ✅ Filter only comedy category
+  const comedyShows = allEvents.filter(
+    (event) => event.category?.toLowerCase() === "comedy"
+  );
 
   const scrollLeft = () => {
     scrollRef.current.scrollBy({ left: -320, behavior: "smooth" });
@@ -26,7 +31,7 @@ const ComedyShow = () => {
       </button>
 
       <div className="comedy-events__grid" ref={scrollRef}>
-        {comedyEvents.map((show) => (
+        {comedyShows.map((show) => (
           <article key={show.id} className="card">
             <div className="card__image">
               <img

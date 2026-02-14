@@ -1,28 +1,23 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png';
-import { useClerk, UserButton, useUser } from '@clerk/clerk-react';
 import './Navbar.css';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user } = useUser();
-  const { openSignIn } = useClerk();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
-  const handleLogin = () => {
-    openSignIn({
-      appearance: {
-        elements: {
-          phoneNumberField: { display: "none" },
-          phoneNumberSection: { display: "none" }
-        }
-      },
-      signInOptions: {
-        identifier: {
-          strategies: ["email"]
-        }
-      }
-    });
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    setIsLoggedIn(false);
+    navigate("/");
   };
 
   return (
@@ -46,10 +41,21 @@ const Navbar = () => {
 
         {/* Right */}
         <div className="nav-right">
-          {!user ? (
-            <button className="login-btn" onClick={handleLogin}>Login</button>
+          {!isLoggedIn ? (
+            <button
+              className="login-btn"
+             onClick={() => navigate("/login")}
+
+            >
+              Login
+            </button>
           ) : (
-            <UserButton />
+            <button
+              className="login-btn"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
           )}
 
           {/* Hamburger */}

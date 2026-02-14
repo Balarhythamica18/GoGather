@@ -741,6 +741,12 @@ export const topevents = [
   }
 ];
 
+export const allEvents = [
+  ...comedyEvents,
+  ...upcomingEvents,
+  ...topevents
+];
+
 
 
 // random events picker
@@ -754,14 +760,8 @@ export const dummyEventDashboardData = {
   totalRevenue: 87450,
   totalUsers: 42,
 
-  activeEvents: getRandomEvents(
-    [
-      ...comedyEvents,
-      ...topevents,
-      ...upcomingEvents
-    ],
-    4
-  )
+ activeEvents: getRandomEvents(allEvents, 4)
+
 };
 
 export const dummybookingdata =[

@@ -1,23 +1,41 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import upcoming from "../data/events.json";
-import top from "../data/topevent.json";
-import comedy from "../data/comedy.json";
+import { allEvents } from "../data/assets";
 import SeatLayout from "../components/SeatLayout/SeatLayout";
 
 const SeatLayoutPage = () => {
   const { category, id } = useParams();
 
-  let data = [];
+  // ✅ Find event from master array
+  const event = allEvents.find((e) => {
+    const matchesId = e.id === Number(id);
 
-  if (category === "upcoming") data = upcoming;
-  if (category === "top") data = top;
-  if (category === "comedy") data = comedy;
+    if (!matchesId) return false;
 
-  const event = data.find(e => e.id === Number(id));
+    if (category === "upcoming") {
+      return !!e.declaration;
+    }
+
+    if (category === "comedy") {
+      return e.category?.toLowerCase() === "comedy";
+    }
+
+    if (category === "top") {
+      return (
+        !e.declaration &&
+        e.category?.toLowerCase() !== "comedy"
+      );
+    }
+
+    return false;
+  });
 
   if (!event) {
-    return <h2 style={{ textAlign: "center" }}>Event Not Found</h2>;
+    return (
+      <h2 style={{ textAlign: "center" }}>
+        Event Not Found
+      </h2>
+    );
   }
 
   return <SeatLayout event={event} />;

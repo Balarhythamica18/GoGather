@@ -1,41 +1,53 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { allEvents } from "../../data/assets";
 import "./Event.css";
-
-import comedy from "../../data/comedy.json";
-import upcoming from "../../data/events.json";
-import topEvents from "../../data/topevent.json";
-
-
-const comedyTagged = comedy.map(e => ({ ...e, source: "comedy" }));
-const upcomingTagged = upcoming.map(e => ({
-  ...e,
-  source: "upcoming",
-  isUpcoming: true,
-}));
-const topTagged = topEvents.map(e => ({ ...e, source: "top" }));
-
-const allEventsRaw = [...comedyTagged, ...upcomingTagged, ...topTagged];
-
-const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
-const allEvents = shuffleArray(allEventsRaw);
 
 const Event = () => {
   const navigate = useNavigate();
 
+  // ✅ Add dynamic source + upcoming flag
+  const processedEvents = useMemo(() => {
+    return allEvents.map((event) => {
+      let source = "top";
+
+      if (event.declaration) {
+        source = "upcoming";
+      } else if (
+        event.category?.toLowerCase() === "comedy"
+      ) {
+        source = "comedy";
+      }
+
+      return {
+        ...event,
+        source,
+        isUpcoming: !!event.declaration,
+      };
+    });
+  }, []);
+
+  // ✅ Shuffle once
+  const shuffledEvents = useMemo(() => {
+    return [...processedEvents].sort(
+      () => Math.random() - 0.5
+    );
+  }, [processedEvents]);
+
   return (
     <div className="events-page">
-      
       <h1 className="events-title">All Events</h1>
 
       <div className="events-grid">
-        {allEvents.map((event) => (
+        {shuffledEvents.map((event) => (
           <div
             className="event-card"
             key={`${event.source}-${event.id}`}
           >
             {event.isUpcoming && (
-              <span className="upcoming-badge">Upcoming</span>
+              <span className="upcoming-badge">
+                Upcoming
+              </span>
             )}
 
             <img
@@ -50,7 +62,7 @@ const Event = () => {
                   {event.month} {event.date}
                 </span>
 
-                {event.price && (
+                {!event.isUpcoming && event.price && (
                   <div className="event-price-wrap">
                     <span className="event-price">
                       {event.price}
@@ -59,7 +71,10 @@ const Event = () => {
                 )}
               </div>
 
-              <h2 className="event-title">{event.title}</h2>
+              <h2 className="event-title">
+                {event.title}
+              </h2>
+
               <p className="event-description">
                 {event.description}
               </p>
@@ -68,6 +83,7 @@ const Event = () => {
                 <span className="event-category">
                   {event.category}
                 </span>
+
                 <span className="event-location">
                   📍 {event.location}
                 </span>

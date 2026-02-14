@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { upcomingEvents } from "../../data/assets"; 
+import { allEvents } from "../../data/assets";
 import "./UpcomingEvents.css";
 
 const UpcomingEvents = () => {
@@ -9,7 +9,9 @@ const UpcomingEvents = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setEvents(upcomingEvents); // ✅ upcoming only
+    // ✅ Upcoming events have declaration field
+    const upcoming = allEvents.filter((event) => event.declaration);
+    setEvents(upcoming);
   }, []);
 
   const handleClick = (id) => {
