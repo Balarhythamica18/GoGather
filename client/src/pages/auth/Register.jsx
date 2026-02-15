@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
-import "./Auth.css";
+import { Link, useNavigate } from "react-router-dom";
+import "./auth.css";
 
 const Register = () => {
+  const navigate = useNavigate();
+
   const [role, setRole] = useState("user");
 
   const [form, setForm] = useState({
@@ -13,6 +16,7 @@ const Register = () => {
   });
 
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const validatePassword = (password) => {
     const regex = /^(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/;
@@ -22,6 +26,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     if (form.password !== form.confirmPassword) {
       return setError("Passwords do not match");
@@ -35,11 +40,19 @@ const Register = () => {
 
     try {
       await axios.post("http://localhost:5000/api/auth/register", {
-        ...form,
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        confirmPassword: form.confirmPassword,
         role
       });
 
-      alert("Registered Successfully");
+      setSuccess("Registered Successfully 🎉 Redirecting to login...");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
     }
@@ -49,9 +62,11 @@ const Register = () => {
     <div className="auth-container">
       <div className="auth-card">
 
-        <h2>Create Account 🚀</h2>
+        <h2>Create Account</h2>
 
-        {/* Role Tabs */}
+        {success && <div className="success-popup">{success}</div>}
+        {error && <div className="error-popup">{error}</div>}
+
         <div className="role-tabs">
           <button
             className={role === "user" ? "active" : ""}
@@ -73,40 +88,42 @@ const Register = () => {
           <input
             type="text"
             placeholder="Full Name"
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
             required
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
 
           <input
             type="email"
             placeholder="Email Address"
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
             required
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
 
           <input
             type="password"
             placeholder="Password"
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
             required
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
 
           <input
             type="password"
             placeholder="Confirm Password"
+            required
             onChange={(e) =>
               setForm({ ...form, confirmPassword: e.target.value })
             }
-            required
           />
 
-          {error && <p className="error-text">{error}</p>}
-
-        <button className="auth-btn">
-  Login
-</button>
-
+          <button type="submit" className="auth-btn">
+            Register
+          </button>
         </form>
+
+        <p className="auth-switch">
+          Already have an account?{" "}
+          <Link to="/login">Login</Link>
+        </p>
 
       </div>
     </div>

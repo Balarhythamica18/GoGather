@@ -1,69 +1,125 @@
+/* Centering Layout */
 .auth-container {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #6a11cb, #ff007f);
+  background-color: #f4f6f8;
+  padding: 20px;
 }
 
+/* Card */
 .auth-card {
-  width: 400px;
-  padding: 40px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-  color: white;
-  text-align: center;
+  width: 100%;
+  max-width: 380px;
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+/* Heading */
+.auth-card h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 22px;
+  color: #333;
+}
+
+/* Inputs */
+.auth-card input {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border 0.2s ease;
+}
+
+.auth-card input:focus {
+  border-color: #4a90e2;
+  outline: none;
+}
+
+/* Button */
+.auth-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.auth-btn:hover {
+  background-color: #357abd;
+}
+
+/* Role Tabs */
 .role-tabs {
   display: flex;
-  margin-bottom: 20px;
-  background: rgba(255,255,255,0.2);
-  border-radius: 50px;
-  padding: 5px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 .role-tabs button {
   flex: 1;
-  padding: 10px;
+  padding: 8px;
+  background: white;
   border: none;
-  background: transparent;
-  color: white;
-  border-radius: 50px;
   cursor: pointer;
-  transition: 0.3s;
+  font-size: 14px;
 }
 
 .role-tabs button.active {
-  background: white;
-  color: #6a11cb;
-  font-weight: bold;
-}
-
-.auth-card input {
-  width: 100%;
-  padding: 12px;
-  margin: 10px 0;
-  border-radius: 10px;
-  border: none;
-  outline: none;
-}
-
-.auth-btn {
-  width: 100%;
-  padding: 12px;
-  border-radius: 50px;
-  border: none;
-  background: linear-gradient(to right, #ff007f, #6a11cb);
+  background-color: #4a90e2;
   color: white;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 15px;
+  font-weight: 500;
 }
 
+/* Error Text */
 .error-text {
-  color: #ffdede;
+  color: #d9534f;
   font-size: 13px;
+  margin-bottom: 10px;
+}
+.auth-switch {
+  margin-top: 15px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.auth-switch a {
+  color: #4a90e2;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
+.success-popup {
+  background: #e6f9f0;
+  color: #0a7f42;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.error-popup {
+  background: #fdecea;
+  color: #d93025;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 14px;
 }

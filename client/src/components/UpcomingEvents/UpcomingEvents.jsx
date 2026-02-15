@@ -15,7 +15,7 @@ const UpcomingEvents = () => {
   }, []);
 
   const handleClick = (id) => {
-    navigate(`/event/upcoming/${id}`);
+    navigate(`/events/upcoming/${id}`);
   };
 
   return (

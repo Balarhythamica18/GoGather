@@ -86,3 +86,18 @@ export const login = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Get current user profile
+export const getCurrentUser = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const user = await User.findById(userId).select("name email role image");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({ name: user.name, email: user.email, role: user.role, image: user.image });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

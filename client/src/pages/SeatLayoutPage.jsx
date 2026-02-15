@@ -1,42 +1,34 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { allEvents } from "../data/assets";
+import axios from "axios";
 import SeatLayout from "../components/SeatLayout/SeatLayout";
 
 const SeatLayoutPage = () => {
-  const { category, id } = useParams();
+  const { id } = useParams();
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // ✅ Find event from master array
-  const event = allEvents.find((e) => {
-    const matchesId = e.id === Number(id);
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await axios.get(`http://localhost:5000/api/events/${id}`);
+        setEvent(res.data);
+      } catch (err) {
+        setError(err.response?.data?.message || err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (!matchesId) return false;
+    load();
+  }, [id]);
 
-    if (category === "upcoming") {
-      return !!e.declaration;
-    }
-
-    if (category === "comedy") {
-      return e.category?.toLowerCase() === "comedy";
-    }
-
-    if (category === "top") {
-      return (
-        !e.declaration &&
-        e.category?.toLowerCase() !== "comedy"
-      );
-    }
-
-    return false;
-  });
-
-  if (!event) {
-    return (
-      <h2 style={{ textAlign: "center" }}>
-        Event Not Found
-      </h2>
-    );
-  }
+  if (loading) return <h2 style={{ textAlign: "center" }}>Loading...</h2>;
+  if (error) return <h2 style={{ textAlign: "center" }}>Event Not Found</h2>;
+  if (!event) return <h2 style={{ textAlign: "center" }}>Event Not Found</h2>;
 
   return <SeatLayout event={event} />;
 };

@@ -7,7 +7,7 @@ import { Toaster } from "react-hot-toast";
 
 import "./App.css";
 
-/* 🌍 PUBLIC PAGES */
+/*  PUBLIC PAGES */
 import Home from "./pages/Home";
 import Events from "./pages/Events";
 import Eventdetails from "./pages/Eventdetails";
@@ -15,22 +15,32 @@ import Favorites from "./pages/Favorites";
 import MyBookings from "./pages/MyBookings";
 import SeatLayoutPage from "./pages/SeatLayoutPage";
 
-/* 🔐 AUTH */
-import Login from "../src/pages/auth/Login.jsx";
-import Register from "../src/pages/auth/Register";
+/*  AUTH */
+import Login from "./pages/auth/Login.jsx";
+import Register from "./pages/auth/Register";
 
-/* 👑 ADMIN */
+/*  ADMIN */
 import AdminLayout from "./pages/admin/Layout";
 import ListShows from "./pages/admin/ListShows/ListShows";
 import ListBookings from "./pages/admin/ListBookings/ListBookings";
 
+/*  ORGANIZER */
+import OrganizerDashboard from "./pages/organizer/OrganizerDashboard";
+import AddEvent from "./pages/organizer/AddEvent";
+
 const App = () => {
   const location = useLocation();
 
-  // Hide Navbar & Footer for Admin & Organizer routes
-  const hideLayoutRoutes =
-    location.pathname.toLowerCase().startsWith("/admin") ||
-    location.pathname.toLowerCase().startsWith("/organizer");
+  // Routes where Navbar & Footer should be hidden
+  const noLayoutRoutes = [
+    "/admin",        // all admin routes
+    "/dashboard",    // organizer dashboard
+    "/add-event"     // organizer add event
+  ];
+
+  const hideLayoutRoutes = noLayoutRoutes.some(path =>
+    location.pathname.toLowerCase().startsWith(path)
+  );
 
   return (
     <div className="app-layout">
@@ -60,6 +70,11 @@ const App = () => {
             <Route path="list-bookings" element={<ListBookings />} />
           </Route>
 
+          {/* 🎤 ORGANIZER DASHBOARD */}
+          <Route path="/dashboard" element={<OrganizerDashboard />} />
+          <Route path="/add-event" element={<AddEvent />} />
+          <Route path="/add-event/:id" element={<AddEvent />} />
+          
         </Routes>
       </main>
 

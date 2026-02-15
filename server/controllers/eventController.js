@@ -1,20 +1,149 @@
 import Event from "../models/Event.js";
 
-export const getAllEvents = async (req, res) => {
+export const createEvent = async (req, res) => {
   try {
-    const events = await Event.find();
-    res.status(200).json(events);
+    const { date, ...otherData } = req.body;
+    
+    // Parse the date to extract month and day
+    let month = "";
+    let dayOnly = "";
+    if (date) {
+      const dateObj = new Date(date);
+      const year = dateObj.getFullYear();
+      const monthNum = String(dateObj.getMonth() + 1).padStart(2, "0");
+      dayOnly = String(dateObj.getDate()).padStart(2, "0");
+      month = `${year}-${monthNum}`;
+    }
+
+    const imageUrl = req.file ? `http://localhost:5000/uploads/${req.file.filename}` : null;
+
+    const eventData = {
+      ...otherData,
+      month: month,
+      date: dayOnly,
+      image: imageUrl,
+      organizerDetails: {
+        name: req.body.organizerName,
+        contactEmail: req.body.organizerEmail,
+        contactPhone: req.body.organizerPhone,
+      },
+    };
+
+    // Remove old organizer fields
+    delete eventData.organizerName;
+    delete eventData.organizerEmail;
+    delete eventData.organizerPhone;
+
+    console.log("Creating event with image:", eventData.image);
+
+    const event = await Event.create(eventData);
+    res.status(201).json(event);
+  } catch (error) {
+    console.error("Error creating event:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getEventById = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    res.json(event);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export const createEvent = async (req, res) => {
+export const getAllEvents = async (req, res) => {
   try {
-    const newEvent = new Event(req.body);
-    const savedEvent = await newEvent.save();
-    res.status(201).json(savedEvent);
+    const events = await Event.find().sort({ createdAt: -1 });
+    res.json(events);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getUpcomingEvents = async (req, res) => {
+  try {
+    // Find events that have a non-empty declaration field (used to mark upcoming)
+    const events = await Event.find({ declaration: { $exists: true, $ne: "" } }).sort({ createdAt: -1 });
+    res.json(events);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const deleteEvent = async (req, res) => {
+  try {
+    await Event.findByIdAndDelete(req.params.id);
+    res.json({ message: "Event deleted" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateEvent = async (req, res) => {
+  try {
+    const { date, ...otherData } = req.body;
+
+    // Find existing event
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    // Update date/month if provided
+    if (date) {
+      try {
+        const dateObj = new Date(date);
+        const year = dateObj.getFullYear();
+        const monthNum = String(dateObj.getMonth() + 1).padStart(2, "0");
+        event.month = `${year}-${monthNum}`;
+        event.date = String(dateObj.getDate()).padStart(2, "0");
+      } catch (e) {
+        console.error("Invalid date provided to updateEvent:", e.message);
+      }
+    }
+
+    // Image: if a new file uploaded, use it; else if image field provided, use it; otherwise preserve existing
+    if (req.file) {
+      event.image = `http://localhost:5000/uploads/${req.file.filename}`;
+    } else if (otherData.image) {
+      event.image = otherData.image;
+    }
+
+    // Update simple fields if provided in body
+    const simpleFields = [
+      "title",
+      "description",
+      "location",
+      "address",
+      "category",
+      "price",
+      "aboutEvent",
+      "declaration",
+    ];
+
+    simpleFields.forEach((f) => {
+      if (otherData[f] !== undefined) event[f] = otherData[f];
+    });
+
+    // keyHighlights may come as array or single string
+    if (otherData.keyHighlights !== undefined) {
+      if (Array.isArray(otherData.keyHighlights)) event.keyHighlights = otherData.keyHighlights;
+      else if (typeof otherData.keyHighlights === "string") event.keyHighlights = [otherData.keyHighlights];
+    }
+
+    // Organizer details
+    event.organizerDetails = event.organizerDetails || {};
+    if (otherData.organizerName) event.organizerDetails.name = otherData.organizerName;
+    if (otherData.organizerEmail) event.organizerDetails.contactEmail = otherData.organizerEmail;
+    if (otherData.organizerPhone) event.organizerDetails.contactPhone = otherData.organizerPhone;
+
+    await event.save();
+    res.json(event);
+  } catch (error) {
+    console.error("Error updating event:", error.message);
+    res.status(500).json({ message: error.message });
   }
 };
