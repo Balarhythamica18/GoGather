@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
+import { addressOptions, getAddressesByLocation } from "../../data/addressOptions";
 
 const AddEvent = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const AddEvent = () => {
     time: "",
     title: "",
     location: "",
+    address: "",
     category: "",
     customCategory: "",
     price: "",
@@ -42,6 +44,7 @@ const AddEvent = () => {
           time: ev.time || "",
           title: ev.title || "",
           location: ev.location || "",
+          address: ev.address || "",
           category: ev.category || "",
           customCategory: "",
           price: ev.price || "",
@@ -95,11 +98,16 @@ const AddEvent = () => {
     }
 
     try {
+      const token = localStorage.getItem("token");
+      const config = {
+        headers: { "Content-Type": "multipart/form-data", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      };
+
       if (id) {
-        await axios.put(`http://localhost:5000/api/events/${id}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
+        await axios.put(`http://localhost:5000/api/events/${id}`, formData, config);
         alert("Event updated successfully!");
       } else {
-        await axios.post("http://localhost:5000/api/events", formData, { headers: { "Content-Type": "multipart/form-data" } });
+        await axios.post("http://localhost:5000/api/events", formData, config);
         alert("Event created successfully!");
       }
       navigate("/dashboard");
@@ -140,6 +148,33 @@ const AddEvent = () => {
               </div>
 
               <input name="location" placeholder="Location" onChange={handleChange} required style={styles.input} value={form.location} />
+
+              {/* Address Dropdown (dynamic based on location) */}
+              {form.location && getAddressesByLocation(form.location).length > 0 ? (
+                <select
+                  name="address"
+                  onChange={handleChange}
+                  required
+                  style={styles.input}
+                  value={form.address}
+                >
+                  <option value="">Select Address</option>
+                  {getAddressesByLocation(form.location).map((addr, idx) => (
+                    <option key={idx} value={addr}>
+                      {addr}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  name="address"
+                  placeholder="Address"
+                  onChange={handleChange}
+                  required
+                  style={styles.input}
+                  value={form.address}
+                />
+              )}
 
               {/* Category Dropdown */}
               <select name="category" onChange={handleChange} required style={styles.input} value={form.category}>

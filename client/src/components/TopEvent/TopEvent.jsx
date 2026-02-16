@@ -1,19 +1,50 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { allEvents } from "../../data/assets";
+import axios from "axios";
 import "./TopEvent.css";
 
 const TopEvent = () => {
   const scrollRef = useRef(null);
   const navigate = useNavigate();
 
-  // ✅ Exclude comedy & upcoming
-  const topEventsData = allEvents
-    .filter(
-      (event) =>
-        event.category?.toLowerCase() !== "comedy" &&
-        !event.declaration
-    )
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/events");
+        setEvents(res.data);
+      } catch (err) {
+        console.error("Error fetching top events:", err);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  // ✅ Exclude comedy & upcoming (by declaration or date > 1 month away)
+  const topEventsData = events
+    .filter((event) => {
+      // Exclude comedy
+      if (event.category?.toLowerCase() === "comedy") return false;
+
+      // Exclude if manually marked as upcoming
+      if (event.declaration) return false;
+
+      // Exclude if date is more than 1 month away
+      if (event.month && event.date) {
+        try {
+          const eventDate = new Date(`${event.month}-${String(event.date).padStart(2, "0")}`);
+          const currentDate = new Date();
+          const oneMonthLater = new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+          if (eventDate > oneMonthLater) return false; // exclude upcoming events
+        } catch (e) {
+          console.error("Error parsing date:", e);
+        }
+      }
+
+      return true;
+    })
     .slice(0, 10); // only first 10
 
   const scrollLeft = () => {
@@ -36,12 +67,12 @@ const TopEvent = () => {
 
       <div className="top-events__grid" ref={scrollRef}>
         {topEventsData.map((ev) => (
-          <article key={ev.id} className="card">
+          <article key={ev._id} className="card">
             <div className="card__image">
-              <img
+                <img
                 src={ev.image}
                 alt={ev.title}
-                onClick={() => navigate(`/events/top/${ev.id}`)}
+                onClick={() => navigate(`/events/top/${ev._id}`)}
                 onError={(e) => (e.target.src = "/top/placeholder.png")}
                 style={{ cursor: "pointer" }}
               />

@@ -1,16 +1,49 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { allEvents } from "../../data/assets";
+import axios from "axios";
 import "./ComedyShow.css";
 
 const ComedyShow = () => {
   const scrollRef = useRef(null);
   const navigate = useNavigate();
 
-  // ✅ Filter only comedy category
-  const comedyShows = allEvents.filter(
-    (event) => event.category?.toLowerCase() === "comedy"
-  );
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/events");
+        setEvents(res.data);
+      } catch (err) {
+        console.error("Error fetching comedy events:", err);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  // ✅ Filter only comedy category, exclude upcoming events (> 1 month away or has declaration)
+  const comedyShows = events.filter((event) => {
+    // Must be comedy
+    if (event.category?.toLowerCase() !== "comedy") return false;
+
+    // Exclude if marked as upcoming
+    if (event.declaration) return false;
+
+    // Exclude if date is more than 1 month away
+    if (event.month && event.date) {
+      try {
+        const eventDate = new Date(`${event.month}-${String(event.date).padStart(2, "0")}`);
+        const currentDate = new Date();
+        const oneMonthLater = new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+        if (eventDate > oneMonthLater) return false; // exclude upcoming events
+      } catch (e) {
+        console.error("Error parsing date:", e);
+      }
+    }
+
+    return true;
+  });
 
   const scrollLeft = () => {
     scrollRef.current.scrollBy({ left: -320, behavior: "smooth" });
@@ -32,13 +65,13 @@ const ComedyShow = () => {
 
       <div className="comedy-events__grid" ref={scrollRef}>
         {comedyShows.map((show) => (
-          <article key={show.id} className="card">
+          <article key={show._id} className="card">
             <div className="card__image">
-              <img
-                src={show.image}
-                alt={show.title}
-                onError={(e) => (e.target.src = "/top/placeholder.png")}
-              />
+                <img
+                  src={show.image}
+                  alt={show.title}
+                  onError={(e) => (e.target.src = "/top/placeholder.png")}
+                />
 
               <div className="card__date">
                 <span className="month">{show.month}</span>
@@ -65,7 +98,7 @@ const ComedyShow = () => {
 
                 <button
                   className="btn btn--ghost"
-                  onClick={() => navigate(`/events/comedy/${show.id}`)}
+                  onClick={() => navigate(`/events/comedy/${show._id}`)}
                 >
                   Details
                 </button>

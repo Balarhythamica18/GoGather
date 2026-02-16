@@ -1,4 +1,5 @@
 import Event from "../models/Event.js";
+import User from "../models/User.js";
 
 export const createEvent = async (req, res) => {
   try {
@@ -17,6 +18,7 @@ export const createEvent = async (req, res) => {
 
     const imageUrl = req.file ? `http://localhost:5000/uploads/${req.file.filename}` : null;
 
+    // Attach organizer from authenticated user when available
     const eventData = {
       ...otherData,
       month: month,
@@ -28,6 +30,20 @@ export const createEvent = async (req, res) => {
         contactPhone: req.body.organizerPhone,
       },
     };
+
+    if (req.user && req.user.id) {
+      eventData.organizer = req.user.id;
+
+      try {
+        const user = await User.findById(req.user.id).select("name email");
+        if (user) {
+          eventData.organizerDetails.name = user.name || eventData.organizerDetails.name;
+          eventData.organizerDetails.contactEmail = user.email || eventData.organizerDetails.contactEmail;
+        }
+      } catch (e) {
+        console.error("Could not fetch user to populate organizerDetails:", e.message);
+      }
+    }
 
     // Remove old organizer fields
     delete eventData.organizerName;
@@ -65,6 +81,25 @@ export const getAllEvents = async (req, res) => {
   }
 };
 
+export const getMyEvents = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) return res.status(401).json({ message: "Unauthorized" });
+
+    // Fetch user email to include legacy events that were created before organizer reference was added
+    const user = await User.findById(req.user.id).select("email");
+    const email = user?.email;
+
+    const query = email
+      ? { $or: [{ organizer: req.user.id }, { "organizerDetails.contactEmail": email }] }
+      : { organizer: req.user.id };
+
+    const events = await Event.find(query).sort({ createdAt: -1 });
+    res.json(events);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getUpcomingEvents = async (req, res) => {
   try {
     // Find events that have a non-empty declaration field (used to mark upcoming)
@@ -77,6 +112,14 @@ export const getUpcomingEvents = async (req, res) => {
 
 export const deleteEvent = async (req, res) => {
   try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    // Only organizer who created the event or admin can delete
+    if (req.user?.role !== "admin" && String(event.organizer) !== String(req.user?.id)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
     await Event.findByIdAndDelete(req.params.id);
     res.json({ message: "Event deleted" });
   } catch (error) {
@@ -91,6 +134,11 @@ export const updateEvent = async (req, res) => {
     // Find existing event
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ message: "Event not found" });
+
+    // Authorization: only owner or admin
+    if (req.user?.role !== "admin" && String(event.organizer) !== String(req.user?.id)) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
 
     // Update date/month if provided
     if (date) {

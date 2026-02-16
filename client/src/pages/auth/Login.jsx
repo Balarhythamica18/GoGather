@@ -28,6 +28,8 @@ const Login = () => {
       // Store token + name
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("userName", res.data.name);
+      // store role for conditional UI
+      if (res.data.role) localStorage.setItem("role", res.data.role);
 
       setSuccess("Login Successful 🎉 Redirecting...");
 

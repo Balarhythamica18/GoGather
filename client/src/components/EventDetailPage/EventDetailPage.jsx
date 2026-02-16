@@ -71,6 +71,11 @@ const EventDetailPage = () => {
             <p>
               <strong>Location:</strong> {event.location}
             </p>
+            {event.address && (
+              <p>
+                <strong>Address:</strong> {event.address}
+              </p>
+            )}
             <p>
               <strong>Category:</strong> {event.category}
             </p>

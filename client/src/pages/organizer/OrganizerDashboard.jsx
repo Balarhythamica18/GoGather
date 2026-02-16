@@ -6,37 +6,75 @@ const OrganizerDashboard = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [organizerName, setOrganizerName] = useState("");
+  const [organizerEmail, setOrganizerEmail] = useState("");
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState(null);
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/events");
-      setEvents(res.data);
+      const token = localStorage.getItem("token");
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+
+      // If token exists, request the organizer's own events; otherwise fall back to public events
+      if (token) {
+        const res = await axios.get("http://localhost:5000/api/events/my", config);
+        setEvents(res.data);
+      } else {
+        const res = await axios.get("http://localhost:5000/api/events");
+        setEvents(res.data);
+      }
     } catch (error) {
       console.error("Error fetching events:", error);
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (event) => {
+    setEventToDelete(event);
+    setShowConfirmation(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:5000/api/events/${id}`);
+      const token = localStorage.getItem("token");
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      await axios.delete(`http://localhost:5000/api/events/${eventToDelete._id}`, config);
       fetchEvents();
+      setShowConfirmation(false);
+      setEventToDelete(null);
     } catch (error) {
       console.error("Error deleting event:", error);
+      alert("Error deleting event: " + (error.response?.data?.message || error.message));
+      setShowConfirmation(false);
+      setEventToDelete(null);
     }
   };
 
+  const cancelDelete = () => {
+    setShowConfirmation(false);
+    setEventToDelete(null);
+  };
+
   useEffect(() => {
-    fetchEvents();
-    // fetch organizer profile if token present
-    const token = localStorage.getItem("token");
-    if (token) {
-      axios
-        .get("http://localhost:5000/api/auth/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => setOrganizerName(res.data.name || ""))
-        .catch((err) => console.error("Error fetching profile:", err.response?.data || err.message));
-    }
+    // fetch organizer profile if token present, then fetch events filtered for this organizer
+    const init = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const profile = await axios.get("http://localhost:5000/api/auth/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setOrganizerName(profile.data.name || "");
+          setOrganizerEmail(profile.data.email || "");
+        } catch (err) {
+          console.error("Error fetching profile:", err.response?.data || err.message);
+        }
+      }
+
+      // fetch events after profile (organizerEmail) is set
+      await fetchEvents();
+    };
+
+    init();
   }, []);
 
   return (
@@ -52,6 +90,17 @@ const OrganizerDashboard = () => {
           onClick={() => navigate("/add-event")}
         >
           + Add Event
+        </button>
+        <button
+          style={{...styles.addButton, marginLeft:12, background:'#ff4d4d', color:'white'}}
+          onClick={() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            localStorage.removeItem('userName');
+            navigate('/');
+          }}
+        >
+          Logout
         </button>
       </div>
 
@@ -88,7 +137,7 @@ const OrganizerDashboard = () => {
 
                 <button
                   style={styles.deleteButton}
-                  onClick={() => handleDelete(event._id)}
+                  onClick={() => handleDelete(event)}
                 >
                   Delete
                 </button>
@@ -98,6 +147,32 @@ const OrganizerDashboard = () => {
           ))
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmation && eventToDelete && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <h2 style={styles.modalTitle}>Hi, {organizerName || localStorage.getItem("userName") || "Organizer"}</h2>
+            <p style={styles.modalMessage}>Are you sure delete this event?</p>
+            <h3 style={styles.eventName}>{eventToDelete.title}</h3>
+            
+            <div style={styles.modalButtons}>
+              <button
+                style={styles.confirmButton}
+                onClick={confirmDelete}
+              >
+                ✓ Yes, Delete
+              </button>
+              <button
+                style={styles.cancelButton}
+                onClick={cancelDelete}
+              >
+                ✗ Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -204,6 +279,83 @@ const styles = {
   noEvents: {
     color: "white",
     fontSize: "18px"
+  },
+
+  // Modal styles
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000
+  },
+
+  modalContent: {
+    background: "white",
+    borderRadius: "15px",
+    padding: "40px",
+    boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
+    maxWidth: "450px",
+    width: "90%",
+    textAlign: "center",
+    animation: "slideIn 0.3s ease-out"
+  },
+
+  modalTitle: {
+    margin: "0 0 15px 0",
+    fontSize: "24px",
+    fontWeight: "bold",
+    color: "#333"
+  },
+
+  modalMessage: {
+    margin: "10px 0",
+    fontSize: "16px",
+    color: "#666"
+  },
+
+  eventName: {
+    margin: "15px 0",
+    fontSize: "18px",
+    color: "#ff4d4d",
+    fontWeight: "600",
+    wordBreak: "break-word"
+  },
+
+  modalButtons: {
+    display: "flex",
+    gap: "15px",
+    marginTop: "30px",
+    justifyContent: "center"
+  },
+
+  confirmButton: {
+    background: "#ff4d4d",
+    color: "white",
+    border: "none",
+    padding: "12px 30px",
+    borderRadius: "25px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    fontSize: "14px",
+    transition: "background 0.2s ease"
+  },
+
+  cancelButton: {
+    background: "#4caf50",
+    color: "white",
+    border: "none",
+    padding: "12px 30px",
+    borderRadius: "25px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    fontSize: "14px",
+    transition: "background 0.2s ease"
   }
 };
 

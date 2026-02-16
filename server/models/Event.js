@@ -9,8 +9,13 @@ const organizerSchema = new mongoose.Schema({
 
 const eventSchema = new mongoose.Schema(
   {
+    organizer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
     month: String,
     date: String,
+    time: String,
     title: String,
     description: String,
     image: String,

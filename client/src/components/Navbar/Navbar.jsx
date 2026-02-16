@@ -6,11 +6,16 @@ import './Navbar.css';
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLogout, setShowLogout] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+    const role = localStorage.getItem("role");
+    // Only count as "logged in" for navbar if user is NOT an organizer
+    // Organizers will see "Login" button even though they have a token
+    setIsLoggedIn(!!token && role !== "organizer");
+    setShowLogout(!!token && role !== "organizer");
   }, []);
 
   const handleLogout = () => {
@@ -41,21 +46,29 @@ const Navbar = () => {
 
         {/* Right */}
         <div className="nav-right">
-          {!isLoggedIn ? (
+          {!isLoggedIn && !localStorage.getItem("role") ? (
             <button
               className="login-btn"
-             onClick={() => navigate("/login")}
-
+              onClick={() => navigate("/login")}
             >
               Login
             </button>
           ) : (
-            <button
-              className="login-btn"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
+            showLogout ? (
+              <button
+                className="login-btn"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            ) : (
+              <button
+                className="login-btn"
+                onClick={() => navigate("/login")}
+              >
+                Login
+              </button>
+            )
           )}
 
           {/* Hamburger */}

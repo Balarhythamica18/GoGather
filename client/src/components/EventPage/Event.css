@@ -48,7 +48,6 @@
 /* Content */
 .event-content {
   padding: 16px;
-
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -135,7 +134,7 @@
 
 /* Book Now */
 .book-btn {
-  background-color:#ff007a;
+  background-color: #ff007a;
   color: #ffffff;
   border: none;
 }
@@ -175,10 +174,166 @@
   color: #888;
   position: relative;
   top: 1px;
-  margin-left:2px;
+  margin-left: 2px;
 }
 
+/* ========================= */
+/* UNIQUE HEADER SECTION */
+/* ========================= */
+
+.eventpage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.eventpage-filter-icon-btn {
+  background-color: #0b0b3b;
+  color: #ffffff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.eventpage-filter-icon-btn:hover {
+  background-color: #1a1a5a;
+}
+
+/* ========================= */
+/* UNIQUE FILTER SIDEBAR */
+/* ========================= */
+
+.eventpage-filter-sidebar {
+  position: fixed;
+  top: 0;
+  right: -380px;
+  width: 360px;
+  height: 100%;
+  background: #ffffff;
+  box-shadow: -6px 0 25px rgba(0, 0, 0, 0.12);
+  padding: 28px 22px;
+  transition: right 0.35s ease;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+}
+
+.eventpage-filter-sidebar.open {
+  right: 0;
+}
+
+.eventpage-filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.eventpage-filter-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0b0b3b;
+}
+
+.eventpage-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.eventpage-close-btn:hover {
+  color: #0b0b3b;
+}
+
+.eventpage-filter-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.eventpage-filter-body label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0b0b3b;
+}
+
+.eventpage-filter-body input,
+.eventpage-filter-body select {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1.5px solid #e5e7eb;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s ease;
+  background: #ffffff;
+}
+
+.eventpage-filter-body input:focus,
+.eventpage-filter-body select:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+}
+
+.eventpage-filter-footer {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.eventpage-cancel-btn {
+  flex: 1;
+  height: 36px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.eventpage-cancel-btn:hover {
+  background: #e5e7eb;
+}
+
+.eventpage-apply-btn {
+  flex: 1;
+  height: 36px;
+  background: #ff007a;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.eventpage-apply-btn:hover {
+  background: #e6005c;
+}
+
+.eventpage-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 1000;
+}
+
+/* ========================= */
 /* Responsive Styles */
+/* ========================= */
 
 /* Tablets */
 @media (max-width: 1024px) {
@@ -252,7 +407,10 @@
     font-size: 12px;
   }
 
-  .event-date, .event-price, .event-location, .event-category {
+  .event-date,
+  .event-price,
+  .event-location,
+  .event-category {
     font-size: 11px;
   }
 

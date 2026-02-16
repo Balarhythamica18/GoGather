@@ -15,7 +15,7 @@ const Home = () => {
     <div>
       <Navbar />
        <Head />
-       <Search />
+    
       <UpcomingEvents />
         <DiscountOffer />
         <TopEvent />
