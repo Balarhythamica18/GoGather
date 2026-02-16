@@ -1,115 +1,127 @@
-/* Centering Layout */
+/* Page Center */
 .auth-container {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f4f6f8;
+  background: linear-gradient(135deg, #eef2f7, #f8fafc);
   padding: 20px;
+  font-family: "Segoe UI", sans-serif;
 }
 
 /* Card */
 .auth-card {
   width: 100%;
-  max-width: 380px;
+  max-width: 400px;
   background: #ffffff;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 35px 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
 /* Heading */
 .auth-card h2 {
   text-align: center;
+  margin-bottom: 25px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Role Tabs Wrapper */
+.role-tabs {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 4px;
   margin-bottom: 20px;
-  font-size: 22px;
-  color: #333;
+}
+
+/* Individual Tabs */
+.role-tabs button {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  color: #475569;
+}
+
+/* Active Tab */
+.role-tabs button.active {
+  background: #4a90e2;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+}
+
+/* Hover */
+.role-tabs button:hover {
+  background: rgba(74, 144, 226, 0.1);
 }
 
 /* Inputs */
 .auth-card input {
   width: 100%;
-  padding: 10px 12px;
-  margin-bottom: 14px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
   font-size: 14px;
-  transition: border 0.2s ease;
+  transition: 0.2s ease;
 }
 
 .auth-card input:focus {
   border-color: #4a90e2;
   outline: none;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.15);
 }
 
 /* Button */
 .auth-btn {
   width: 100%;
-  padding: 10px;
-  background-color: #4a90e2;
+  padding: 12px;
+  background: #4a90e2;
   color: white;
   border: none;
-  border-radius: 6px;
-  font-weight: 500;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: 0.3s ease;
 }
 
 .auth-btn:hover {
-  background-color: #357abd;
+  background: #357abd;
 }
 
-/* Role Tabs */
-.role-tabs {
-  display: flex;
-  margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.role-tabs button {
-  flex: 1;
-  padding: 8px;
-  background: white;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.role-tabs button.active {
-  background-color: #4a90e2;
-  color: white;
-  font-weight: 500;
-}
-
-/* Error Text */
-.error-text {
-  color: #d9534f;
-  font-size: 13px;
-  margin-bottom: 10px;
-}
+/* Switch Link */
 .auth-switch {
-  margin-top: 15px;
-  font-size: 14px;
+  margin-top: 18px;
   text-align: center;
+  font-size: 14px;
+  color: #475569;
 }
 
 .auth-switch a {
   color: #4a90e2;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .auth-switch a:hover {
   text-decoration: underline;
 }
+
+/* Popups */
 .success-popup {
   background: #e6f9f0;
   color: #0a7f42;
   padding: 10px;
   border-radius: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   text-align: center;
   font-size: 14px;
 }
@@ -119,7 +131,7 @@
   color: #d93025;
   padding: 10px;
   border-radius: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   text-align: center;
   font-size: 14px;
 }
