@@ -22,6 +22,10 @@ const Event = () => {
     category: "",
   });
 
+  // ✅ Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const eventsPerPage = 12;
+
   useEffect(() => {
     axios
       .get("http://localhost:5000/api/events")
@@ -81,8 +85,20 @@ const Event = () => {
       });
   }, [events, appliedFilters]);
 
+  // ✅ Pagination Logic
+  const totalPages = Math.ceil(processedEvents.length / eventsPerPage);
+
+  const indexOfLastEvent = currentPage * eventsPerPage;
+  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
+
+  const currentEvents = processedEvents.slice(
+    indexOfFirstEvent,
+    indexOfLastEvent
+  );
+
   const handleApply = () => {
     setAppliedFilters(filters);
+    setCurrentPage(1); // Reset to first page
     setIsFilterOpen(false);
   };
 
@@ -178,7 +194,7 @@ const Event = () => {
       )}
 
       <div className="events-grid">
-        {processedEvents.map((event) => (
+        {currentEvents.map((event) => (
           <div className="event-card" key={event._id}>
             {event.isUpcoming && (
               <span className="upcoming-badge">Upcoming</span>
@@ -193,7 +209,19 @@ const Event = () => {
             <div className="event-content">
               <div className="event-date-price">
                 <span className="event-date">
-                  {event.month} {event.date}
+                  {(() => {
+                    try {
+                      const dateObj = new Date(`${event.month}-${event.date}`);
+                      const day = String(dateObj.getDate()).padStart(2, "0");
+                      const monthName = dateObj.toLocaleDateString("en-US", {
+                        month: "short",
+                      });
+                      const year = dateObj.getFullYear();
+                      return `${day} ${monthName} ${year}`;
+                    } catch (e) {
+                      return `${event.date} ${event.month}`;
+                    }
+                  })()}
                 </span>
                 {event.price && (
                   <span className="event-price">{event.price}</span>
@@ -201,23 +229,17 @@ const Event = () => {
               </div>
 
               <h2 className="event-title">{event.title}</h2>
-              <p className="event-description">
-                {event.description}
-              </p>
+              <p className="event-description">{event.description}</p>
 
               <div className="event-meta">
-                <span className="event-category">
-                  {event.category}
-                </span>
+                <span className="event-category">{event.category}</span>
                 <span className="event-location">
                   📍 {event.location}
                 </span>
               </div>
 
               <div className="event-buttons">
-                <button className="btn book-btn">
-                  Book Now
-                </button>
+                <button className="btn book-btn">Book Now</button>
                 <button
                   className="btn details-btn"
                   onClick={() =>
@@ -233,6 +255,39 @@ const Event = () => {
           </div>
         ))}
       </div>
+
+      {/* ✅ Pagination UI */}
+      {totalPages > 1 && (
+        <div className="eventpage-pagination-wrapper">
+          <button
+            className="eventpage-pagination-btn"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
+          >
+            ◀ Prev
+          </button>
+
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index}
+              className={`eventpage-pagination-number ${
+                currentPage === index + 1 ? "active-page" : ""
+              }`}
+              onClick={() => setCurrentPage(index + 1)}
+            >
+              {index + 1}
+            </button>
+          ))}
+
+          <button
+            className="eventpage-pagination-btn"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            Next ▶
+          </button>
+        </div>
+      )}
     </div>
   );
 };

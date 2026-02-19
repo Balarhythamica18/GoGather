@@ -9,24 +9,23 @@ const UpcomingEvents = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch all events and filter for upcoming (date > 1 month away OR has declaration field)
     const fetchUpcoming = async () => {
       try {
         const res = await axios.get("http://localhost:5000/api/events");
-        
-        // Filter events that are upcoming: either have declaration field or date is > 1 month away
+
         const upcomingFiltered = res.data.filter((event) => {
-          // If it has declaration field, it's marked as upcoming
           if (event.declaration) return true;
 
-          // Check if date is more than 1 month away
           if (event.month && event.date) {
             try {
-              // Parse month-date format (e.g., "2026-04" and "14")
-              const eventDate = new Date(`${event.month}-${String(event.date).padStart(2, "0")}`);
+              const eventDate = new Date(
+                `${event.month}-${String(event.date).padStart(2, "0")}`
+              );
               const currentDate = new Date();
-              const oneMonthLater = new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000);
-              
+              const oneMonthLater = new Date(
+                currentDate.getTime() + 30 * 24 * 60 * 60 * 1000
+              );
+
               return eventDate > oneMonthLater;
             } catch (e) {
               console.error("Error parsing event date:", e);
@@ -50,6 +49,19 @@ const UpcomingEvents = () => {
     navigate(`/events/upcoming/${id}`);
   };
 
+  /* ===== FORMAT MONTH FUNCTION ===== */
+  const formatMonth = (monthValue) => {
+    if (!monthValue) return "";
+
+    try {
+      // If month is like "2026-04"
+      const date = new Date(`${monthValue}-01`);
+      return date.toLocaleString("en-US", { month: "short" });
+    } catch {
+      return monthValue;
+    }
+  };
+
   return (
     <div className="upcoming-container">
       <h2 className="upcoming-title">Upcoming Events</h2>
@@ -69,8 +81,12 @@ const UpcomingEvents = () => {
 
             <div className="event-info">
               <div className="date-box">
-                <div>{event.month}</div>
-                <div>{event.date}</div>
+                <div className="month-text">
+                  {formatMonth(event.month)}
+                </div>
+                <div className="date-text">
+                  {event.date}
+                </div>
               </div>
 
               <div className="title-desc">
@@ -84,7 +100,7 @@ const UpcomingEvents = () => {
 
       {visibleCount < events.length && (
         <button
-          className="load-more"
+          className="upcoming-load-more"
           onClick={() => setVisibleCount((v) => v + 3)}
         >
           Load More

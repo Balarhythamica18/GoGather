@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import { Toaster } from "react-hot-toast";
+import ContactForm from "./components/ContactForm.jsx";
 
 import "./App.css";
 
@@ -59,6 +60,7 @@ const App = () => {
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/my-bookings" element={<MyBookings />} />
           <Route path="/seats/:category/:id" element={<SeatLayoutPage />} />
+          <Route path="/contact" element={<ContactForm />} />
 
           {/* 🔐 AUTH ROUTES */}
           <Route path="/login" element={<Login />} />

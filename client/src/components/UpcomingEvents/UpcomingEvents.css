@@ -127,7 +127,7 @@
   line-height: 1.5;
 }
 
-.load-more {
+.upcoming-load-more {
   margin: 40px auto 0;
   display: block;
   padding: 12px 36px;
@@ -135,13 +135,13 @@
   font-size: 14px;
   font-weight: 600;
   border: 1px solid #d1d1d1;
-  background: #fff;
+  background:#0d0f5a;
   cursor: pointer;
   transition: 0.2s ease;
 }
 
-.load-more:hover {
-  background: #f1f1f1;
+.upcoming-load-more:hover {
+  background: #15188a;
 }
 
 @media (max-width: 1200px) {

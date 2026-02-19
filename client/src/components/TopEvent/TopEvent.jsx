@@ -22,22 +22,34 @@ const TopEvent = () => {
     fetchEvents();
   }, []);
 
-  // ✅ Exclude comedy & upcoming (by declaration or date > 1 month away)
+  // ✅ Format Month (Apr, May, Jun...)
+  const formatMonth = (monthValue) => {
+    if (!monthValue) return "";
+
+    try {
+      const date = new Date(`${monthValue}-01`);
+      return date.toLocaleString("en-US", { month: "short" });
+    } catch {
+      return monthValue;
+    }
+  };
+
+  // ✅ Exclude comedy & upcoming
   const topEventsData = events
     .filter((event) => {
-      // Exclude comedy
       if (event.category?.toLowerCase() === "comedy") return false;
-
-      // Exclude if manually marked as upcoming
       if (event.declaration) return false;
 
-      // Exclude if date is more than 1 month away
       if (event.month && event.date) {
         try {
-          const eventDate = new Date(`${event.month}-${String(event.date).padStart(2, "0")}`);
+          const eventDate = new Date(
+            `${event.month}-${String(event.date).padStart(2, "0")}`
+          );
           const currentDate = new Date();
-          const oneMonthLater = new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000);
-          if (eventDate > oneMonthLater) return false; // exclude upcoming events
+          const oneMonthLater = new Date(
+            currentDate.getTime() + 30 * 24 * 60 * 60 * 1000
+          );
+          if (eventDate > oneMonthLater) return false;
         } catch (e) {
           console.error("Error parsing date:", e);
         }
@@ -45,7 +57,7 @@ const TopEvent = () => {
 
       return true;
     })
-    .slice(0, 10); // only first 10
+    .slice(0, 10);
 
   const scrollLeft = () => {
     scrollRef.current.scrollBy({ left: -320, behavior: "smooth" });
@@ -69,7 +81,7 @@ const TopEvent = () => {
         {topEventsData.map((ev) => (
           <article key={ev._id} className="card">
             <div className="card__image">
-                <img
+              <img
                 src={ev.image}
                 alt={ev.title}
                 onClick={() => navigate(`/events/top/${ev._id}`)}
@@ -77,9 +89,14 @@ const TopEvent = () => {
                 style={{ cursor: "pointer" }}
               />
 
+              {/* ✅ Updated Date Format */}
               <div className="card__date">
-                <span className="month">{ev.month}</span>
-                <span className="day">{ev.date}</span>
+                <span className="month">
+                  {formatMonth(ev.month)}
+                </span>
+                <span className="day">
+                  {ev.date}
+                </span>
               </div>
             </div>
 
@@ -98,11 +115,16 @@ const TopEvent = () => {
               </div>
 
               <div className="card__actions">
-                <button className="btn btn--primary">Book Now</button>
+                <button
+                  className="btn btn--primary"
+                  onClick={() => navigate(`/seats/top/${ev._id}`)}
+                >
+                  Book Now
+                </button>
 
                 <button
                   className="btn btn--ghost"
-                  onClick={() => navigate(`/events/top/${ev.id}`)}
+                  onClick={() => navigate(`/events/top/${ev._id}`)}
                 >
                   Details
                 </button>

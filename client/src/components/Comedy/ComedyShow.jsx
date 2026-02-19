@@ -22,21 +22,33 @@ const ComedyShow = () => {
     fetchEvents();
   }, []);
 
-  // ✅ Filter only comedy category, exclude upcoming events (> 1 month away or has declaration)
-  const comedyShows = events.filter((event) => {
-    // Must be comedy
-    if (event.category?.toLowerCase() !== "comedy") return false;
+  /* ✅ Format Month (Apr, May, Jun...) */
+  const formatMonth = (monthValue) => {
+    if (!monthValue) return "";
 
-    // Exclude if marked as upcoming
+    try {
+      const date = new Date(`${monthValue}-01`);
+      return date.toLocaleString("en-US", { month: "short" });
+    } catch {
+      return monthValue;
+    }
+  };
+
+  // ✅ Filter only comedy category, exclude upcoming events
+  const comedyShows = events.filter((event) => {
+    if (event.category?.toLowerCase() !== "comedy") return false;
     if (event.declaration) return false;
 
-    // Exclude if date is more than 1 month away
     if (event.month && event.date) {
       try {
-        const eventDate = new Date(`${event.month}-${String(event.date).padStart(2, "0")}`);
+        const eventDate = new Date(
+          `${event.month}-${String(event.date).padStart(2, "0")}`
+        );
         const currentDate = new Date();
-        const oneMonthLater = new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000);
-        if (eventDate > oneMonthLater) return false; // exclude upcoming events
+        const oneMonthLater = new Date(
+          currentDate.getTime() + 30 * 24 * 60 * 60 * 1000
+        );
+        if (eventDate > oneMonthLater) return false;
       } catch (e) {
         console.error("Error parsing date:", e);
       }
@@ -67,15 +79,20 @@ const ComedyShow = () => {
         {comedyShows.map((show) => (
           <article key={show._id} className="card">
             <div className="card__image">
-                <img
-                  src={show.image}
-                  alt={show.title}
-                  onError={(e) => (e.target.src = "/top/placeholder.png")}
-                />
+              <img
+                src={show.image}
+                alt={show.title}
+                onError={(e) => (e.target.src = "/top/placeholder.png")}
+              />
 
+              {/* ✅ Updated Date Format */}
               <div className="card__date">
-                <span className="month">{show.month}</span>
-                <span className="day">{show.date}</span>
+                <span className="month">
+                  {formatMonth(show.month)}
+                </span>
+                <span className="day">
+                  {show.date}
+                </span>
               </div>
             </div>
 
@@ -94,7 +111,12 @@ const ComedyShow = () => {
               </div>
 
               <div className="card__actions">
-                <button className="btn btn--primary">Book Now</button>
+                <button
+                  className="btn btn--primary"
+                  onClick={() => navigate(`/seats/comedy/${show._id}`)}
+                >
+                  Book Now
+                </button>
 
                 <button
                   className="btn btn--ghost"
