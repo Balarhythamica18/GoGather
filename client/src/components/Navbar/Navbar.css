@@ -68,6 +68,11 @@
   cursor: pointer;
 }
 
+.hi-user {
+  margin-right: 12px;
+  font-weight: 600;
+}
+
 /* HAMBURGER */
 .menu-icon {
   width: 26px;

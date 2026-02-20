@@ -7,17 +7,28 @@ const SeatLayout = ({ event }) => {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [ticketCount, setTicketCount] = useState(1);
 
-  const seatPrice = event.price
-    ? Number(event.price.replace("₹", ""))
-    : 0;
+  // ✅ detect first login
+  const isFirstLogin = localStorage.getItem("firstLogin") === "true";
+
+  // ✅ safe price conversion
+  const seatPrice =
+    Number(String(event?.price).replace(/[^\d]/g, "")) || 0;
 
   // ❗ Art & Sport → no seat selection
   const isSeatBased =
-    event.category !== "art" && event.category !== "sport";
+    event.category?.toLowerCase() !== "art" &&
+    event.category?.toLowerCase() !== "sport";
 
-  const totalAmount = isSeatBased
+  // ✅ subtotal
+  const subtotal = isSeatBased
     ? selectedSeats.length * seatPrice
     : ticketCount * seatPrice;
+
+  // ✅ discount
+  const discount = isFirstLogin ? subtotal * 0.2 : 0;
+
+  // ✅ final total
+  const totalAmount = subtotal - discount;
 
   const toggleSeat = (seat) => {
     setSelectedSeats((prev) =>
@@ -27,14 +38,10 @@ const SeatLayout = ({ event }) => {
     );
   };
 
-  const increaseTickets = () => {
-    setTicketCount((prev) => prev + 1);
-  };
+  const increaseTickets = () => setTicketCount((p) => p + 1);
 
   const decreaseTickets = () => {
-    if (ticketCount > 1) {
-      setTicketCount((prev) => prev - 1);
-    }
+    if (ticketCount > 1) setTicketCount((p) => p - 1);
   };
 
   return (
@@ -43,7 +50,7 @@ const SeatLayout = ({ event }) => {
         !isSeatBased ? "center-summary" : ""
       }`}
     >
-      {/* LEFT - SEAT SELECTION (ONLY FOR SEAT-BASED EVENTS) */}
+      {/* LEFT — SEATS */}
       {isSeatBased && (
         <div className="seat-left">
           <h2>{event.title}</h2>
@@ -56,22 +63,24 @@ const SeatLayout = ({ event }) => {
               <div className="seat-row" key={row}>
                 <span className="row-label">{row}</span>
 
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((num) => {
-                  const seatId = `${row}${num}`;
-                  return (
-                    <button
-                      key={seatId}
-                      className={`seat ${
-                        selectedSeats.includes(seatId)
-                          ? "selected"
-                          : ""
-                      }`}
-                      onClick={() => toggleSeat(seatId)}
-                    >
-                      {num}
-                    </button>
-                  );
-                })}
+                {Array.from({ length: 12 }, (_, i) => i + 1).map(
+                  (num) => {
+                    const seatId = `${row}${num}`;
+                    return (
+                      <button
+                        key={seatId}
+                        className={`seat ${
+                          selectedSeats.includes(seatId)
+                            ? "selected"
+                            : ""
+                        }`}
+                        onClick={() => toggleSeat(seatId)}
+                      >
+                        {num}
+                      </button>
+                    );
+                  }
+                )}
               </div>
             ))}
           </div>
@@ -90,7 +99,7 @@ const SeatLayout = ({ event }) => {
         </div>
       )}
 
-      {/* RIGHT - BOOKING SUMMARY */}
+      {/* RIGHT — SUMMARY */}
       <div className="seat-right">
         <h3>Booking Summary</h3>
 
@@ -109,18 +118,16 @@ const SeatLayout = ({ event }) => {
           <span>{event.address}</span>
         </p>
 
-        {/* SEAT-BASED EVENTS */}
         {isSeatBased ? (
           <p>
             <strong>Seats</strong>
             <span>
-              {selectedSeats.length > 0
+              {selectedSeats.length
                 ? selectedSeats.join(", ")
                 : "None"}
             </span>
           </p>
         ) : (
-          /* ART & SPORT EVENTS */
           <div className="ticket-counter">
             <strong>Tickets</strong>
             <div className="counter-controls">
@@ -136,6 +143,15 @@ const SeatLayout = ({ event }) => {
           <span>₹{seatPrice}</span>
         </p>
 
+        {/* ✅ Discount */}
+        {isFirstLogin && subtotal > 0 && (
+          <p className="discount">
+            <strong>First Login Discount (20%)</strong>
+            <span>-₹{discount}</span>
+          </p>
+        )}
+
+        {/* ✅ Total */}
         <p className="total">
           <strong>Total Amount</strong>
           <span>₹{totalAmount}</span>
@@ -148,6 +164,10 @@ const SeatLayout = ({ event }) => {
               ? selectedSeats.length === 0
               : ticketCount < 1
           }
+          onClick={() => {
+            // after payment success remove discount
+            localStorage.removeItem("firstLogin");
+          }}
         >
           Proceed to Payment
         </button>

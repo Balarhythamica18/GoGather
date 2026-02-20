@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./auth.css";
 
 const Register = () => {
@@ -14,6 +15,10 @@ const Register = () => {
     password: "",
     confirmPassword: ""
   });
+
+  // ⭐ NEW STATES
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -99,21 +104,39 @@ const Register = () => {
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
 
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-          />
+          {/* ⭐ PASSWORD */}
+          <div className="password-field">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              required
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+            />
+            <span
+              className="eye-icon"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
 
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            required
-            onChange={(e) =>
-              setForm({ ...form, confirmPassword: e.target.value })
-            }
-          />
+          {/* ⭐ CONFIRM PASSWORD */}
+          <div className="password-field">
+            <input
+              type={showConfirm ? "text" : "password"}
+              placeholder="Confirm Password"
+              required
+              onChange={(e) =>
+                setForm({ ...form, confirmPassword: e.target.value })
+              }
+            />
+            <span
+              className="eye-icon"
+              onClick={() => setShowConfirm(!showConfirm)}
+            >
+              {showConfirm ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
 
           <button type="submit" className="auth-btn">
             Register
@@ -121,8 +144,7 @@ const Register = () => {
         </form>
 
         <p className="auth-switch">
-          Already have an account?{" "}
-          <Link to="/login">Login</Link>
+          Already have an account? <Link to="/login">Login</Link>
         </p>
 
       </div>

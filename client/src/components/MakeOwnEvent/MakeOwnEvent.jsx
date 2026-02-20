@@ -23,7 +23,7 @@ const MakeOwnEvent = () => {
             Concerts, meetups, workshops, or conferences — we’ve got you covered.
           </p>
 
-         <button onClick={() => navigate("/login")}>
+         <button className="create-event-btn" onClick={() => navigate("/login")}>
   Create Event
 </button>
 

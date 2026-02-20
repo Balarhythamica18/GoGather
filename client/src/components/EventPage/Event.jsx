@@ -238,19 +238,30 @@ const Event = () => {
                 </span>
               </div>
 
-              <div className="event-buttons">
-                <button className="btn book-btn">Book Now</button>
-                <button
-                  className="btn details-btn"
-                  onClick={() =>
-                    navigate(
-                      `/events/${event.source || "top"}/${event._id}`
-                    )
-                  }
-                >
-                  Details
-                </button>
-              </div>
+            <div
+  className={`event-buttons ${
+    event.isUpcoming ? "center-details" : ""
+  }`}
+>
+  {!event.isUpcoming && (
+    <button
+      className="btn book-btn"
+      onClick={() => navigate(`/seatlayout/${event._id}`)}
+    >
+      Book Now
+    </button>
+  )}
+
+  <button
+    className="btn details-btn"
+    onClick={() =>
+      navigate(`/events/${event.source || "top"}/${event._id}`)
+    }
+  >
+    Details
+  </button>
+</div>
+
             </div>
           </div>
         ))}

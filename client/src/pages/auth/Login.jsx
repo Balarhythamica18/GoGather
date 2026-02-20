@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./Auth.css";
 
-const Login = () => {
+const Login = ({ setUser }) => { // ✅ receive setUser from App/Navbar
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -11,6 +12,7 @@ const Login = () => {
     password: ""
   });
 
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -25,24 +27,24 @@ const Login = () => {
         form
       );
 
-      // Store token + name
+      // Save auth data
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("userName", res.data.name);
-      // store role for conditional UI
       if (res.data.role) localStorage.setItem("role", res.data.role);
 
-      setSuccess("Login Successful 🎉 Redirecting...");
+      setSuccess("Login Successful 🎉"); // show immediately
 
-      setTimeout(() => {
-        if (res.data.role === "admin") {
-          navigate("/admin/dashboard");
-        } else if (res.data.role === "organizer") {
-          navigate("/dashboard");
-        } else {
-          navigate("/home");
-        }
-      }, 1500);
+      // Update Navbar user immediately
+      setUser({ name: res.data.name, role: res.data.role });
 
+      // Redirect based on role
+      if (res.data.role === "admin") {
+        navigate("/admin/dashboard");
+      } else if (res.data.role === "organizer") {
+        navigate("/dashboard");
+      } else {
+        navigate("/home");
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     }
@@ -64,12 +66,20 @@ const Login = () => {
             onChange={(e)=>setForm({...form,email:e.target.value})}
           />
 
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            onChange={(e)=>setForm({...form,password:e.target.value})}
-          />
+          <div className="password-field">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              required
+              onChange={(e)=>setForm({...form,password:e.target.value})}
+            />
+            <span
+              className="eye-icon"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
 
           <button type="submit" className="auth-btn">
             Login
@@ -77,10 +87,8 @@ const Login = () => {
         </form>
 
         <p className="auth-switch">
-          Don’t have an account?{" "}
-          <Link to="/register">Register</Link>
+          Don’t have an account? <Link to="/register">Register</Link>
         </p>
-
       </div>
     </div>
   );

@@ -6,23 +6,33 @@ import './Navbar.css';
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showLogout, setShowLogout] = useState(true);
+  const [username, setUsername] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
-    // Only count as "logged in" for navbar if user is NOT an organizer
-    // Organizers will see "Login" button even though they have a token
-    setIsLoggedIn(!!token && role !== "organizer");
-    setShowLogout(!!token && role !== "organizer");
+    const name = localStorage.getItem("name");
+
+    if (token && role !== "organizer") {
+      setIsLoggedIn(true);
+      setUsername(name ? name : "User");
+    } else {
+      setIsLoggedIn(false);
+      setUsername("");
+    }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    localStorage.removeItem("name");
+
     setIsLoggedIn(false);
+    setUsername("");
+
     navigate("/");
+    window.location.reload();
   };
 
   return (
@@ -34,7 +44,7 @@ const Navbar = () => {
           <img src={logo} alt="Logo" className="nav-logo" />
         </Link>
 
-        {/* Desktop Links */}
+        {/* Center Links */}
         <div className="nav-center">
           <ul className="nav-links-list">
             <li><Link to="/" className="nav-link-item">Home</Link></li>
@@ -44,9 +54,16 @@ const Navbar = () => {
           </ul>
         </div>
 
-        {/* Right */}
+        {/* Right Section */}
         <div className="nav-right">
-          {!isLoggedIn && !localStorage.getItem("role") ? (
+
+          {/* Hi username */}
+          {isLoggedIn && (
+            <span className="hi-user">Hi {username}</span>
+          )}
+
+          {/* Login / Logout button */}
+          {!isLoggedIn ? (
             <button
               className="login-btn"
               onClick={() => navigate("/login")}
@@ -54,21 +71,12 @@ const Navbar = () => {
               Login
             </button>
           ) : (
-            showLogout ? (
-              <button
-                className="login-btn"
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
-            ) : (
-              <button
-                className="login-btn"
-                onClick={() => navigate("/login")}
-              >
-                Login
-              </button>
-            )
+            <button
+              className="login-btn"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
           )}
 
           {/* Hamburger */}
@@ -80,6 +88,7 @@ const Navbar = () => {
             <span></span>
             <span></span>
           </div>
+
         </div>
       </nav>
 

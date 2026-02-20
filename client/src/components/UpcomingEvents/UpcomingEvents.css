@@ -138,6 +138,7 @@
   background:#0d0f5a;
   cursor: pointer;
   transition: 0.2s ease;
+  color: #fff;
 }
 
 .upcoming-load-more:hover {
