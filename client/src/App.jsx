@@ -5,6 +5,8 @@ import Footer from "./components/Footer/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import { Toaster } from "react-hot-toast";
 import ContactForm from "./components/ContactForm.jsx";
+import PaymentPage from "./pages/PaymentPage.jsx";
+import ConfirmationPage from "./pages/ConfirmationPage.jsx";
 
 import "./App.css";
 
@@ -61,6 +63,8 @@ const App = () => {
           <Route path="/my-bookings" element={<MyBookings />} />
           <Route path="/seats/:category/:id" element={<SeatLayoutPage />} />
           <Route path="/contact" element={<ContactForm />} />
+          <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/confirmation" element={<ConfirmationPage />} />
 
           {/* 🔐 AUTH ROUTES */}
           <Route path="/login" element={<Login />} />

@@ -10,41 +10,54 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-    const name = localStorage.getItem("name");
+    const updateUser = () => {
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role");
+      const name = localStorage.getItem("name");
 
-    if (token && role !== "organizer") {
-      setIsLoggedIn(true);
-      setUsername(name ? name : "User");
-    } else {
-      setIsLoggedIn(false);
-      setUsername("");
-    }
+      if (token && role !== "organizer") {
+        setIsLoggedIn(true);
+        setUsername(name || "User");
+      } else {
+        setIsLoggedIn(false);
+        setUsername("");
+      }
+    };
+
+    // Listen for custom login/logout events
+    window.addEventListener("storageChange", updateUser);
+
+    // Listen for cross-tab changes in localStorage
+    window.addEventListener("storage", updateUser);
+
+    // Run once on mount
+    updateUser();
+
+    return () => {
+      window.removeEventListener("storageChange", updateUser);
+      window.removeEventListener("storage", updateUser);
+    };
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("name");
+    localStorage.removeItem("user");
 
     setIsLoggedIn(false);
     setUsername("");
 
     navigate("/");
-    window.location.reload();
   };
 
   return (
     <>
       <nav className="navbar-container">
-
-        {/* Logo */}
         <Link to="/" className="nav-logo-link">
           <img src={logo} alt="Logo" className="nav-logo" />
         </Link>
 
-        {/* Center Links */}
         <div className="nav-center">
           <ul className="nav-links-list">
             <li><Link to="/" className="nav-link-item">Home</Link></li>
@@ -54,32 +67,15 @@ const Navbar = () => {
           </ul>
         </div>
 
-        {/* Right Section */}
         <div className="nav-right">
+          {isLoggedIn && <span className="hi-user">Hi {username}</span>}
 
-          {/* Hi username */}
-          {isLoggedIn && (
-            <span className="hi-user">Hi {username}</span>
-          )}
-
-          {/* Login / Logout button */}
           {!isLoggedIn ? (
-            <button
-              className="login-btn"
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </button>
+            <button className="login-btn" onClick={() => navigate("/login")}>Login</button>
           ) : (
-            <button
-              className="login-btn"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
+            <button className="login-btn" onClick={handleLogout}>Logout</button>
           )}
 
-          {/* Hamburger */}
           <div
             className={`menu-icon ${isMenuOpen ? 'open' : ''}`}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -88,11 +84,9 @@ const Navbar = () => {
             <span></span>
             <span></span>
           </div>
-
         </div>
       </nav>
 
-      {/* Mobile Menu */}
       <div className={`mobile-menu ${isMenuOpen ? 'show' : ''}`}>
         <ul>
           <li><Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link></li>

@@ -6,11 +6,13 @@ import { fileURLToPath } from "url";
 import { dirname } from "path";
 import fs from "fs";
 import nodemailer from "nodemailer"; 
+import http from "http";
+import { Server } from "socket.io";
+
 import connectDB from "./configs/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
-
-
+import bookingRoutes from "./routes/bookingRoutes.js"; // new booking routes
 
 dotenv.config();
 
@@ -44,13 +46,15 @@ app.use("/api/auth", authRoutes);
 // Event Route
 app.use("/api/events", eventRoutes);
 
+// Booking routes
+app.use("/api/bookings", bookingRoutes);
+
+// Serve uploads folder
 app.use("/uploads", express.static(uploadsDir));
 
-
-/*
-   CONTACT route */
-
-
+/* ==============================
+   CONTACT ROUTE
+============================== */
 app.post("/api/contact", async (req, res) => {
   const { name, email, phone, subject, message } = req.body;
 
@@ -59,7 +63,7 @@ app.post("/api/contact", async (req, res) => {
       service: "gmail",
       auth: {
         user: "gogatherticketbooking@gmail.com",
-        pass: process.env.EMAIL_PASS, //gamil app pwd pass here
+        pass: process.env.EMAIL_PASS,
       },
     });
 
@@ -102,11 +106,38 @@ app.post("/api/contact", async (req, res) => {
     res.status(500).json({ error: "Failed to send email ❌" });
   }
 });
-
 /* ==============================
    END CONTACT ROUTE
 ============================== */
 
-app.listen(PORT, () =>
+// Create HTTP server for Socket.IO
+const server = http.createServer(app);
+
+// Initialize Socket.IO
+const io = new Server(server, {
+  cors: { origin: "*" }, // replace * with your frontend origin for production
+});
+
+// Socket.IO seat locking/unlocking
+io.on("connection", (socket) => {
+  console.log("New client connected:", socket.id);
+
+  // Lock a seat
+  socket.on("lockSeat", ({ eventId, seat }) => {
+    socket.broadcast.emit("seatLocked", { eventId, seat });
+  });
+
+  // Unlock a seat
+  socket.on("unlockSeat", ({ eventId, seat }) => {
+    socket.broadcast.emit("seatUnlocked", { eventId, seat });
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:", socket.id);
+  });
+});
+
+// Start server
+server.listen(PORT, () => 
   console.log(`Server running on http://localhost:${PORT}`)
 );

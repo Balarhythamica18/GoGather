@@ -2,13 +2,17 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-// Password validation
+/* ===============================
+   PASSWORD VALIDATION
+=============================== */
 const validatePassword = (password) => {
   const regex = /^(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/;
   return regex.test(password);
 };
 
-// REGISTER
+/* ===============================
+   REGISTER
+=============================== */
 export const register = async (req, res) => {
   try {
     const { name, email, password, confirmPassword, role } = req.body;
@@ -24,7 +28,7 @@ export const register = async (req, res) => {
     if (!validatePassword(password)) {
       return res.status(400).json({
         message:
-          "Password must be 8 characters, include one number and one special character"
+          "Password must be 8 characters, include one number and one special character",
       });
     }
 
@@ -33,7 +37,6 @@ export const register = async (req, res) => {
     }
 
     const existingUser = await User.findOne({ email });
-
     if (existingUser) {
       return res.status(400).json({ message: "Email already exists" });
     }
@@ -44,32 +47,32 @@ export const register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role
+      role: role || "user",
     });
 
     res.status(201).json({ message: "Registered Successfully" });
-
   } catch (error) {
+    console.error("Register error:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// LOGIN
+/* ===============================
+   LOGIN ⭐ IMPORTANT FIX
+=============================== */
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    if (!email || !password)
+      return res.status(400).json({ message: "Email & password required" });
 
-    if (!user) {
-      return res.status(400).json({ message: "User not found" });
-    }
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
+    if (!isMatch)
       return res.status(400).json({ message: "Invalid credentials" });
-    }
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -77,27 +80,46 @@ export const login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
+    // ⭐ THIS FIXES YOUR SEAT ERROR
     res.json({
       token,
-      role: user.role
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        image: user.image || null,
+      },
     });
-
   } catch (error) {
+    console.error("Login error:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// Get current user profile
+/* ===============================
+   GET CURRENT USER
+=============================== */
 export const getCurrentUser = async (req, res) => {
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const user = await User.findById(userId).select("name email role image");
+    const user = await User.findById(userId).select(
+      "name email role image"
+    );
+
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.json({ name: user.name, email: user.email, role: user.role, image: user.image });
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      image: user.image,
+    });
   } catch (error) {
+    console.error("Get user error:", error);
     res.status(500).json({ message: error.message });
   }
 };

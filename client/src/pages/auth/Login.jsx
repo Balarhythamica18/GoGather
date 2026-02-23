@@ -4,12 +4,12 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./Auth.css";
 
-const Login = ({ setUser }) => { // ✅ receive setUser from App/Navbar
+const Login = () => {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
     email: "",
-    password: ""
+    password: "",
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -27,24 +27,31 @@ const Login = ({ setUser }) => { // ✅ receive setUser from App/Navbar
         form
       );
 
-      // Save auth data
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("userName", res.data.name);
-      if (res.data.role) localStorage.setItem("role", res.data.role);
-
-      setSuccess("Login Successful 🎉"); // show immediately
-
-      // Update Navbar user immediately
-      setUser({ name: res.data.name, role: res.data.role });
-
-      // Redirect based on role
-      if (res.data.role === "admin") {
-        navigate("/admin/dashboard");
-      } else if (res.data.role === "organizer") {
-        navigate("/dashboard");
-      } else {
-        navigate("/home");
+      // ✅ Ensure response has token + user
+      if (!res.data?.token || !res.data?.user) {
+        setError("Invalid server response");
+        return;
       }
+
+      // ⭐ SAVE TOKEN
+      localStorage.setItem("token", res.data.token);
+
+      // ⭐ SAVE FULL USER OBJECT (IMPORTANT FOR SeatLayout)
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      // Optional extras for Navbar
+      localStorage.setItem("name", res.data.user.name || "");
+      localStorage.setItem("role", res.data.user.role || "");
+
+      // ⭐ Dispatch event so Navbar updates immediately
+      window.dispatchEvent(new Event("storageChange"));
+
+      setSuccess("Login Successful 🎉 Redirecting...");
+
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 1200);
+
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     }
@@ -59,20 +66,30 @@ const Login = ({ setUser }) => { // ✅ receive setUser from App/Navbar
         {error && <div className="error-popup">{error}</div>}
 
         <form onSubmit={handleSubmit}>
+          
+          {/* Email */}
           <input
             type="email"
             placeholder="Email"
             required
-            onChange={(e)=>setForm({...form,email:e.target.value})}
+            value={form.email}
+            onChange={(e) =>
+              setForm({ ...form, email: e.target.value })
+            }
           />
 
-          <div className="password-field">
+          {/* Password */}
+          <div className="password-box">
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Password"
               required
-              onChange={(e)=>setForm({...form,password:e.target.value})}
+              value={form.password}
+              onChange={(e) =>
+                setForm({ ...form, password: e.target.value })
+              }
             />
+
             <span
               className="eye-icon"
               onClick={() => setShowPassword(!showPassword)}
