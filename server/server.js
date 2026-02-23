@@ -5,7 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import fs from "fs";
-import nodemailer from "nodemailer"; 
+import nodemailer from "nodemailer";
 import http from "http";
 import { Server } from "socket.io";
 
@@ -138,6 +138,6 @@ io.on("connection", (socket) => {
 });
 
 // Start server
-server.listen(PORT, () => 
+server.listen(PORT, () =>
   console.log(`Server running on http://localhost:${PORT}`)
 );
