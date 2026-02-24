@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { UserCircleIcon } from '@heroicons/react/24/outline';
 import logo from '../../assets/logo.png';
+import ManageAccountModal from '../ManageAccount/ManageAccountModal';
 import './Navbar.css';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,8 +18,6 @@ const Navbar = () => {
       const role = localStorage.getItem("role");
       const name = localStorage.getItem("name");
 
-      // Only show as logged in for regular users (not admins or organizers)
-      // Admins will logout from their dashboard
       if (token && role === "user") {
         setIsLoggedIn(true);
         setUsername(name || "User");
@@ -26,13 +27,8 @@ const Navbar = () => {
       }
     };
 
-    // Listen for custom login/logout events
     window.addEventListener("storageChange", updateUser);
-
-    // Listen for cross-tab changes in localStorage
     window.addEventListener("storage", updateUser);
-
-    // Run once on mount
     updateUser();
 
     return () => {
@@ -46,10 +42,8 @@ const Navbar = () => {
     localStorage.removeItem("role");
     localStorage.removeItem("name");
     localStorage.removeItem("user");
-
     setIsLoggedIn(false);
     setUsername("");
-
     navigate("/");
   };
 
@@ -70,12 +64,26 @@ const Navbar = () => {
         </div>
 
         <div className="nav-right">
-          {isLoggedIn && <span className="hi-user">Hi {username}</span>}
-
-          {!isLoggedIn ? (
-            <button className="login-btn" onClick={() => navigate("/login")}>Login</button>
+          {isLoggedIn ? (
+            <div className="user-profile-actions">
+              <div className="user-info-pill">
+                <span className="hi-user">Hi, {username}</span>
+                <button
+                  className="icon-action-btn account-btn"
+                  onClick={() => setIsAccountModalOpen(true)}
+                  title="Manage Account"
+                >
+                  <UserCircleIcon className="nav-icon-sm" />
+                </button>
+              </div>
+              <button className="navbar-logout-btn" onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
           ) : (
-            <button className="login-btn" onClick={handleLogout}>Logout</button>
+            <button className="login-btn primary-nav-btn" onClick={() => navigate("/login")}>
+              Login
+            </button>
           )}
 
           <div
@@ -95,8 +103,14 @@ const Navbar = () => {
           <li><Link to="/events" onClick={() => setIsMenuOpen(false)}>Events</Link></li>
           <li><Link to="/my-bookings" onClick={() => setIsMenuOpen(false)}>My Bookings</Link></li>
           <li><Link to="/contact" onClick={() => setIsMenuOpen(false)}>Contact</Link></li>
+          {isLoggedIn && <li><button className="mobile-manage-btn" onClick={() => { setIsAccountModalOpen(true); setIsMenuOpen(false); }}>Manage Account</button></li>}
         </ul>
       </div>
+
+      <ManageAccountModal
+        isOpen={isAccountModalOpen}
+        onClose={() => setIsAccountModalOpen(false)}
+      />
     </>
   );
 };

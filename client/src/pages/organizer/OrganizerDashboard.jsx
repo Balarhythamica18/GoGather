@@ -224,16 +224,6 @@ const styles = {
     gap: "25px"
   },
 
-  card: {
-    background: "white",
-    borderRadius: "15px",
-    padding: "20px",
-    boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-    transition: "transform 0.2s ease-in-out"
-  },
 
   imageWrapper: {
     width: "100%",

@@ -1,5 +1,5 @@
 import express from "express";
-import { register, login, getCurrentUser } from "../controllers/authController.js";
+import { register, login, getCurrentUser, updateProfile, deleteAccount } from "../controllers/authController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -7,5 +7,7 @@ const router = express.Router();
 router.post("/register", register);
 router.post("/login", login);
 router.get("/me", authMiddleware, getCurrentUser);
+router.put("/update-profile", authMiddleware, updateProfile);
+router.delete("/delete-account", authMiddleware, deleteAccount);
 
 export default router;
