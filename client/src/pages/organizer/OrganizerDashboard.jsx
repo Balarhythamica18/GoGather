@@ -1,30 +1,71 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import {
+  Calendar,
+  MapPin,
+  Edit,
+  Trash2,
+  Plus,
+  Search,
+  Filter,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  Users,
+  DollarSign
+} from "lucide-react";
+import StatCard from "../../components/organizer/StatCard";
+import DashboardSidebar from "../../components/organizer/DashboardSidebar";
 
 const OrganizerDashboard = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
+  const [stats, setStats] = useState({
+    totalEvents: 0,
+    approvedEvents: 0,
+    pendingEvents: 0,
+    rejectedEvents: 0,
+    totalBookings: 0,
+    totalRevenue: 0
+  });
   const [organizerName, setOrganizerName] = useState("");
   const [organizerEmail, setOrganizerEmail] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [eventToDelete, setEventToDelete] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const fetchEvents = async () => {
+  const fetchData = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem("token");
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
-      // If token exists, request the organizer's own events; otherwise fall back to public events
       if (token) {
-        const res = await axios.get("http://localhost:5000/api/events/my", config);
-        setEvents(res.data);
+        // Fetch events
+        try {
+          const eventsRes = await axios.get("http://localhost:5000/api/events/my", config);
+          setEvents(eventsRes.data);
+        } catch (err) {
+          console.error("Error fetching events:", err);
+        }
+
+        // Fetch stats
+        try {
+          const statsRes = await axios.get("http://localhost:5000/api/events/stats", config);
+          setStats(statsRes.data);
+        } catch (err) {
+          console.error("Error fetching stats:", err);
+        }
       } else {
         const res = await axios.get("http://localhost:5000/api/events");
         setEvents(res.data);
       }
     } catch (error) {
-      console.error("Error fetching events:", error);
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -38,7 +79,7 @@ const OrganizerDashboard = () => {
       const token = localStorage.getItem("token");
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
       await axios.delete(`http://localhost:5000/api/events/${eventToDelete._id}`, config);
-      fetchEvents();
+      fetchData();
       setShowConfirmation(false);
       setEventToDelete(null);
     } catch (error) {
@@ -54,8 +95,14 @@ const OrganizerDashboard = () => {
     setEventToDelete(null);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('userName');
+    navigate('/');
+  };
+
   useEffect(() => {
-    // fetch organizer profile if token present, then fetch events filtered for this organizer
     const init = async () => {
       const token = localStorage.getItem("token");
       if (token) {
@@ -69,115 +116,166 @@ const OrganizerDashboard = () => {
           console.error("Error fetching profile:", err.response?.data || err.message);
         }
       }
-
-      // fetch events after profile (organizerEmail) is set
-      await fetchEvents();
+      await fetchData();
     };
-
     init();
   }, []);
 
+  const filteredEvents = events.filter(event =>
+    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.location.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <div>
-          <h3 style={styles.greeting}>Hi, {organizerName || localStorage.getItem("userName") || "Organizer"}</h3>
-          <h1 style={styles.title}>Organizer Dashboard</h1>
+    <div style={styles.layout}>
+      <DashboardSidebar
+        organizerName={organizerName || localStorage.getItem("userName")}
+        onLogout={handleLogout}
+      />
+
+      <main style={styles.mainContent}>
+        {/* Header */}
+        <header style={styles.header}>
+          <div>
+            <h1 style={styles.title}>Welcome back, {organizerName || "Organizer"}!</h1>
+            <p style={styles.subtitle}>Here's what's happening with your events today.</p>
+          </div>
+          <button style={styles.primaryButton} onClick={() => navigate("/add-event")}>
+            <Plus size={18} />
+            Add New Event
+          </button>
+        </header>
+
+        {/* Stats Grid */}
+        <div style={styles.statsGrid}>
+          <StatCard
+            title="Total Posted"
+            value={stats.totalEvents}
+            icon={Calendar}
+            color="#ff007a"
+          />
+          <StatCard
+            title="Approved Events"
+            value={stats.approvedEvents}
+            icon={CheckCircle}
+            color="#ff007a"
+          />
+          <StatCard
+            title="Total Bookings"
+            value={stats.totalBookings}
+            icon={Users}
+            color="#ff007a"
+          />
+          <StatCard
+            title="Total Revenue"
+            value={`₹${stats.totalRevenue.toLocaleString()}`}
+            icon={DollarSign}
+            color="#ff007a"
+          />
         </div>
 
-        <button
-          style={styles.addButton}
-          onClick={() => navigate("/add-event")}
-        >
-          + Add Event
-        </button>
-        <button
-          style={{ ...styles.addButton, marginLeft: 12, background: '#ff4d4d', color: 'white' }}
-          onClick={() => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('role');
-            localStorage.removeItem('userName');
-            navigate('/');
-          }}
-        >
-          Logout
-        </button>
-      </div>
-
-      <div style={styles.grid}>
-        {events.length === 0 ? (
-          <p style={styles.noEvents}>No events available.</p>
-        ) : (
-          events.map((event) => (
-            <div key={event._id} style={styles.card}>
-
-              {/* Event Image */}
-              <div style={styles.imageWrapper}>
-                <img
-                  src={event.image}
-                  alt={event.title}
-                  style={styles.image}
+        {/* Content Section */}
+        <div style={styles.contentSection}>
+          <div style={styles.sectionHeader}>
+            <h2 style={styles.sectionTitle}>Manage Events</h2>
+            <div style={styles.controls}>
+              <div style={styles.searchWrapper}>
+                <Search size={18} color="#94a3b8" />
+                <input
+                  type="text"
+                  placeholder="Search events..."
+                  style={styles.searchInput}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-
-              {/* Event Info */}
-              <div>
-                <h3 style={styles.eventTitle}>{event.title}</h3>
-                <p style={styles.location}>📍 {event.location}</p>
-              </div>
-
-              {/* Buttons */}
-              <div style={styles.buttonRow}>
-                <button
-                  style={styles.editButton}
-                  onClick={() => navigate(`/add-event/${event._id}`)}
-                >
-                  Edit
-                </button>
-
-                <button
-                  style={styles.deleteButton}
-                  onClick={() => handleDelete(event)}
-                >
-                  Delete
-                </button>
-              </div>
-
-              {/* Status Badge */}
-              <div style={{
-                ...styles.statusBadge,
-                ...(event.status === "approved" ? styles.statusApproved :
-                  event.status === "rejected" ? styles.statusRejected : styles.statusPending)
-              }}>
-                {event.status || "pending"}
-              </div>
-
+              <button style={styles.secondaryButton}>
+                <Filter size={18} />
+                Filter
+              </button>
             </div>
-          ))
-        )}
-      </div>
+          </div>
+
+          {loading ? (
+            <div style={styles.loadingWrapper}>
+              <p>Loading your events...</p>
+            </div>
+          ) : filteredEvents.length === 0 ? (
+            <div style={styles.emptyState}>
+              <div style={styles.emptyIcon}>📅</div>
+              <h3>No events found</h3>
+              <p>You haven't created any events yet or none match your search.</p>
+              <button style={styles.primaryButton} onClick={() => navigate("/add-event")}>
+                Create Your First Event
+              </button>
+            </div>
+          ) : (
+            <div style={styles.eventGrid}>
+              {filteredEvents.map((event) => (
+                <div key={event._id} style={styles.eventCard}>
+                  <div style={styles.cardImageWrapper}>
+                    <img src={event.image} alt={event.title} style={styles.cardImage} />
+                    <div style={{
+                      ...styles.statusTag,
+                      ...(event.status === "approved" ? styles.statusApproved :
+                        event.status === "rejected" ? styles.statusRejected : styles.statusPending)
+                    }}>
+                      {event.status === "approved" ? <CheckCircle size={12} /> :
+                        event.status === "rejected" ? <AlertCircle size={12} /> : <Clock size={12} />}
+                      {event.status || "pending"}
+                    </div>
+                  </div>
+
+                  <div style={styles.cardBody}>
+                    <h3 style={styles.eventTitle}>{event.title}</h3>
+                    <div style={styles.eventMeta}>
+                      <span><Calendar size={14} /> {event.date} {event.month}</span>
+                      <span><MapPin size={14} /> {event.location}</span>
+                    </div>
+
+                    <div style={styles.cardFooter}>
+                      <div style={styles.priceTag}>
+                        {event.price ? `₹${event.price}` : 'Free'}
+                      </div>
+                      <div style={styles.actionButtons}>
+                        <button
+                          style={styles.iconButton}
+                          onClick={() => navigate(`/add-event/${event._id}`)}
+                          title="Edit Event"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          style={{ ...styles.iconButton, color: '#f43f5e' }}
+                          onClick={() => handleDelete(event)}
+                          title="Delete Event"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
 
       {/* Confirmation Modal */}
       {showConfirmation && eventToDelete && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
-            <h2 style={styles.modalTitle}>Hi, {organizerName || localStorage.getItem("userName") || "Organizer"}</h2>
-            <p style={styles.modalMessage}>Are you sure delete this event?</p>
-            <h3 style={styles.eventName}>{eventToDelete.title}</h3>
-
-            <div style={styles.modalButtons}>
-              <button
-                style={styles.confirmButton}
-                onClick={confirmDelete}
-              >
-                ✓ Yes, Delete
-              </button>
-              <button
-                style={styles.cancelButton}
-                onClick={cancelDelete}
-              >
-                ✗ Cancel
-              </button>
+            <div style={styles.modalIcon}>
+              <Trash2 size={32} color="#f43f5e" />
+            </div>
+            <h2 style={styles.modalTitle}>Delete Event?</h2>
+            <p style={styles.modalMessage}>
+              Are you sure you want to delete <strong>{eventToDelete.title}</strong>? This action cannot be undone.
+            </p>
+            <div style={styles.modalFooter}>
+              <button style={styles.cancelButton} onClick={cancelDelete}>Cancel</button>
+              <button style={styles.deleteConfirmButton} onClick={confirmDelete}>Yes, Delete</button>
             </div>
           </div>
         </div>
@@ -187,209 +285,294 @@ const OrganizerDashboard = () => {
 };
 
 const styles = {
-  container: {
-    minHeight: "100vh",
-    padding: "50px",
-    background: "linear-gradient(135deg, #667eea, #764ba2)",
-    fontFamily: "Arial, sans-serif"
+  layout: {
+    display: 'flex',
+    minHeight: '100vh',
+    backgroundColor: '#f8fafc',
+    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
   },
-
+  mainContent: {
+    flex: 1,
+    marginLeft: '260px',
+    padding: '40px 60px',
+  },
   header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "40px"
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '32px',
   },
-
   title: {
-    color: "white",
-    fontSize: "32px",
-    fontWeight: "bold"
+    fontSize: '28px',
+    fontWeight: '700',
+    color: '#1e293b',
+    margin: '0 0 8px 0',
+    letterSpacing: '-0.02em',
   },
-
-  addButton: {
-    padding: "12px 25px",
-    background: "white",
-    color: "#764ba2",
-    border: "none",
-    borderRadius: "25px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.2)"
-  },
-
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-    gap: "25px"
-  },
-
-
-  imageWrapper: {
-    width: "100%",
-    height: "160px",
-    overflow: "hidden",
-    borderRadius: "10px"
-  },
-
-  image: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover"
-  },
-
-  eventTitle: {
+  subtitle: {
+    fontSize: '16px',
+    color: '#64748b',
     margin: 0,
-    fontSize: "20px",
-    fontWeight: "600",
-    color: "#333"
   },
-
-  location: {
-    marginTop: "8px",
-    color: "#777"
+  primaryButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '12px 24px',
+    backgroundColor: '#ff007a',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '10px',
+    fontWeight: '600',
+    fontSize: '14px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 4px 6px -1px rgba(255, 0, 122, 0.2)',
   },
-
-  buttonRow: {
-    display: "flex",
-    justifyContent: "space-between"
+  secondaryButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '10px 16px',
+    backgroundColor: '#fff',
+    color: '#64748b',
+    border: '1px solid #e2e8f0',
+    borderRadius: '8px',
+    fontWeight: '500',
+    fontSize: '14px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
   },
-
-  deleteButton: {
-    background: "#ff4d4d",
-    color: "white",
-    border: "none",
-    padding: "8px 15px",
-    borderRadius: "20px",
-    cursor: "pointer",
-    fontWeight: "bold"
+  statsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+    gap: '24px',
+    marginBottom: '40px',
   },
-
-  editButton: {
-    background: "#4caf50",
-    color: "white",
-    border: "none",
-    padding: "8px 15px",
-    borderRadius: "20px",
-    cursor: "pointer",
-    fontWeight: "bold"
+  contentSection: {
+    backgroundColor: '#fff',
+    borderRadius: '16px',
+    padding: '32px',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
   },
-
-  noEvents: {
-    color: "white",
-    fontSize: "18px"
+  sectionHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '24px',
   },
-
-  // Modal styles
+  sectionTitle: {
+    fontSize: '20px',
+    fontWeight: '600',
+    color: '#1e293b',
+    margin: 0,
+  },
+  controls: {
+    display: 'flex',
+    gap: '12px',
+  },
+  searchWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '0 12px',
+    backgroundColor: '#f1f5f9',
+    borderRadius: '8px',
+    border: '1px solid #e2e8f0',
+    minWidth: '280px',
+  },
+  searchInput: {
+    border: 'none',
+    background: 'none',
+    padding: '10px 0',
+    fontSize: '14px',
+    color: '#1e293b',
+    outline: 'none',
+    width: '100%',
+  },
+  eventGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+    gap: '24px',
+  },
+  eventCard: {
+    borderRadius: '12px',
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    border: '1px solid #e2e8f0',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+  },
+  cardImageWrapper: {
+    position: 'relative',
+    height: '160px',
+    overflow: 'hidden',
+  },
+  cardImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+  statusTag: {
+    position: 'absolute',
+    top: '12px',
+    right: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '4px 8px',
+    borderRadius: '6px',
+    fontSize: '11px',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    backdropFilter: 'blur(4px)',
+  },
+  statusApproved: {
+    backgroundColor: 'rgba(16, 185, 129, 0.9)',
+    color: '#fff',
+  },
+  statusPending: {
+    backgroundColor: 'rgba(245, 158, 11, 0.9)',
+    color: '#fff',
+  },
+  statusRejected: {
+    backgroundColor: 'rgba(244, 63, 94, 0.9)',
+    color: '#fff',
+  },
+  cardBody: {
+    padding: '20px',
+  },
+  eventTitle: {
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#1e293b',
+    margin: '0 0 12px 0',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  eventMeta: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    fontSize: '14px',
+    color: '#64748b',
+    marginBottom: '20px',
+  },
+  cardFooter: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: '16px',
+    borderTop: '1px solid #f1f5f9',
+  },
+  priceTag: {
+    fontSize: '18px',
+    fontWeight: '700',
+    color: '#ff007a',
+  },
+  actionButtons: {
+    display: 'flex',
+    gap: '8px',
+  },
+  iconButton: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '36px',
+    height: '36px',
+    borderRadius: '8px',
+    border: '1px solid #e2e8f0',
+    backgroundColor: 'transparent',
+    color: '#64748b',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  emptyState: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '60px 0',
+    textAlign: 'center',
+  },
+  emptyIcon: {
+    fontSize: '48px',
+    marginBottom: '16px',
+  },
+  loadingWrapper: {
+    display: 'flex',
+    justifyContent: 'center',
+    padding: '60px 0',
+    color: '#64748b',
+  },
   modalOverlay: {
-    position: "fixed",
+    position: 'fixed',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+    backdropFilter: 'blur(4px)',
   },
-
   modalContent: {
-    background: "white",
-    borderRadius: "15px",
-    padding: "40px",
-    boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
-    maxWidth: "450px",
-    width: "90%",
-    textAlign: "center",
-    animation: "slideIn 0.3s ease-out"
+    backgroundColor: '#fff',
+    borderRadius: '16px',
+    padding: '32px',
+    width: '90%',
+    maxWidth: '400px',
+    textAlign: 'center',
+    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
   },
-
+  modalIcon: {
+    width: '64px',
+    height: '64px',
+    borderRadius: '50%',
+    backgroundColor: '#fff1f2',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: '0 auto 20px',
+  },
   modalTitle: {
-    margin: "0 0 15px 0",
-    fontSize: "24px",
-    fontWeight: "bold",
-    color: "#333"
+    fontSize: '20px',
+    fontWeight: '700',
+    color: '#1e293b',
+    margin: '0 0 12px 0',
   },
-
   modalMessage: {
-    margin: "10px 0",
-    fontSize: "16px",
-    color: "#666"
+    fontSize: '16px',
+    color: '#64748b',
+    lineHeight: '1.5',
+    marginBottom: '28px',
   },
-
-  eventName: {
-    margin: "15px 0",
-    fontSize: "18px",
-    color: "#ff4d4d",
-    fontWeight: "600",
-    wordBreak: "break-word"
+  modalFooter: {
+    display: 'flex',
+    gap: '12px',
   },
-
-  modalButtons: {
-    display: "flex",
-    gap: "15px",
-    marginTop: "30px",
-    justifyContent: "center"
-  },
-
-  confirmButton: {
-    background: "#ff4d4d",
-    color: "white",
-    border: "none",
-    padding: "12px 30px",
-    borderRadius: "25px",
-    cursor: "pointer",
-    fontWeight: "bold",
-    fontSize: "14px",
-    transition: "background 0.2s ease"
-  },
-
   cancelButton: {
-    background: "#4caf50",
-    color: "white",
-    border: "none",
-    padding: "12px 30px",
-    borderRadius: "25px",
-    cursor: "pointer",
-    fontWeight: "bold",
-    fontSize: "14px",
-    transition: "background 0.2s ease"
+    flex: 1,
+    padding: '12px',
+    borderRadius: '8px',
+    border: '1px solid #e2e8f0',
+    backgroundColor: '#fff',
+    color: '#64748b',
+    fontWeight: '600',
+    cursor: 'pointer',
   },
-  statusBadge: {
-    position: "absolute",
-    top: "10px",
-    right: "10px",
-    padding: "5px 12px",
-    borderRadius: "15px",
-    fontSize: "12px",
-    fontWeight: "bold",
-    textTransform: "uppercase",
-    boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
+  deleteConfirmButton: {
+    flex: 1,
+    padding: '12px',
+    borderRadius: '8px',
+    border: 'none',
+    backgroundColor: '#f43f5e',
+    color: '#fff',
+    fontWeight: '600',
+    cursor: 'pointer',
   },
-  statusPending: {
-    background: "#ffcc00",
-    color: "#333",
-  },
-  statusApproved: {
-    background: "#00ff88",
-    color: "#000",
-  },
-  statusRejected: {
-    background: "#ff4d4d",
-    color: "#fff",
-  },
-  card: {
-    background: "white",
-    borderRadius: "15px",
-    padding: "20px",
-    boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-    transition: "transform 0.2s ease-in-out",
-    position: "relative" // Added for absolute badge
-  }
 };
 
 export default OrganizerDashboard;

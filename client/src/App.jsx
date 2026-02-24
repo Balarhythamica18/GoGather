@@ -97,6 +97,7 @@ const App = () => {
 
           {/* 🎤 ORGANIZER DASHBOARD */}
           <Route path="/dashboard" element={<OrganizerDashboard />} />
+          <Route path="/my-events" element={<OrganizerDashboard />} />
           <Route path="/add-event" element={<AddEvent />} />
           <Route path="/add-event/:id" element={<AddEvent />} />
 

@@ -2,6 +2,20 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { addressOptions, getAddressesByLocation } from "../../data/addressOptions";
+import {
+  ArrowLeft,
+  Save,
+  Calendar,
+  MapPin,
+  Clock,
+  Tag,
+  Info,
+  Image as ImageIcon,
+  User as UserIcon,
+  Mail,
+  Phone,
+  Trash2
+} from "lucide-react";
 
 const AddEvent = () => {
   const navigate = useNavigate();
@@ -25,6 +39,8 @@ const AddEvent = () => {
   });
 
   const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -33,7 +49,6 @@ const AddEvent = () => {
         const res = await axios.get(`http://localhost:5000/api/events/${id}`);
         const ev = res.data;
 
-        // Build an ISO date for the date input if month+date exist
         let isoDate = "";
         if (ev.month && ev.date) {
           isoDate = `${ev.month}-${String(ev.date).padStart(2, "0")}`;
@@ -57,6 +72,7 @@ const AddEvent = () => {
           organizerPhone: ev.organizerDetails?.contactPhone || "",
         });
         setImage(null);
+        if (ev.image) setPreview(ev.image);
       } catch (err) {
         console.error("Error loading event for edit:", err);
       }
@@ -69,33 +85,35 @@ const AddEvent = () => {
     setForm((f) => ({ ...f, [name]: value }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleHighlightsChange = (e) => {
     setForm((f) => ({ ...f, keyHighlights: e.target.value.split(",").map(h => h.trim()) }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     const formData = new FormData();
 
     const finalCategory = form.category === "Other" ? form.customCategory : form.category;
 
-    // Append all simple fields except keyHighlights (handled separately)
     Object.keys(form).forEach((key) => {
       if (key === "keyHighlights" || key === "customCategory") return;
       formData.append(key, form[key]);
     });
 
     formData.set("category", finalCategory);
-
-    // Append highlights individually
     (form.keyHighlights || []).forEach((highlight) => formData.append("keyHighlights", highlight));
 
     if (image) formData.append("image", image);
-
-    // If no new file selected, ensure we still send existing image URL so server preserves it
-    if (!image && form.image) {
-      formData.set("image", form.image);
-    }
+    if (!image && form.image) formData.set("image", form.image);
 
     try {
       const token = localStorage.getItem("token");
@@ -114,127 +132,222 @@ const AddEvent = () => {
     } catch (err) {
       console.error(err);
       alert("Error saving event: " + (err.response?.data?.message || err.message));
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <div style={styles.topBar}>
-          <h1>{id ? "Edit Event" : "Create New Event"}</h1>
-          <button style={styles.backBtn} onClick={() => navigate("/dashboard")}> 
-            ← Back
+    <div style={styles.page}>
+      <div style={styles.container}>
+        {/* Header Section */}
+        <header style={styles.header}>
+          <button type="button" style={styles.backLink} onClick={() => navigate("/dashboard")}>
+            <ArrowLeft size={18} />
+            Back to Dashboard
           </button>
-        </div>
+          <h1 style={styles.title}>{id ? "Edit Event" : "Create New Event"}</h1>
+          <p style={styles.subtitle}>Fill in the details below to list your event on GoGather.</p>
+        </header>
 
         <form onSubmit={handleSubmit} style={styles.form}>
-
-          {/* Event Details */}
-          <div style={styles.section}>
-            <h2>Event Details</h2>
-
-            <div style={styles.grid}>
-
-              <input name="title" placeholder="Event Title" onChange={handleChange} required style={styles.input} value={form.title} />
-
-              <div style={styles.iconInput}>
-                <span>📅</span>
-                <input type="date" name="date" onChange={handleChange} required style={styles.iconField} value={form.date} />
-              </div>
-
-              <div style={styles.iconInput}>
-                <span>⏰</span>
-                <input type="time" name="time" onChange={handleChange} required style={styles.iconField} value={form.time} />
-              </div>
-
-              <input name="location" placeholder="Location" onChange={handleChange} required style={styles.input} value={form.location} />
-
-              {/* Address Dropdown (dynamic based on location) */}
-              {form.location && getAddressesByLocation(form.location).length > 0 ? (
-                <select
-                  name="address"
-                  onChange={handleChange}
-                  required
-                  style={styles.input}
-                  value={form.address}
-                >
-                  <option value="">Select Address</option>
-                  {getAddressesByLocation(form.location).map((addr, idx) => (
-                    <option key={idx} value={addr}>
-                      {addr}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  name="address"
-                  placeholder="Address"
-                  onChange={handleChange}
-                  required
-                  style={styles.input}
-                  value={form.address}
-                />
-              )}
-
-              {/* Category Dropdown */}
-              <select name="category" onChange={handleChange} required style={styles.input} value={form.category}>
-                <option value="">Select Category</option>
-                <option>Food</option>
-                <option>Rawstories</option>
-                <option>TheatreDrama</option>
-                <option>Comedy</option>
-                <option>Sports</option>
-                <option>Concert</option>
-                <option>Other</option>
-              </select>
-
-              {form.category === "Other" && (
-                <input name="customCategory" placeholder="Enter Custom Category" onChange={handleChange} required style={styles.input} value={form.customCategory} />
-              )}
-
-              <input name="price" placeholder="Price" onChange={handleChange} style={styles.input} value={form.price} />
-            </div>
-
-            <textarea name="description" placeholder="Event Description" onChange={handleChange} style={styles.textarea} value={form.description} />
-
-            <textarea name="aboutEvent" placeholder="About Event (Additional Details)" onChange={handleChange} style={styles.textarea} value={form.aboutEvent} />
-
-            {/* Properly aligned highlights */}
-            <div style={{ marginTop: "15px" }}>
-              <label style={styles.label}>Key Highlights (comma separated)</label>
-              <input name="keyHighlights" placeholder="Music, Free Food, Celebrity Guest..." onChange={handleHighlightsChange} style={{ ...styles.input, width: "100%" }} value={Array.isArray(form.keyHighlights) ? form.keyHighlights.join(', ') : form.keyHighlights} />
-            </div>
-
-            <div style={{ marginTop: "15px" }}>
-              <label style={styles.label}>Upload Event Image</label>
-              {image ? (
-                <div style={{ marginBottom: 8 }}>
-                  <img src={URL.createObjectURL(image)} alt="preview" style={{ maxWidth: 200, borderRadius: 8 }} />
+          <div style={styles.formLayout}>
+            {/* Left Column - Main Details */}
+            <div style={styles.leftColumn}>
+              <div style={styles.card}>
+                <h3 style={styles.cardTitle}>Basic Information</h3>
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Event Title</label>
+                  <input
+                    name="title"
+                    placeholder="e.g. Summer Music Festival 2024"
+                    onChange={handleChange}
+                    required
+                    style={styles.input}
+                    value={form.title}
+                  />
                 </div>
-              ) : (
-                form.image && (
-                  <div style={{ marginBottom: 8 }}>
-                    <img src={form.image} alt="current" style={{ maxWidth: 200, borderRadius: 8 }} />
+
+                <div style={styles.grid2}>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Category</label>
+                    <div style={styles.selectWrapper}>
+                      <Tag size={16} color="#94a3b8" style={styles.selectIcon} />
+                      <select name="category" onChange={handleChange} required style={styles.select} value={form.category}>
+                        <option value="">Select Category</option>
+                        <option>Food</option>
+                        <option>Rawstories</option>
+                        <option>TheatreDrama</option>
+                        <option>Comedy</option>
+                        <option>Sports</option>
+                        <option>Concert</option>
+                        <option>Other</option>
+                      </select>
+                    </div>
                   </div>
-                )
-              )}
+                  {form.category === "Other" && (
+                    <div style={styles.inputGroup}>
+                      <label style={styles.label}>Custom Category</label>
+                      <input name="customCategory" placeholder="Enter Category" onChange={handleChange} required style={styles.input} value={form.customCategory} />
+                    </div>
+                  )}
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Price (optional)</label>
+                    <div style={styles.inputWithIcon}>
+                      <span style={styles.currencyPrefix}>₹</span>
+                      <input name="price" placeholder="0.00" onChange={handleChange} style={styles.inputIcon} value={form.price} />
+                    </div>
+                  </div>
+                </div>
 
-              <input type="file" onChange={(e) => setImage(e.target.files[0])} />
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Brief Description</label>
+                  <textarea
+                    name="description"
+                    placeholder="Short summary for event cards..."
+                    onChange={handleChange}
+                    style={styles.textareaCompact}
+                    value={form.description}
+                  />
+                </div>
+              </div>
+
+              <div style={styles.card}>
+                <h3 style={styles.cardTitle}>Location & Time</h3>
+                <div style={styles.grid2}>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Date</label>
+                    <div style={styles.inputWithIcon}>
+                      <Calendar size={18} color="#94a3b8" style={styles.iconPos} />
+                      <input type="date" name="date" onChange={handleChange} required style={styles.inputIcon} value={form.date} />
+                    </div>
+                  </div>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Time</label>
+                    <div style={styles.inputWithIcon}>
+                      <Clock size={18} color="#94a3b8" style={styles.iconPos} />
+                      <input type="time" name="time" onChange={handleChange} required style={styles.inputIcon} value={form.time} />
+                    </div>
+                  </div>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>City/Location</label>
+                    <div style={styles.inputWithIcon}>
+                      <MapPin size={18} color="#94a3b8" style={styles.iconPos} />
+                      <input name="location" placeholder="City" onChange={handleChange} required style={styles.inputIcon} value={form.location} />
+                    </div>
+                  </div>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Specific Venue/Address</label>
+                    {form.location && getAddressesByLocation(form.location).length > 0 ? (
+                      <select name="address" onChange={handleChange} required style={styles.selectStandalone} value={form.address}>
+                        <option value="">Select Venue</option>
+                        {getAddressesByLocation(form.location).map((addr, idx) => (
+                          <option key={idx} value={addr}>{addr}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input name="address" placeholder="Venue Address" onChange={handleChange} required style={styles.input} value={form.address} />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div style={styles.card}>
+                <h3 style={styles.cardTitle}>Detailed Information</h3>
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>About the Event</label>
+                  <textarea
+                    name="aboutEvent"
+                    placeholder="Tell your attendees all they need to know..."
+                    onChange={handleChange}
+                    style={styles.textareaLarge}
+                    value={form.aboutEvent}
+                  />
+                </div>
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Key Highlights (comma separated)</label>
+                  <input
+                    name="keyHighlights"
+                    placeholder="Live Music, Workshops, Drinks included..."
+                    onChange={handleHighlightsChange}
+                    style={styles.input}
+                    value={Array.isArray(form.keyHighlights) ? form.keyHighlights.join(', ') : form.keyHighlights}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Media & Organizer */}
+            <div style={styles.rightColumn}>
+              <div style={styles.card}>
+                <h3 style={styles.cardTitle}>Event Media</h3>
+                <div style={styles.imageUploadArea}>
+                  {(preview || form.image) ? (
+                    <div style={styles.previewWrapper}>
+                      <img src={preview || form.image} alt="Preview" style={styles.previewImage} />
+                      <button
+                        type="button"
+                        style={styles.removeImageBtn}
+                        onClick={() => { setImage(null); setPreview(null); }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={styles.uploadPlaceholder}>
+                      <ImageIcon size={40} color="#cbd5e1" />
+                      <p>Click to upload event cover</p>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={styles.fileInput}
+                    id="event-image"
+                  />
+                  <label htmlFor="event-image" style={styles.uploadBtn}>
+                    {(preview || form.image) ? "Change Image" : "Select Image"}
+                  </label>
+                </div>
+                <p style={styles.helpText}>Recommended: 1200 x 600px, max 5MB</p>
+              </div>
+
+              <div style={styles.card}>
+                <h3 style={styles.cardTitle}>Organizer Profile</h3>
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Display Name</label>
+                  <div style={styles.inputWithIcon}>
+                    <UserIcon size={18} color="#94a3b8" style={styles.iconPos} />
+                    <input name="organizerName" placeholder="Organization Name" onChange={handleChange} required style={styles.inputIcon} value={form.organizerName} />
+                  </div>
+                </div>
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Contact Email</label>
+                  <div style={styles.inputWithIcon}>
+                    <Mail size={18} color="#94a3b8" style={styles.iconPos} />
+                    <input name="organizerEmail" placeholder="email@example.com" onChange={handleChange} style={styles.inputIcon} value={form.organizerEmail} />
+                  </div>
+                </div>
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>Contact Phone</label>
+                  <div style={styles.inputWithIcon}>
+                    <Phone size={18} color="#94a3b8" style={styles.iconPos} />
+                    <input name="organizerPhone" placeholder="+91 000 000 0000" onChange={handleChange} style={styles.inputIcon} value={form.organizerPhone} />
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                style={loading ? styles.submitBtnDisabled : styles.submitBtn}
+                disabled={loading}
+              >
+                {loading ? "Saving..." : (id ? "Update Event" : "Publish Event")}
+                <Save size={18} />
+              </button>
             </div>
           </div>
-
-          {/* Organizer Details */}
-          <div style={styles.section}>
-            <h2>Organizer Details</h2>
-            <div style={styles.grid}>
-              <input name="organizerName" placeholder="Name" onChange={handleChange} required style={styles.input} value={form.organizerName} />
-              <input name="organizerEmail" placeholder="Email" onChange={handleChange} style={styles.input} value={form.organizerEmail} />
-              <input name="organizerPhone" placeholder="Phone" onChange={handleChange} style={styles.input} value={form.organizerPhone} />
-            </div>
-          </div>
-
-          <button type="submit" style={styles.submitBtn}>Save Event</button>
-
         </form>
       </div>
     </div>
@@ -242,88 +355,271 @@ const AddEvent = () => {
 };
 
 const styles = {
-  container: {
+  page: {
     minHeight: "100vh",
-    padding: "40px",
-    background: "linear-gradient(135deg, #6a11cb, #2575fc)",
-    display: "flex",
-    justifyContent: "center",
+    backgroundColor: "#f8fafc",
+    padding: "40px 20px",
+    fontFamily: '"Inter", -apple-system, sans-serif',
   },
-  card: {
-    background: "white",
-    padding: "40px",
-    borderRadius: "20px",
-    width: "100%",
-    maxWidth: "1000px",
-    boxShadow: "0 20px 50px rgba(0,0,0,0.2)"
+  container: {
+    maxWidth: "1100px",
+    margin: "0 auto",
   },
-  topBar: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginBottom: "30px",
+  header: {
+    marginBottom: "32px",
   },
-  backBtn: {
-    padding: "8px 15px",
-    borderRadius: "8px",
-    border: "none",
-    cursor: "pointer"
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "30px"
-  },
-  section: {
-    background: "#f9f9f9",
-    padding: "20px",
-    borderRadius: "15px"
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-    gap: "15px"
-  },
-  input: {
-    padding: "12px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-  },
-  textarea: {
-    marginTop: "15px",
-    padding: "12px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    minHeight: "100px",
-    width: "100%"
-  },
-  iconInput: {
+  backLink: {
     display: "flex",
     alignItems: "center",
-    border: "1px solid #ddd",
-    borderRadius: "8px",
-    padding: "0 10px",
-  },
-  iconField: {
+    gap: "8px",
+    background: "none",
     border: "none",
-    padding: "12px",
-    outline: "none",
-    width: "100%"
+    color: "#64748b",
+    fontSize: "14px",
+    fontWeight: "500",
+    cursor: "pointer",
+    padding: "0",
+    marginBottom: "20px",
+  },
+  title: {
+    fontSize: "32px",
+    fontWeight: "800",
+    color: "#1e293b",
+    margin: "0 0 8px 0",
+    letterSpacing: "-0.025em",
+  },
+  subtitle: {
+    fontSize: "16px",
+    color: "#64748b",
+    margin: 0,
+  },
+  formLayout: {
+    display: "grid",
+    gridTemplateColumns: "1fr 340px",
+    gap: "32px",
+    alignItems: "start",
+  },
+  leftColumn: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "24px",
+  },
+  rightColumn: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "24px",
+    position: "sticky",
+    top: "40px",
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: "16px",
+    padding: "24px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)",
+  },
+  cardTitle: {
+    fontSize: "18px",
+    fontWeight: "600",
+    color: "#1e293b",
+    margin: "0 0 20px 0",
+    paddingBottom: "12px",
+    borderBottom: "1px solid #f1f5f9",
+  },
+  inputGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    marginBottom: "20px",
   },
   label: {
-    fontWeight: "bold",
-    display: "block",
-    marginBottom: "5px"
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "#475569",
+  },
+  input: {
+    padding: "12px 16px",
+    borderRadius: "10px",
+    border: "1px solid #e2e8f0",
+    fontSize: "15px",
+    color: "#1e293b",
+    outline: "none",
+    transition: "border-color 0.2s ease",
+  },
+  inputWithIcon: {
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+  },
+  iconPos: {
+    position: "absolute",
+    left: "12px",
+  },
+  inputIcon: {
+    padding: "12px 16px 12px 40px",
+    borderRadius: "10px",
+    border: "1px solid #e2e8f0",
+    fontSize: "15px",
+    color: "#1e293b",
+    outline: "none",
+    width: "100%",
+  },
+  currencyPrefix: {
+    position: "absolute",
+    left: "16px",
+    color: "#94a3b8",
+    fontWeight: "600",
+  },
+  grid2: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "16px",
+  },
+  selectWrapper: {
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+  },
+  selectIcon: {
+    position: "absolute",
+    left: "12px",
+    pointerEvents: "none",
+  },
+  selectStandalone: {
+    padding: "12px 16px",
+    borderRadius: "10px",
+    border: "1px solid #e2e8f0",
+    fontSize: "15px",
+    color: "#1e293b",
+    backgroundColor: "#fff",
+    outline: "none",
+  },
+  select: {
+    padding: "12px 16px 12px 36px",
+    borderRadius: "10px",
+    border: "1px solid #e2e8f0",
+    fontSize: "15px",
+    color: "#1e293b",
+    backgroundColor: "#fff",
+    width: "100%",
+    outline: "none",
+  },
+  textareaCompact: {
+    padding: "12px 16px",
+    borderRadius: "10px",
+    border: "1px solid #e2e8f0",
+    fontSize: "15px",
+    minHeight: "80px",
+    resize: "vertical",
+    outline: "none",
+  },
+  textareaLarge: {
+    padding: "12px 16px",
+    borderRadius: "10px",
+    border: "1px solid #e2e8f0",
+    fontSize: "15px",
+    minHeight: "180px",
+    resize: "vertical",
+    outline: "none",
+  },
+  imageUploadArea: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
+    alignItems: "center",
+  },
+  uploadPlaceholder: {
+    width: "100%",
+    height: "160px",
+    border: "2px dashed #e2e8f0",
+    borderRadius: "12px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f8fafc",
+    color: "#94a3b8",
+    fontSize: "14px",
+    cursor: "pointer",
+  },
+  previewWrapper: {
+    position: "relative",
+    width: "100%",
+    height: "160px",
+    borderRadius: "12px",
+    overflow: "hidden",
+  },
+  previewImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+  },
+  removeImageBtn: {
+    position: "absolute",
+    top: "8px",
+    right: "8px",
+    width: "28px",
+    height: "28px",
+    borderRadius: "50%",
+    backgroundColor: "rgba(244, 63, 94, 0.9)",
+    color: "#fff",
+    border: "none",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+  },
+  fileInput: {
+    display: "none",
+  },
+  uploadBtn: {
+    width: "100%",
+    padding: "12px",
+    borderRadius: "10px",
+    border: "1px solid #e2e8f0",
+    backgroundColor: "#fff",
+    color: "#1e293b",
+    fontSize: "14px",
+    fontWeight: "600",
+    textAlign: "center",
+    cursor: "pointer",
+    transition: "background-color 0.2s ease",
+  },
+  helpText: {
+    fontSize: "12px",
+    color: "#94a3b8",
+    marginTop: "8px",
+    textAlign: "center",
   },
   submitBtn: {
-    padding: "15px",
-    borderRadius: "10px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "12px",
+    padding: "16px",
+    borderRadius: "12px",
     border: "none",
-    background: "linear-gradient(90deg, #6a11cb, #2575fc)",
-    color: "white",
+    backgroundColor: "#ff007a",
+    color: "#fff",
     fontSize: "16px",
-    fontWeight: "bold",
-    cursor: "pointer"
-  }
+    fontWeight: "700",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    boxShadow: "0 10px 15px -3px rgba(255, 0, 122, 0.3)",
+  },
+  submitBtnDisabled: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "12px",
+    padding: "16px",
+    borderRadius: "12px",
+    border: "none",
+    backgroundColor: "#94a3b8",
+    color: "#fff",
+    fontSize: "16px",
+    fontWeight: "700",
+    cursor: "not-allowed",
+  },
 };
 
 export default AddEvent;

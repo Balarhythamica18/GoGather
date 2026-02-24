@@ -1,5 +1,6 @@
 import Event from "../models/Event.js";
 import User from "../models/User.js";
+import Booking from "../models/Booking.js";
 
 export const createEvent = async (req, res) => {
   try {
@@ -202,6 +203,63 @@ export const updateEvent = async (req, res) => {
     res.json(event);
   } catch (error) {
     console.error("Error updating event:", error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getMyStats = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) return res.status(401).json({ message: "Unauthorized" });
+
+    // 1. Fetch all events for this organizer
+    const user = await User.findById(req.user.id).select("email");
+    const email = user?.email;
+
+    const eventQuery = email
+      ? { $or: [{ organizer: req.user.id }, { "organizerDetails.contactEmail": email }] }
+      : { organizer: req.user.id };
+
+    console.log("Stats Event Query:", JSON.stringify(eventQuery));
+    const events = await Event.find(eventQuery);
+    console.log("Stats Events Found:", events.length);
+    if (events.length > 0) {
+      console.log("First event organizer:", events[0].organizer);
+      console.log("First event email:", events[0].organizerDetails?.contactEmail);
+    }
+    const eventIds = events.map(e => e._id);
+
+    // 2. Fetch all bookings for these events
+    const bookings = await Booking.find({ eventId: { $in: eventIds }, status: "confirmed" }).populate("eventId");
+    console.log("Stats Bookings Found:", bookings.length);
+
+    // 3. Calculate stats
+    let totalRevenue = 0;
+    let totalBookingsCount = 0;
+
+    bookings.forEach(booking => {
+      totalBookingsCount += (booking.ticketCount || (booking.seats ? booking.seats.length : 1));
+
+      if (booking.eventId && booking.eventId.price) {
+        // Price might be "Rs.500" or "500" or "Free"
+        const priceStr = String(booking.eventId.price).replace(/[^0-9.]/g, '');
+        const price = parseFloat(priceStr) || 0;
+        const count = booking.ticketCount || (booking.seats ? booking.seats.length : 1);
+        totalRevenue += price * count;
+      }
+    });
+
+    const stats = {
+      totalEvents: events.length,
+      approvedEvents: events.filter(e => e.status === "approved").length,
+      pendingEvents: events.filter(e => e.status === "pending" || !e.status).length,
+      rejectedEvents: events.filter(e => e.status === "rejected").length,
+      totalBookings: totalBookingsCount,
+      totalRevenue: totalRevenue
+    };
+
+    res.json(stats);
+  } catch (error) {
+    console.error("Error fetching organizer stats:", error.message);
     res.status(500).json({ message: error.message });
   }
 };

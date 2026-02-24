@@ -86,8 +86,8 @@
 
 .account-input-group input:focus {
     outline: none;
-    border-color: #6a11cb;
-    box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.2);
+    border-color: #ff007a;
+    box-shadow: 0 0 0 3px rgba(255, 0, 122, 0.2);
 }
 
 .password-divider {
@@ -156,7 +156,7 @@
 
 .save-btn {
     flex: 2;
-    background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+    background: linear-gradient(90deg, #ff007a 0%, #ff4d94 100%);
     color: #fff;
     border: none;
     padding: 12px;
@@ -168,7 +168,7 @@
 
 .save-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4);
+    box-shadow: 0 5px 15px rgba(255, 0, 122, 0.4);
 }
 
 .save-btn:disabled {
