@@ -92,7 +92,7 @@ const OrganizerDashboard = () => {
           + Add Event
         </button>
         <button
-          style={{...styles.addButton, marginLeft:12, background:'#ff4d4d', color:'white'}}
+          style={{ ...styles.addButton, marginLeft: 12, background: '#ff4d4d', color: 'white' }}
           onClick={() => {
             localStorage.removeItem('token');
             localStorage.removeItem('role');
@@ -110,7 +110,7 @@ const OrganizerDashboard = () => {
         ) : (
           events.map((event) => (
             <div key={event._id} style={styles.card}>
-              
+
               {/* Event Image */}
               <div style={styles.imageWrapper}>
                 <img
@@ -143,6 +143,15 @@ const OrganizerDashboard = () => {
                 </button>
               </div>
 
+              {/* Status Badge */}
+              <div style={{
+                ...styles.statusBadge,
+                ...(event.status === "approved" ? styles.statusApproved :
+                  event.status === "rejected" ? styles.statusRejected : styles.statusPending)
+              }}>
+                {event.status || "pending"}
+              </div>
+
             </div>
           ))
         )}
@@ -155,7 +164,7 @@ const OrganizerDashboard = () => {
             <h2 style={styles.modalTitle}>Hi, {organizerName || localStorage.getItem("userName") || "Organizer"}</h2>
             <p style={styles.modalMessage}>Are you sure delete this event?</p>
             <h3 style={styles.eventName}>{eventToDelete.title}</h3>
-            
+
             <div style={styles.modalButtons}>
               <button
                 style={styles.confirmButton}
@@ -356,6 +365,40 @@ const styles = {
     fontWeight: "bold",
     fontSize: "14px",
     transition: "background 0.2s ease"
+  },
+  statusBadge: {
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    padding: "5px 12px",
+    borderRadius: "15px",
+    fontSize: "12px",
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
+  },
+  statusPending: {
+    background: "#ffcc00",
+    color: "#333",
+  },
+  statusApproved: {
+    background: "#00ff88",
+    color: "#000",
+  },
+  statusRejected: {
+    background: "#ff4d4d",
+    color: "#fff",
+  },
+  card: {
+    background: "white",
+    borderRadius: "15px",
+    padding: "20px",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "15px",
+    transition: "transform 0.2s ease-in-out",
+    position: "relative" // Added for absolute badge
   }
 };
 

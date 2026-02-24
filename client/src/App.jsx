@@ -28,7 +28,8 @@ import AdminLayout from "./pages/admin/Layout";
 import AdminDashboard from "./pages/admin/AdminDashboard"; // to be created
 import ListShows from "./pages/admin/ListShows/ListShows";
 import ListBookings from "./pages/admin/ListBookings/ListBookings";
-import UserManagement from "./pages/admin/UserManagement"; // to be created
+import UserManagement from "./pages/admin/UserManagement";
+import EventApprovals from "./pages/admin/EventApprovals";
 
 /*  ORGANIZER */
 import OrganizerDashboard from "./pages/organizer/OrganizerDashboard";
@@ -90,6 +91,7 @@ const App = () => {
               <Route path="users" element={<UserManagement />} />
               <Route path="list-shows" element={<ListShows />} />
               <Route path="list-bookings" element={<ListBookings />} />
+              <Route path="event-approvals" element={<EventApprovals />} />
             </Route>
           </Route>
 

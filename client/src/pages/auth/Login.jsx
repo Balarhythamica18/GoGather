@@ -51,6 +51,8 @@ const Login = () => {
       setTimeout(() => {
         if (res.data.user.role === "admin") {
           navigate("/admin", { replace: true });
+        } else if (res.data.user.role === "organizer") {
+          navigate("/dashboard", { replace: true });
         } else {
           navigate("/", { replace: true });
         }

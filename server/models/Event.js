@@ -27,6 +27,11 @@ const eventSchema = new mongoose.Schema(
     aboutEvent: String,
     keyHighlights: [String],
     organizerDetails: organizerSchema,
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
   },
   { timestamps: true }
 );

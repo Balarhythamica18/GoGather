@@ -4,7 +4,7 @@ import User from "../models/User.js";
 export const createEvent = async (req, res) => {
   try {
     const { date, ...otherData } = req.body;
-    
+
     // Parse the date to extract month and day
     let month = "";
     let dayOnly = "";
@@ -29,6 +29,7 @@ export const createEvent = async (req, res) => {
         contactEmail: req.body.organizerEmail,
         contactPhone: req.body.organizerPhone,
       },
+      status: "pending", // Explicitly set as pending
     };
 
     if (req.user && req.user.id) {
@@ -74,7 +75,8 @@ export const getEventById = async (req, res) => {
 
 export const getAllEvents = async (req, res) => {
   try {
-    const events = await Event.find().sort({ createdAt: -1 });
+    // Only return approved events for public view
+    const events = await Event.find({ status: "approved" }).sort({ createdAt: -1 });
     res.json(events);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -102,8 +104,8 @@ export const getMyEvents = async (req, res) => {
 
 export const getUpcomingEvents = async (req, res) => {
   try {
-    // Find events that have a non-empty declaration field (used to mark upcoming)
-    const events = await Event.find({ declaration: { $exists: true, $ne: "" } }).sort({ createdAt: -1 });
+    // Find approved events that have a non-empty declaration field
+    const events = await Event.find({ status: "approved", declaration: { $exists: true, $ne: "" } }).sort({ createdAt: -1 });
     res.json(events);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -187,6 +189,14 @@ export const updateEvent = async (req, res) => {
     if (otherData.organizerName) event.organizerDetails.name = otherData.organizerName;
     if (otherData.organizerEmail) event.organizerDetails.contactEmail = otherData.organizerEmail;
     if (otherData.organizerPhone) event.organizerDetails.contactPhone = otherData.organizerPhone;
+
+    // Reset status to pending if an organizer edits the event
+    if (req.user?.role !== "admin") {
+      event.status = "pending";
+    } else if (otherData.status) {
+      // Allow admins to update status directly if needed (though usually handled via admin routes)
+      event.status = otherData.status;
+    }
 
     await event.save();
     res.json(event);

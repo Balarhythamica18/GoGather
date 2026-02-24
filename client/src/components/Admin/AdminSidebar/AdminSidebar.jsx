@@ -29,6 +29,11 @@ const AdminSidebar = () => {
       path: "/admin/list-bookings",
       icon: ClipboardDocumentListIcon,
     },
+    {
+      name: "Event Approvals",
+      path: "/admin/event-approvals",
+      icon: PlusCircleIcon, // Using Plus icon for now, could be CheckBadgeIcon if available
+    },
   ];
 
   return (

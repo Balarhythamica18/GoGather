@@ -203,4 +203,47 @@ router.delete(
   }
 );
 
+// Get all pending events for review
+router.get(
+  "/events/pending",
+  authMiddleware,
+  authorizeRoles("admin"),
+  async (req, res) => {
+    try {
+      const events = await Event.find({ status: "pending" }).populate("organizer", "name email");
+      res.json(events);
+    } catch (error) {
+      console.error("Error fetching pending events:", error);
+      res.status(500).json({ message: "Error fetching pending events", error: error.message });
+    }
+  }
+);
+
+// Update event status (Approve/Reject)
+router.patch(
+  "/events/:id/status",
+  authMiddleware,
+  authorizeRoles("admin"),
+  async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (!["approved", "rejected"].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+
+      const event = await Event.findByIdAndUpdate(
+        req.params.id,
+        { status },
+        { new: true }
+      );
+
+      if (!event) return res.status(404).json({ message: "Event not found" });
+
+      res.json({ message: `Event ${status} successfully`, event });
+    } catch (error) {
+      res.status(500).json({ message: "Error updating event status" });
+    }
+  }
+);
+
 export default router;
