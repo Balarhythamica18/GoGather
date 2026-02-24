@@ -9,7 +9,7 @@ const Layout = () => {
       <style>{`
         .admin-layout {
           min-height: 100vh;
-          background-color: black;
+          background-color: #f8fafc;
           display: flex;
           flex-direction: column;
         }
@@ -17,47 +17,38 @@ const Layout = () => {
         .admin-layout__body {
           display: flex;
           flex: 1;
-          margin-top: 64px; /* navbar height */
+          margin-top: 64px;
           position: relative;
         }
 
         .admin-layout__content {
           flex: 1;
-          margin-left: 260px; /* sidebar width */
+          margin-left: 260px;
           padding: 40px;
           min-height: calc(100vh - 64px);
           overflow-y: auto;
           box-sizing: border-box;
-          transition: margin-left 0.3s ease, padding 0.3s ease;
+          transition: all 0.3s ease;
         }
 
-        /* Tablets */
         @media (max-width: 1024px) {
           .admin-layout__content {
             padding: 32px;
           }
         }
 
-        /* Mobile */
         @media (max-width: 768px) {
           .admin-layout__content {
             margin-left: 0;
             padding: 24px 16px;
           }
         }
-
-        /* Small Mobile */
-        @media (max-width: 480px) {
-          .admin-layout__content {
-            padding: 20px 12px;
-          }
-        }
       `}</style>
 
       <div className="admin-layout">
+        <AdminSidebar />
         <AdminNavbar />
         <div className="admin-layout__body">
-          <AdminSidebar />
           <main className="admin-layout__content">
             <Outlet />
           </main>

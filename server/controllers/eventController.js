@@ -221,16 +221,10 @@ export const getMyStats = async (req, res) => {
 
     console.log("Stats Event Query:", JSON.stringify(eventQuery));
     const events = await Event.find(eventQuery);
-    console.log("Stats Events Found:", events.length);
-    if (events.length > 0) {
-      console.log("First event organizer:", events[0].organizer);
-      console.log("First event email:", events[0].organizerDetails?.contactEmail);
-    }
     const eventIds = events.map(e => e._id);
 
     // 2. Fetch all bookings for these events
     const bookings = await Booking.find({ eventId: { $in: eventIds }, status: "confirmed" }).populate("eventId");
-    console.log("Stats Bookings Found:", bookings.length);
 
     // 3. Calculate stats
     let totalRevenue = 0;

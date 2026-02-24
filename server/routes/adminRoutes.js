@@ -246,4 +246,23 @@ router.patch(
   }
 );
 
+// Get all bookings
+router.get(
+  "/bookings/all",
+  authMiddleware,
+  authorizeRoles("admin"),
+  async (req, res) => {
+    try {
+      const bookings = await Booking.find()
+        .populate("eventId", "title location price date month")
+        .populate("userId", "name email")
+        .sort({ createdAt: -1 });
+      res.json(bookings);
+    } catch (error) {
+      console.error("Error fetching all bookings:", error);
+      res.status(500).json({ message: "Error fetching bookings" });
+    }
+  }
+);
+
 export default router;

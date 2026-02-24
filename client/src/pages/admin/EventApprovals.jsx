@@ -62,22 +62,25 @@ const EventApprovals = () => {
                     {pendingEvents.map((event) => (
                         <div key={event._id} className="approval-card">
                             <div className="approval-card__image">
-                                <img src={event.image || "https://via.placeholder.com/400x200"} alt={event.title} />
-                                <div className="status-badge-mini"><Clock size={12} /> Pending</div>
+                                <img src={event.image || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=400"} alt={event.title} />
+                                <div className="status-badge-mini"><Clock size={12} /> Pending Review</div>
                             </div>
 
                             <div className="approval-card__content">
                                 <h3>{event.title}</h3>
-                                <p className="event-meta"><Calendar size={14} /> {event.month} {event.date} at {event.time}</p>
-                                <p className="event-meta"><MapPin size={14} /> {event.location}, {event.address}</p>
+                                <div className="event-meta-group">
+                                    <p className="event-meta"><Calendar size={14} /> {event.month} {event.date} at {event.time}</p>
+                                    <p className="event-meta"><MapPin size={14} /> {event.location}</p>
+                                </div>
 
                                 <div className="organizer-info">
+                                    <div className="org-label">Organizer Details</div>
                                     <p><User size={14} /> <strong>{event.organizer?.name || event.organizerDetails?.name}</strong></p>
                                     <p><Mail size={14} /> {event.organizer?.email || event.organizerDetails?.contactEmail}</p>
                                 </div>
 
                                 <div className="event-desc-preview">
-                                    {event.description?.substring(0, 100)}...
+                                    {event.description?.substring(0, 80)}...
                                 </div>
                             </div>
 
@@ -94,7 +97,7 @@ const EventApprovals = () => {
                                     onClick={() => handleStatusUpdate(event._id, "approved")}
                                     disabled={processingId === event._id}
                                 >
-                                    <CheckCircle size={18} /> Approve
+                                    <CheckCircle size={18} /> Approve Event
                                 </button>
                             </div>
                         </div>
@@ -105,20 +108,26 @@ const EventApprovals = () => {
             <style>{`
                 .approvals-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-                    gap: 2rem;
-                    margin-top: 2rem;
+                    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+                    gap: 24px;
+                    margin-top: 24px;
                 }
                 .approval-card {
-                    background: #111;
-                    border: 1px solid #333;
-                    border-radius: 16px;
+                    background: #fff;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 20px;
                     overflow: hidden;
                     display: flex;
                     flex-direction: column;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+                    transition: transform 0.2s;
+                }
+                .approval-card:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
                 }
                 .approval-card__image {
-                    height: 180px;
+                    height: 160px;
                     position: relative;
                 }
                 .approval-card__image img {
@@ -128,86 +137,107 @@ const EventApprovals = () => {
                 }
                 .status-badge-mini {
                     position: absolute;
-                    top: 10px;
-                    left: 10px;
-                    background: rgba(255, 204, 0, 0.9);
-                    color: #000;
-                    padding: 4px 10px;
+                    top: 12px;
+                    left: 12px;
+                    background: #fefce8;
+                    color: #854d0e;
+                    padding: 6px 12px;
                     border-radius: 20px;
                     font-size: 0.75rem;
-                    font-weight: bold;
+                    font-weight: 700;
                     display: flex;
                     align-items: center;
-                    gap: 4px;
+                    gap: 6px;
+                    border: 1px solid #fef08a;
                 }
                 .approval-card__content {
-                    padding: 1.5rem;
+                    padding: 24px;
                     flex: 1;
                 }
                 .approval-card__content h3 {
-                    margin: 0 0 1rem 0;
-                    color: #fff;
-                    font-size: 1.25rem;
+                    margin: 0 0 16px 0;
+                    color: #1e293b;
+                    font-size: 1.15rem;
+                    font-weight: 800;
+                }
+                .event-meta-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                    margin-bottom: 20px;
                 }
                 .event-meta {
                     display: flex;
                     align-items: center;
                     gap: 8px;
-                    color: #888;
+                    color: #64748b;
                     font-size: 0.85rem;
-                    margin-bottom: 0.5rem;
+                    margin: 0;
                 }
                 .organizer-info {
-                    background: rgba(255,255,255,0.05);
-                    padding: 0.8rem;
-                    border-radius: 8px;
-                    margin: 1rem 0;
+                    background: #f8fafc;
+                    padding: 16px;
+                    border-radius: 12px;
+                    margin-bottom: 16px;
+                    border: 1px solid #f1f5f9;
+                }
+                .org-label {
+                    font-size: 11px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #94a3b8;
+                    font-weight: 700;
+                    margin-bottom: 8px;
                 }
                 .organizer-info p {
                     display: flex;
                     align-items: center;
                     gap: 8px;
-                    margin: 0;
+                    margin: 4px 0 0 0;
                     font-size: 0.85rem;
-                    color: #ccc;
+                    color: #334155;
                 }
                 .event-desc-preview {
-                    color: #666;
+                    color: #94a3b8;
                     font-size: 0.85rem;
-                    font-style: italic;
+                    line-height: 1.5;
                 }
                 .approval-card__actions {
-                    padding: 1rem;
-                    background: #1a1a1a;
+                    padding: 16px 24px;
+                    background: #f8fafc;
                     display: flex;
-                    gap: 1rem;
+                    gap: 12px;
+                    border-top: 1px solid #f1f5f9;
                 }
                 .action-btn {
                     flex: 1;
-                    padding: 0.7rem;
-                    border-radius: 8px;
+                    padding: 10px;
+                    border-radius: 10px;
                     border: none;
-                    font-weight: 600;
+                    font-weight: 700;
                     cursor: pointer;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     gap: 8px;
+                    font-size: 14px;
                     transition: all 0.2s;
                 }
                 .action-btn.reject {
-                    background: #222;
-                    color: #ff4d4d;
+                    background: #fff;
+                    color: #ef4444;
+                    border: 1px solid #fee2e2;
                 }
                 .action-btn.reject:hover {
-                    background: #ff4d4d22;
+                    background: #fef2f2;
                 }
                 .action-btn.approve {
-                    background: #00ff88;
-                    color: #000;
+                    background: #ff007a;
+                    color: #fff;
                 }
                 .action-btn.approve:hover {
-                    box-shadow: 0 0 15px #00ff8844;
+                    background: #e6006e;
+                    box-shadow: 0 4px 12px rgba(255, 0, 122, 0.3);
                 }
                 .action-btn:disabled {
                     opacity: 0.5;
