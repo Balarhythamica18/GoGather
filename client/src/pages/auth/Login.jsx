@@ -49,7 +49,11 @@ const Login = () => {
       setSuccess("Login Successful 🎉 Redirecting...");
 
       setTimeout(() => {
-        navigate("/", { replace: true });
+        if (res.data.user.role === "admin") {
+          navigate("/admin", { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
       }, 1200);
 
     } catch (err) {
@@ -66,7 +70,7 @@ const Login = () => {
         {error && <div className="error-popup">{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          
+
           {/* Email */}
           <input
             type="email"

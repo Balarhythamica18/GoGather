@@ -80,6 +80,10 @@ export const login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
+    // Set online status
+    user.isOnline = true;
+    await user.save();
+
     // ⭐ THIS FIXES YOUR SEAT ERROR
     res.json({
       token,

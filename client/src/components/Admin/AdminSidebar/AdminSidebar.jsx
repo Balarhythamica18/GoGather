@@ -22,7 +22,7 @@ const AdminSidebar = () => {
 
   const adminNavLinks = [
     { name: "Dashboard", path: "/admin", icon: HomeIcon },
-    { name: "Add Shows", path: "/admin/add-shows", icon: PlusCircleIcon },
+    { name: "Users", path: "/admin/users", icon: PlusCircleIcon }, // Reusing Plus icon or similar
     { name: "List Shows", path: "/admin/list-shows", icon: ListBulletIcon },
     {
       name: "List Bookings",
@@ -65,9 +65,8 @@ const AdminSidebar = () => {
               <Link
                 key={link.name}
                 to={link.path}
-                className={`admin-sidebar__link ${
-                  isActive ? "active" : ""
-                }`}
+                className={`admin-sidebar__link ${isActive ? "active" : ""
+                  }`}
                 onClick={() => setIsOpen(false)}
               >
                 <Icon className="admin-sidebar__icon" />

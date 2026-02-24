@@ -23,16 +23,29 @@ import Login from "./pages/auth/Login.jsx";
 import Register from "./pages/auth/Register";
 
 /*  ADMIN */
+import AdminProtectedRoute from "./components/common/AdminProtectedRoute";
 import AdminLayout from "./pages/admin/Layout";
+import AdminDashboard from "./pages/admin/AdminDashboard"; // to be created
 import ListShows from "./pages/admin/ListShows/ListShows";
 import ListBookings from "./pages/admin/ListBookings/ListBookings";
+import UserManagement from "./pages/admin/UserManagement"; // to be created
 
 /*  ORGANIZER */
 import OrganizerDashboard from "./pages/organizer/OrganizerDashboard";
 import AddEvent from "./pages/organizer/AddEvent";
 
+import io from "socket.io-client";
+const socket = io("http://localhost:5000");
+
 const App = () => {
   const location = useLocation();
+
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    if (user && user._id) {
+      socket.emit("identify", user._id);
+    }
+  }, []);
 
   // Routes where Navbar & Footer should be hidden
   const noLayoutRoutes = [
@@ -70,17 +83,21 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* 👑 ADMIN DASHBOARD */}
-          <Route path="/admin/dashboard" element={<AdminLayout />}>
-            <Route path="list-shows" element={<ListShows />} />
-            <Route path="list-bookings" element={<ListBookings />} />
+          {/* 👑 ADMIN AREA */}
+          <Route element={<AdminProtectedRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="list-shows" element={<ListShows />} />
+              <Route path="list-bookings" element={<ListBookings />} />
+            </Route>
           </Route>
 
           {/* 🎤 ORGANIZER DASHBOARD */}
           <Route path="/dashboard" element={<OrganizerDashboard />} />
           <Route path="/add-event" element={<AddEvent />} />
           <Route path="/add-event/:id" element={<AddEvent />} />
-          
+
         </Routes>
       </main>
 

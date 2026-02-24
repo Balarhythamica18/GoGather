@@ -26,6 +26,11 @@ const userSchema = new mongoose.Schema({
   image: {
     type: String,
     default: ""
+  },
+
+  isOnline: {
+    type: Boolean,
+    default: false
   }
 
 }, { timestamps: true });

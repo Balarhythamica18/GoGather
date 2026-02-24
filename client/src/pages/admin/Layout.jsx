@@ -1,11 +1,11 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
 import AdminSidebar from "../../components/Admin/AdminSidebar/AdminSidebar";
+import AdminNavbar from "../../components/Admin/AdminNavbar/AdminNavbar";
 
 const Layout = () => {
   return (
     <>
-      {/* CSS INSIDE SAME FILE */}
       <style>{`
         .admin-layout {
           min-height: 100vh;
@@ -17,6 +17,7 @@ const Layout = () => {
         .admin-layout__body {
           display: flex;
           flex: 1;
+          margin-top: 64px; /* navbar height */
           position: relative;
         }
 
@@ -24,7 +25,7 @@ const Layout = () => {
           flex: 1;
           margin-left: 260px; /* sidebar width */
           padding: 40px;
-          min-height: calc(100vh - 64px); /* navbar height */
+          min-height: calc(100vh - 64px);
           overflow-y: auto;
           box-sizing: border-box;
           transition: margin-left 0.3s ease, padding 0.3s ease;
@@ -53,13 +54,10 @@ const Layout = () => {
         }
       `}</style>
 
-      {/* LAYOUT */}
       <div className="admin-layout">
-        
-
+        <AdminNavbar />
         <div className="admin-layout__body">
           <AdminSidebar />
-
           <main className="admin-layout__content">
             <Outlet />
           </main>

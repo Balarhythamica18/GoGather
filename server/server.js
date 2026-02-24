@@ -13,6 +13,7 @@ import connectDB from "./configs/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js"; // new booking routes
+import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 
@@ -48,6 +49,10 @@ app.use("/api/events", eventRoutes);
 
 // Booking routes
 app.use("/api/bookings", bookingRoutes);
+
+// Admin routes
+app.use("/api/admin", adminRoutes);
+console.log("Admin routes registered at /api/admin");
 
 // Serve uploads folder
 app.use("/uploads", express.static(uploadsDir));
@@ -100,7 +105,6 @@ app.post("/api/contact", async (req, res) => {
     });
 
     res.status(200).json({ message: "Emails sent successfully ✅" });
-
   } catch (error) {
     console.error("Contact Error:", error);
     res.status(500).json({ error: "Failed to send email ❌" });
@@ -132,7 +136,22 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("seatUnlocked", { eventId, seat });
   });
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
+    console.log("Client disconnected:", socket.id);
+    // If you have a way to track which user was on this socket
+    // For now, an improved way is to identify user on connection
+  });
+
+  // Identify user to track online status
+  socket.on("identify", async (userId) => {
+    socket.userId = userId;
+    await (await import("./models/User.js")).default.findByIdAndUpdate(userId, { isOnline: true });
+  });
+
+  socket.on("disconnect", async () => {
+    if (socket.userId) {
+      await (await import("./models/User.js")).default.findByIdAndUpdate(socket.userId, { isOnline: false });
+    }
     console.log("Client disconnected:", socket.id);
   });
 });

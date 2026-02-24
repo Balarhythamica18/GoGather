@@ -15,7 +15,9 @@ const Navbar = () => {
       const role = localStorage.getItem("role");
       const name = localStorage.getItem("name");
 
-      if (token && role !== "organizer") {
+      // Only show as logged in for regular users (not admins or organizers)
+      // Admins will logout from their dashboard
+      if (token && role === "user") {
         setIsLoggedIn(true);
         setUsername(name || "User");
       } else {
