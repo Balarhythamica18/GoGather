@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import "./Auth.css";
 
 const Login = () => {
@@ -15,38 +15,32 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setLoading(true);
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        form
-      );
+      // Use relative path for better environment compatibility
+      const res = await axios.post("/api/auth/login", form);
 
-      // ✅ Ensure response has token + user
       if (!res.data?.token || !res.data?.user) {
         setError("Invalid server response");
+        setLoading(false);
         return;
       }
 
-      // ⭐ SAVE TOKEN
       localStorage.setItem("token", res.data.token);
-
-      // ⭐ SAVE FULL USER OBJECT (IMPORTANT FOR SeatLayout)
       localStorage.setItem("user", JSON.stringify(res.data.user));
-
-      // Optional extras for Navbar
       localStorage.setItem("name", res.data.user.name || "");
       localStorage.setItem("role", res.data.user.role || "");
 
-      // ⭐ Dispatch event so Navbar updates immediately
       window.dispatchEvent(new Event("storageChange"));
 
-      setSuccess("Login Successful 🎉 Redirecting...");
+      setSuccess("Welcome back! Redirecting...");
 
       setTimeout(() => {
         if (res.data.user.role === "admin") {
@@ -56,10 +50,11 @@ const Login = () => {
         } else {
           navigate("/", { replace: true });
         }
-      }, 1200);
+      }, 1000);
 
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.message || "Authentication failed. Please try again.");
+      setLoading(false);
     }
   };
 
@@ -67,25 +62,29 @@ const Login = () => {
     <div className="auth-container">
       <div className="auth-card">
         <h2>Login</h2>
+        <p className="subtitle">Welcome back! Please enter your details.</p>
 
         {success && <div className="success-popup">{success}</div>}
         {error && <div className="error-popup">{error}</div>}
 
         <form onSubmit={handleSubmit}>
-
           {/* Email */}
-          <input
-            type="email"
-            placeholder="Email"
-            required
-            value={form.email}
-            onChange={(e) =>
-              setForm({ ...form, email: e.target.value })
-            }
-          />
+          <div className="input-wrapper">
+            <Mail className="input-icon" size={20} />
+            <input
+              type="email"
+              placeholder="Email Address"
+              required
+              value={form.email}
+              onChange={(e) =>
+                setForm({ ...form, email: e.target.value })
+              }
+            />
+          </div>
 
           {/* Password */}
-          <div className="password-box">
+          <div className="input-wrapper">
+            <Lock className="input-icon" size={20} />
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Password"
@@ -95,22 +94,22 @@ const Login = () => {
                 setForm({ ...form, password: e.target.value })
               }
             />
-
-            <span
+            <button
+              type="button"
               className="eye-icon"
               onClick={() => setShowPassword(!showPassword)}
             >
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </span>
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
 
-          <button type="submit" className="auth-btn">
-            Login
+          <button type="submit" className="auth-btn" disabled={loading}>
+            {loading ? "Authenticating..." : "Login"}
           </button>
         </form>
 
         <p className="auth-switch">
-          Don’t have an account? <Link to="/register">Register</Link>
+          Don’t have an account? <Link to="/register">Create one for free</Link>
         </p>
       </div>
     </div>
