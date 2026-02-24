@@ -2,13 +2,16 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './ListShows.css';
 import { FiSearch, FiFilter, FiX, FiCalendar, FiMapPin, FiTag, FiDollarSign } from 'react-icons/fi';
-import { Activity } from 'lucide-react';
+import { Activity, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const ListShows = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showSidebar, setShowSidebar] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalEntries, setTotalEntries] = useState(0);
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -27,9 +30,15 @@ const ListShows = () => {
       const token = localStorage.getItem("token");
       const res = await axios.get("/api/admin/events", {
         headers: { Authorization: `Bearer ${token}` },
-        params: queryParams
+        params: {
+          ...queryParams,
+          page: queryParams.page || page,
+          limit: 10
+        }
       });
-      setEvents(res.data);
+      setEvents(res.data.events);
+      setTotalPages(res.data.totalPages);
+      setTotalEntries(res.data.totalEntries);
     } catch (error) {
       console.error("Error fetching events:", error);
     } finally {
@@ -38,13 +47,14 @@ const ListShows = () => {
   };
 
   useEffect(() => {
-    fetchEvents();
-  }, []);
+    fetchEvents(filters);
+  }, [page]);
 
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearch(value);
-    fetchEvents({ q: value });
+    setPage(1);
+    fetchEvents({ q: value, ...filters, page: 1 });
   };
 
   const handleFilterChange = (e) => {
@@ -53,7 +63,8 @@ const ListShows = () => {
   };
 
   const applyFilters = () => {
-    fetchEvents(filters);
+    setPage(1);
+    fetchEvents({ ...filters, page: 1 });
     setShowSidebar(false);
   };
 
@@ -68,7 +79,8 @@ const ListShows = () => {
       maxPrice: ''
     };
     setFilters(initial);
-    fetchEvents(initial);
+    setPage(1);
+    fetchEvents({ ...initial, page: 1 });
     setShowSidebar(false);
   };
 
@@ -209,6 +221,39 @@ const ListShows = () => {
             )}
           </tbody>
         </table>
+
+        {/* Pagination Section */}
+        {totalPages > 1 && (
+          <div style={styles.pagination}>
+            <div style={styles.paginationInfo}>
+              Showing <strong>{(page - 1) * 10 + 1}</strong> to <strong>{Math.min(page * 10, totalEntries)}</strong> of <strong>{totalEntries}</strong> events
+            </div>
+            <div style={styles.paginationControls}>
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                style={{
+                  ...styles.pageBtn,
+                  opacity: page === 1 ? 0.5 : 1,
+                  cursor: page === 1 ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <ChevronLeft size={16} /> Previous
+              </button>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                style={{
+                  ...styles.pageBtn,
+                  opacity: page === totalPages ? 0.5 : 1,
+                  cursor: page === totalPages ? 'not-allowed' : 'pointer'
+                }}
+              >
+                Next <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -347,6 +392,35 @@ const styles = {
     backgroundColor: 'rgba(0,0,0,0.3)',
     backdropFilter: 'blur(4px)',
     zIndex: 1999,
+  },
+  pagination: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '24px 8px',
+    borderTop: '1px solid #f1f5f9',
+    marginTop: '16px'
+  },
+  paginationInfo: {
+    fontSize: '14px',
+    color: '#64748b'
+  },
+  paginationControls: {
+    display: 'flex',
+    gap: '10px'
+  },
+  pageBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 16px',
+    borderRadius: '10px',
+    border: '1px solid #e2e8f0',
+    background: '#fff',
+    color: '#475569',
+    fontWeight: '600',
+    fontSize: '13px',
+    transition: 'all 0.2s'
   }
 };
 

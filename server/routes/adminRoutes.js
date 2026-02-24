@@ -26,7 +26,8 @@ router.get(
   authorizeRoles("admin"),
   async (req, res) => {
     try {
-      const { q, title, organizerName, location, date, category, minPrice, maxPrice } = req.query;
+      const { q, title, organizerName, location, date, category, page = 1, limit = 10 } = req.query;
+      const skip = (parseInt(page) - 1) * parseInt(limit);
 
       let query = {};
 
@@ -41,8 +42,7 @@ router.get(
       if (title) query.title = { $regex: title, $options: "i" };
       if (location) query.location = { $regex: location, $options: "i" };
       if (category) query.category = category;
-      // Handle date if needed (depending on how date is stored, currently String 'MM DD')
-      // For now, simple regex match
+
       if (date) {
         query.$or = [
           { date: { $regex: date, $options: "i" } },
@@ -50,25 +50,25 @@ router.get(
         ];
       }
 
-      // Price range handling
-      if (minPrice || maxPrice) {
-        // Since price is stored as String like "Rs.699" or "Free", 
-        // we might need to be careful. Ideally it should be Num.
-        // For filtering implementation, we assume numeric comparison is desired.
-        // We'll try to match it if it was numeric, but given the current seed data, 
-        // a robust range filter on String prices is hard without schema change.
-      }
+      const total = await Event.countDocuments(query);
+      let events = await Event.find(query)
+        .populate("organizer", "name email")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit));
 
-      let events = await Event.find(query).populate("organizer", "name email");
-
-      // Filter by organizer name if provided (since it's a joined field)
       if (organizerName) {
         events = events.filter(event =>
           event.organizer?.name?.toLowerCase().includes(organizerName.toLowerCase())
         );
       }
 
-      res.json(events);
+      res.json({
+        events,
+        totalPages: Math.ceil(total / limit),
+        currentPage: parseInt(page),
+        totalEntries: total
+      });
     } catch (error) {
       console.error("Fetch Events Error:", error);
       res.status(500).json({ message: "Error fetching events", error: error.message });
@@ -83,8 +83,46 @@ router.get(
   authorizeRoles("admin"),
   async (req, res) => {
     try {
-      const users = await User.find().select("-password");
-      res.json(users);
+      const { q, role, location, page = 1, limit = 10 } = req.query;
+      const skip = (parseInt(page) - 1) * parseInt(limit);
+
+      let query = {};
+
+      if (q) {
+        query.name = { $regex: q, $options: "i" };
+      }
+
+      if (role && role !== "all") {
+        query.role = role;
+      }
+
+      if (location) {
+        query.location = { $regex: location, $options: "i" };
+      }
+
+      if (date) {
+        const startDate = new Date(date);
+        const endDate = new Date(date);
+        endDate.setDate(endDate.getDate() + 1);
+        query.createdAt = {
+          $gte: startDate,
+          $lt: endDate
+        };
+      }
+
+      const total = await User.countDocuments(query);
+      const users = await User.find(query)
+        .select("-password")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit));
+
+      res.json({
+        users,
+        totalPages: Math.ceil(total / limit),
+        currentPage: parseInt(page),
+        totalEntries: total
+      });
     } catch (error) {
       res.status(500).json({ message: "Error fetching users" });
     }

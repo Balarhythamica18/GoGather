@@ -12,24 +12,46 @@ const UserManagement = () => {
     const [impactData, setImpactData] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [loadingImpact, setLoadingImpact] = useState(false);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalEntries, setTotalEntries] = useState(0);
+    const [filters, setFilters] = useState({
+        q: "",
+        role: "all",
+        location: "",
+        date: ""
+    });
+
+    const fetchUsers = async () => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.get("/api/admin/users", {
+                headers: { Authorization: `Bearer ${token}` },
+                params: {
+                    ...filters,
+                    page,
+                    limit: 10
+                }
+            });
+            setUsers(res.data.users);
+            setTotalPages(res.data.totalPages);
+            setTotalEntries(res.data.totalEntries);
+        } catch (error) {
+            console.error("Error fetching users:", error);
+            toast.error("Failed to load users");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const token = localStorage.getItem("token");
-                const res = await axios.get("/api/admin/users", {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                setUsers(res.data);
-            } catch (error) {
-                console.error("Error fetching users:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+        const delayDebounceFn = setTimeout(() => {
+            fetchUsers();
+        }, 300);
 
-        fetchUsers();
-    }, []);
+        return () => clearTimeout(delayDebounceFn);
+    }, [filters, page]);
 
     const handleDeleteClick = async (user) => {
         setSelectedUser(user);
@@ -75,6 +97,48 @@ const UserManagement = () => {
             <h1 className="admin-dashboard__title">User Management</h1>
             <p className="admin-dashboard__subtitle">View, monitor, and manage all registered system users.</p>
 
+            <div className="admin-filters-bar" style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
+                <div style={{ flex: 2, minWidth: '200px' }}>
+                    <input
+                        type="text"
+                        placeholder="Search by name..."
+                        value={filters.q}
+                        onChange={(e) => { setFilters({ ...filters, q: e.target.value }); setPage(1); }}
+                        style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '14px' }}
+                    />
+                </div>
+                <div style={{ flex: 1, minWidth: '150px' }}>
+                    <select
+                        value={filters.role}
+                        onChange={(e) => { setFilters({ ...filters, role: e.target.value }); setPage(1); }}
+                        style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '14px', backgroundColor: '#fff' }}
+                    >
+                        <option value="all">All Roles</option>
+                        <option value="user">Users</option>
+                        <option value="organizer">Organizers</option>
+                        <option value="admin">Administrators</option>
+                    </select>
+                </div>
+                <div style={{ flex: 1, minWidth: '150px' }}>
+                    <input
+                        type="date"
+                        value={filters.date}
+                        onChange={(e) => { setFilters({ ...filters, date: e.target.value }); setPage(1); }}
+                        style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '14px' }}
+                        title="Filter by Joined Date"
+                    />
+                </div>
+                <div style={{ flex: 1, minWidth: '150px' }}>
+                    <input
+                        type="text"
+                        placeholder="Filter by location..."
+                        value={filters.location}
+                        onChange={(e) => { setFilters({ ...filters, location: e.target.value }); setPage(1); }}
+                        style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '14px' }}
+                    />
+                </div>
+            </div>
+
             {loading ? (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
                     <Activity className="animate-spin" style={{ margin: '0 auto 16px auto' }} />
@@ -93,30 +157,83 @@ const UserManagement = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {users.map((user) => (
-                                <tr key={user._id}>
-                                    <td style={{ fontWeight: '700' }}>{user.name}</td>
-                                    <td style={{ color: '#64748b' }}>{user.email}</td>
-                                    <td>
-                                        <span className={`role-badge role-${user.role}`}>
-                                            {user.role}
-                                        </span>
-                                    </td>
-                                    <td style={{ color: '#94a3b8' }}>{new Date(user.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</td>
-                                    <td style={{ textAlign: 'right' }}>
-                                        <button
-                                            className="delete-btn"
-                                            onClick={() => handleDeleteClick(user)}
-                                            style={{ marginLeft: 'auto' }}
-                                            title="Delete Account"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
+                            {users.length === 0 ? (
+                                <tr>
+                                    <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
+                                        No users found matching your filters.
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                users.map((user) => (
+                                    <tr key={user._id}>
+                                        <td style={{ fontWeight: '700' }}>{user.name}</td>
+                                        <td style={{ color: '#64748b' }}>{user.email}</td>
+                                        <td>
+                                            <span className={`role-badge role-${user.role}`}>
+                                                {user.role}
+                                            </span>
+                                        </td>
+                                        <td style={{ color: '#94a3b8' }}>{new Date(user.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                                        <td style={{ textAlign: 'right' }}>
+                                            <button
+                                                className="delete-btn"
+                                                onClick={() => handleDeleteClick(user)}
+                                                style={{ marginLeft: 'auto' }}
+                                                title="Delete Account"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="admin-pagination" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', padding: '0 8px' }}>
+                            <div style={{ fontSize: '14px', color: '#64748b' }}>
+                                Showing <strong>{(page - 1) * 10 + 1}</strong> to <strong>{Math.min(page * 10, totalEntries)}</strong> of <strong>{totalEntries}</strong> members
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <button
+                                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                                    disabled={page === 1}
+                                    style={{
+                                        padding: '8px 16px',
+                                        borderRadius: '8px',
+                                        border: '1px solid #e2e8f0',
+                                        background: '#fff',
+                                        cursor: page === 1 ? 'not-allowed' : 'pointer',
+                                        opacity: page === 1 ? 0.5 : 1,
+                                        fontWeight: '600',
+                                        fontSize: '14px',
+                                        color: '#475569'
+                                    }}
+                                >
+                                    Previous
+                                </button>
+                                <button
+                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={page === totalPages}
+                                    style={{
+                                        padding: '8px 16px',
+                                        borderRadius: '8px',
+                                        border: '1px solid #e2e8f0',
+                                        background: '#fff',
+                                        cursor: page === totalPages ? 'not-allowed' : 'pointer',
+                                        opacity: page === totalPages ? 0.5 : 1,
+                                        fontWeight: '600',
+                                        fontSize: '14px',
+                                        color: '#475569'
+                                    }}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
