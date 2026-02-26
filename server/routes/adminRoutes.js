@@ -83,7 +83,7 @@ router.get(
   authorizeRoles("admin"),
   async (req, res) => {
     try {
-      const { q, role, location, page = 1, limit = 10 } = req.query;
+      const { q, role, location, date, page = 1, limit = 10 } = req.query;
       const skip = (parseInt(page) - 1) * parseInt(limit);
 
       let query = {};
@@ -110,6 +110,9 @@ router.get(
         };
       }
 
+      console.log("Fetch Users Params:", { q, role, location, date, page, limit });
+      console.log("Calculated Query:", JSON.stringify(query, null, 2));
+
       const total = await User.countDocuments(query);
       const users = await User.find(query)
         .select("-password")
@@ -124,7 +127,8 @@ router.get(
         totalEntries: total
       });
     } catch (error) {
-      res.status(500).json({ message: "Error fetching users" });
+      console.error("Fetch Users Error:", error);
+      res.status(500).json({ message: "Error fetching users", error: error.message });
     }
   }
 );

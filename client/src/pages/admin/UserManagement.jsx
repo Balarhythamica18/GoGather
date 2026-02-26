@@ -39,7 +39,8 @@ const UserManagement = () => {
             setTotalEntries(res.data.totalEntries);
         } catch (error) {
             console.error("Error fetching users:", error);
-            toast.error("Failed to load users");
+            const errorMsg = error.response?.data?.message || error.response?.data?.error || "Failed to load users";
+            toast.error(errorMsg);
         } finally {
             setLoading(false);
         }

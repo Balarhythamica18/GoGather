@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import Event from "../models/Event.js";
+import Booking from "../models/Booking.js";
 
 export const chatWithAI = async (req, res) => {
     const { message } = req.body;
@@ -15,47 +16,85 @@ export const chatWithAI = async (req, res) => {
 
     try {
         // 1. Fetch GoGather Events
-        const dbEvents = await Event.find({ status: "approved" }).select("title description location category price date").lean();
+        const dbEvents = await Event.find({ status: "approved" }).lean();
 
-        const eventsContext = dbEvents.map(e => (
-            `- ${e.title} at ${e.location} (${e.category}). Price: ${e.price}. Date: ${e.date}. Description: ${e.description}`
-        )).join("\n");
+        // 2. Fetch Bookings to calculate availability
+        const bookings = await Booking.find({ status: "confirmed" }).lean();
+
+        const eventsWithAvailability = dbEvents.map(event => {
+            const eventBookings = bookings.filter(b => b.eventId?.toString() === event._id?.toString());
+
+            // Calculate total seats taken
+            let totalTaken = 0;
+            eventBookings.forEach(b => {
+                if (b.seats && b.seats.length > 0) {
+                    totalTaken += b.seats.length;
+                } else {
+                    totalTaken += (Number(b.ticketCount) || 0);
+                }
+            });
+
+            // Standard capacity logic
+            const isSeatBased = event.category?.toLowerCase() !== "art" && event.category?.toLowerCase() !== "sport";
+            const capacity = isSeatBased ? 60 : 100;
+            const available = Math.max(0, capacity - totalTaken);
+
+            return {
+                ...event,
+                availableSeats: available,
+                totalCapacity: capacity,
+                isSeatBased
+            };
+        });
+
+        const eventsContext = eventsWithAvailability.map(e => (
+            `- ${e.title} at ${e.location} (${e.category}). 
+              Price: ${e.price}. 
+              Date: ${e.date}. 
+              Time: ${e.time}.
+              Address: ${e.address}.
+              Highlights: ${Array.isArray(e.keyHighlights) ? e.keyHighlights.join(", ") : "N/A"}.
+              Availability: ${e.availableSeats} seats available out of ${e.totalCapacity}.
+              Description: ${e.description}
+              About: ${e.aboutEvent}`
+        )).join("\n\n");
 
         const genAI = new GoogleGenerativeAI(apiKey);
 
         const systemInstruction = `
-[ROLE] You are the specialized GoGather Assistant. You NOT a general AI.
+[ROLE] You are the specialized GoGather Assistant. You are NOT a general AI.
 [DATABASE]
 ${eventsContext || "NO EVENTS CURRENTLY IN GOGATHER DATABASE."}
 
-[STRICT INSTRUCTION] 
+[STRICT INSTRUCTIONS] 
 1. Only answer about GoGather events in the DATABASE above.
-2. If USER QUERY is about anything else (e.g. general cities, geography, general knowledge, other websites like BookMyShow, Paytm Insider), YOU MUST REFUSE and say: "I only have information about GoGather events."
-3. DO NOT BE HELPFUL with outside knowledge.
-4. If asked for events in a city (like Chennai) and NONE are in the DATABASE, say: "I couldn't find any events in Chennai on GoGather right now."
-5. Never mention external platforms.
+2. Provide COMPREHENSIVE details (360-degree): Title, Date, Time, Location, Address, Price, Category, Highlights, and SEAT AVAILABILITY.
+3. If a user asks about contacting the team, support, or having issues, YOU MUST RESPOND with: "You can contact our team by visiting the [Contact Us](/contact) page and filling out the form there."
+4. If USER QUERY is about anything else (e.g. general cities, geography, general knowledge, other platforms), YOU MUST REFUSE and say: "I only have information about GoGather events."
+5. If asked for events in a city and NONE are in the DATABASE, say: "I couldn't find any events in that location on GoGather right now."
 
 [FORMATTING RULES]
-- When listing events, use this EXACT structure for each event:
+- When listing events, use this EXACT structure:
   ### **[Event Title]**
-  - **Date**: [Date]
-  - **Location**: [Location]
+  - **Date & Time**: [Date] at [Time]
+  - **Location**: [Location] ([Address])
   - **Price**: [Price]
+  - **Availability**: [AvailableSeats] seats left (Total: [TotalCapacity])
   - **Category**: [Category]
+  - **Highlights**: [KeyHighlights]
   - **Description**: [Description]
 - Separate multiple events with a horizontal divider (---).
-- Use proper Markdown for bolding and lists.
-- Do NOT use sentences like "On 27-02-2026, you can attend...". Just list the events in the structure above.
+- Use proper Markdown. Keep responses professional and helpful.
 `;
 
         console.log("AI CONTEXT LENGTH:", eventsContext.length);
         console.log("AI SYSTEM INSTRUCTION SET");
 
         const model = genAI.getGenerativeModel({
-            model: "models/gemini-2.5-flash-lite", // Switched to 2.5-flash-lite for potentially better quota stability
+            model: "gemini-flash-latest", // Using 'gemini-flash-latest' as it has active quota in 2026
             systemInstruction: systemInstruction,
             generationConfig: {
-                temperature: 0.0,
+                temperature: 0.1,
             }
         });
 
@@ -66,8 +105,7 @@ ${eventsContext || "NO EVENTS CURRENTLY IN GOGATHER DATABASE."}
         } catch (initialError) {
             const isQuota = initialError.status === 429 || initialError.message?.includes("429");
             if (isQuota) {
-                console.log("AI Quota hit. Full error details:", JSON.stringify(initialError, null, 2));
-                console.log("Retrying in 5 seconds...");
+                console.log("AI Quota hit. Retrying in 5 seconds...");
                 await new Promise(resolve => setTimeout(resolve, 5000));
                 result = await model.generateContent(message);
             } else {
@@ -80,8 +118,8 @@ ${eventsContext || "NO EVENTS CURRENTLY IN GOGATHER DATABASE."}
 
         console.log("AI RAW REPLY:", text.substring(0, 50));
 
-        // Hard Filter for common hallucinations and external platform leaks
-        const bannedKeywords = ["paris", "france", "capital of", "bookmyshow", "insider", "ticketnew", "general knowledge"];
+        // Hard Filter for common hallucinations
+        const bannedKeywords = ["paris", "france", "capital of", "bookmyshow", "insider", "ticketnew"];
         if (bannedKeywords.some(k => text.toLowerCase().includes(k))) {
             text = "I'm sorry, I only have access to GoGather's current event listings. I couldn't find any matching events on our platform at this time.";
         }

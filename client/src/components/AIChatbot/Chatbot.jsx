@@ -7,6 +7,7 @@ import "./Chatbot.css";
 export default function Chatbot() {
     const [isOpen, setIsOpen] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -15,6 +16,23 @@ export default function Chatbot() {
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
+
+    useEffect(() => {
+        const checkAuth = () => {
+            const token = localStorage.getItem("token");
+            const user = localStorage.getItem("user");
+            setIsLoggedIn(!!(token && user));
+        };
+
+        window.addEventListener("storageChange", checkAuth);
+        window.addEventListener("storage", checkAuth);
+        checkAuth();
+
+        return () => {
+            window.removeEventListener("storageChange", checkAuth);
+            window.removeEventListener("storage", checkAuth);
+        };
+    }, []);
 
     useEffect(() => {
         if (isOpen && !isMinimized) {
@@ -35,8 +53,13 @@ export default function Chatbot() {
         setLoading(true);
 
         try {
+            const token = localStorage.getItem("token");
             const res = await axios.post("http://localhost:5000/api/ai/chat", {
                 message: input.trim(),
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
 
             const aiMsg = {
@@ -105,9 +128,15 @@ export default function Chatbot() {
                                         <Bot size={48} strokeWidth={1.5} />
                                     </div>
                                     <div style={{ fontWeight: '800', color: '#111827', fontSize: '18px', marginBottom: '8px' }}>How can I help you?</div>
-                                    <div style={{ fontSize: '14px', color: '#64748b', lineHeight: '1.5' }}>
-                                        Ask me about upcoming tickets, event details, or your current bookings!
-                                    </div>
+                                    {!isLoggedIn ? (
+                                        <div style={{ fontSize: '14px', color: '#ef4444', fontWeight: '600', lineHeight: '1.5', background: '#fef2f2', padding: '12px', borderRadius: '12px', border: '1px solid #fee2e2' }}>
+                                            Please log in to start chatting with our AI assistant.
+                                        </div>
+                                    ) : (
+                                        <div style={{ fontSize: '14px', color: '#64748b', lineHeight: '1.5' }}>
+                                            Ask me about upcoming tickets, event details, or your current bookings!
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -135,23 +164,32 @@ export default function Chatbot() {
                         </div>
 
                         <div className="chatbot-input-area">
-                            <div className="input-container">
-                                <input
-                                    className="chatbot-input"
-                                    value={input}
-                                    onChange={e => setInput(e.target.value)}
-                                    onKeyDown={e => e.key === 'Enter' && send()}
-                                    placeholder="Type your message..."
-                                    disabled={loading}
-                                />
-                                <button
-                                    className="chatbot-send-btn"
-                                    onClick={send}
-                                    disabled={!input.trim() || loading}
-                                >
-                                    <Send size={20} />
-                                </button>
-                            </div>
+                            {isLoggedIn ? (
+                                <div className="input-container">
+                                    <input
+                                        className="chatbot-input"
+                                        value={input}
+                                        onChange={e => setInput(e.target.value)}
+                                        onKeyDown={e => e.key === 'Enter' && send()}
+                                        placeholder="Type your message..."
+                                        disabled={loading}
+                                    />
+                                    <button
+                                        className="chatbot-send-btn"
+                                        onClick={send}
+                                        disabled={!input.trim() || loading}
+                                    >
+                                        <Send size={20} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="login-notice">
+                                    <div className="lock-icon-wrap">
+                                        <X size={14} />
+                                    </div>
+                                    <span>Please log in to continue</span>
+                                </div>
+                            )}
                         </div>
                     </>
                 )}
