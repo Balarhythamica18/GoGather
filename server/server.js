@@ -1,6 +1,6 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
@@ -12,10 +12,9 @@ import { Server } from "socket.io";
 import connectDB from "./configs/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
-import bookingRoutes from "./routes/bookingRoutes.js"; // new booking routes
+import bookingRoutes from "./routes/bookingRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-
-dotenv.config();
+import aiRoutes from "./routes/aiRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -35,6 +34,8 @@ connectDB();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+
 
 // Test route
 app.get("/", (req, res) => {
@@ -56,6 +57,9 @@ console.log("Admin routes registered at /api/admin");
 
 // Serve uploads folder
 app.use("/uploads", express.static(uploadsDir));
+
+// AI Routes
+app.use("/api/ai", aiRoutes);
 
 /* ==============================
    CONTACT ROUTE

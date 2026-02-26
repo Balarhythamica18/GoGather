@@ -4,23 +4,25 @@ import Head from '../components/Head/Head'
 import MakeOwnEvent from '../components/MakeOwnEvent/MakeOwnEvent'
 
 import TopEvent from '../components/TopEvent/TopEvent'
- 
+
 
 import UpcomingEvents from '../components/UpcomingEvents/UpcomingEvents'
+
 
 
 
 const Home = () => {
   return (
     <div>
-    
-       <Head />
-    
+
+      <Head />
+
       <UpcomingEvents />
-        <DiscountOffer />
-        <TopEvent />
-        <ComedyShow />
-        <MakeOwnEvent />
+      <DiscountOffer />
+      <TopEvent />
+      <ComedyShow />
+      <MakeOwnEvent />
+
     </div>
   )
 }

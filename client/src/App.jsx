@@ -7,6 +7,7 @@ import { Toaster } from "react-hot-toast";
 import ContactForm from "./components/ContactForm.jsx";
 import PaymentPage from "./pages/PaymentPage.jsx";
 import ConfirmationPage from "./pages/ConfirmationPage.jsx";
+import Chatbot from "./components/AIChatbot/Chatbot";
 
 import "./App.css";
 
@@ -103,6 +104,8 @@ const App = () => {
 
         </Routes>
       </main>
+
+      <Chatbot />
 
       {!hideLayoutRoutes && <Footer />}
     </div>
