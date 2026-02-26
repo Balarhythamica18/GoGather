@@ -73,7 +73,10 @@ const PaymentPage = () => {
 
           <div className="summary-header">
             <h2>Amount Due</h2>
-            <div className="amount">₹{bookingData.amount}</div>
+            <div className="amount">
+              <span className="currency">₹</span>
+              {bookingData.amount}
+            </div>
           </div>
 
           <div className="booking-details">

@@ -7,6 +7,16 @@ const ConfirmationPage = () => {
   const { state } = useLocation();
   const { booking } = state || {};
 
+  // ⭐ Update user booking status in session
+  React.useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user._id && !user.hasBooked) {
+      user.hasBooked = true;
+      localStorage.setItem("user", JSON.stringify(user));
+      window.dispatchEvent(new Event("storageChange"));
+    }
+  }, []);
+
   if (!booking) {
     return (
       <div className="confirmation-container">

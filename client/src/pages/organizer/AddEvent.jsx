@@ -228,6 +228,7 @@ const AddEvent = () => {
                       <Clock size={18} color="#94a3b8" style={styles.iconPos} />
                       <input type="time" name="time" onChange={handleChange} required style={styles.inputIcon} value={form.time} />
                     </div>
+                    <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>Select start time (24h format internally)</p>
                   </div>
                   <div style={styles.inputGroup}>
                     <label style={styles.label}>City/Location</label>

@@ -84,7 +84,10 @@ export const login = async (req, res) => {
     user.isOnline = true;
     await user.save();
 
-    // ⭐ THIS FIXES YOUR SEAT ERROR
+    // Check if user has any confirmed bookings
+    const Booking = (await import("../models/Booking.js")).default;
+    const hasBooked = await Booking.exists({ userId: user._id, status: "confirmed" });
+
     res.json({
       token,
       user: {
@@ -93,6 +96,7 @@ export const login = async (req, res) => {
         email: user.email,
         role: user.role,
         image: user.image || null,
+        hasBooked: !!hasBooked,
       },
     });
   } catch (error) {
@@ -115,12 +119,17 @@ export const getCurrentUser = async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    // Check if user has any confirmed bookings
+    const Booking = (await import("../models/Booking.js")).default;
+    const hasBooked = await Booking.exists({ userId, status: "confirmed" });
+
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
       image: user.image,
+      hasBooked: !!hasBooked,
     });
   } catch (error) {
     console.error("Get user error:", error);

@@ -80,7 +80,7 @@ const Event = () => {
             event.date === appliedFilters.date) &&
           (appliedFilters.category === "" ||
             event.category?.toLowerCase() ===
-              appliedFilters.category.toLowerCase())
+            appliedFilters.category.toLowerCase())
         );
       });
   }, [events, appliedFilters]);
@@ -233,34 +233,44 @@ const Event = () => {
 
               <div className="event-meta">
                 <span className="event-category">{event.category}</span>
+                {event.time && (
+                  <span className="event-time" style={{ fontSize: '13px', color: '#666', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    ⏰ {(() => {
+                      const [hours, minutes] = event.time.split(":");
+                      const h = parseInt(hours);
+                      const ampm = h >= 12 ? "PM" : "AM";
+                      const displayHours = h % 12 || 12;
+                      return `${displayHours}:${minutes} ${ampm}`;
+                    })()}
+                  </span>
+                )}
                 <span className="event-location">
                   📍 {event.location}
                 </span>
               </div>
 
-            <div
-  className={`event-buttons ${
-    event.isUpcoming ? "center-details" : ""
-  }`}
->
-  {!event.isUpcoming && (
-    <button
-      className="btn book-btn"
-      onClick={() => navigate(`/seatlayout/${event._id}`)}
-    >
-      Book Now
-    </button>
-  )}
+              <div
+                className={`event-buttons ${event.isUpcoming ? "center-details" : ""
+                  }`}
+              >
+                {!event.isUpcoming && (
+                  <button
+                    className="btn book-btn"
+                    onClick={() => navigate(`/seatlayout/${event._id}`)}
+                  >
+                    Book Now
+                  </button>
+                )}
 
-  <button
-    className="btn details-btn"
-    onClick={() =>
-      navigate(`/events/${event.source || "top"}/${event._id}`)
-    }
-  >
-    Details
-  </button>
-</div>
+                <button
+                  className="btn details-btn"
+                  onClick={() =>
+                    navigate(`/events/${event.source || "top"}/${event._id}`)
+                  }
+                >
+                  Details
+                </button>
+              </div>
 
             </div>
           </div>
@@ -281,9 +291,8 @@ const Event = () => {
           {[...Array(totalPages)].map((_, index) => (
             <button
               key={index}
-              className={`eventpage-pagination-number ${
-                currentPage === index + 1 ? "active-page" : ""
-              }`}
+              className={`eventpage-pagination-number ${currentPage === index + 1 ? "active-page" : ""
+                }`}
               onClick={() => setCurrentPage(index + 1)}
             >
               {index + 1}

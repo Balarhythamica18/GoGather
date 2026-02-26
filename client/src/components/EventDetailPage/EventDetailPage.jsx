@@ -11,6 +11,15 @@ const EventDetailPage = () => {
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
   const navigate = useNavigate();
 
+  const formatTime = (timeStr) => {
+    if (!timeStr) return "";
+    const [hours, minutes] = timeStr.split(":");
+    const h = parseInt(hours);
+    const ampm = h >= 12 ? "PM" : "AM";
+    const displayHours = h % 12 || 12;
+    return `${displayHours}:${minutes} ${ampm}`;
+  };
+
   useEffect(() => {
     axios
       .get(`http://localhost:5000/api/events/${id}`)
@@ -70,6 +79,11 @@ const EventDetailPage = () => {
             <p>
               <strong>Date:</strong> {event.date} {event.month}
             </p>
+            {event.time && (
+              <p>
+                <strong>Time:</strong> {formatTime(event.time)}
+              </p>
+            )}
             <p>
               <strong>Location:</strong> {event.location}
             </p>

@@ -7,6 +7,15 @@ const Favorite = () => {
   const { favorites, removeFavorite } = useFavorites();
   const navigate = useNavigate();
 
+  const formatTime = (timeStr) => {
+    if (!timeStr) return "";
+    const [hours, minutes] = timeStr.split(":");
+    const h = parseInt(hours);
+    const ampm = h >= 12 ? "PM" : "AM";
+    const displayHours = h % 12 || 12;
+    return `${displayHours}:${minutes} ${ampm}`;
+  };
+
   if (favorites.length === 0) {
     return (
       <div className="favorite-empty">
@@ -47,6 +56,7 @@ const Favorite = () => {
                 {event.title}
               </h3>
               <p className="favorite-location">📍 {event.location}</p>
+              {event.time && <p className="favorite-time">⏰ {formatTime(event.time)}</p>}
               <div className="favorite-footer">
                 <span className="favorite-price">{event.price}</span>
                 <button

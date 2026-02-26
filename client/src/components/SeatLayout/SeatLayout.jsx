@@ -27,7 +27,9 @@ const SeatLayout = ({ event, user }) => {
   const storedUser = safeParse(localStorage.getItem("user"));
   const currentUser = user || storedUser;
 
-  const isFirstLogin = localStorage.getItem("firstLogin") === "true";
+  /* ⭐ REAL BOOKING HISTORY CHECK (For 20% Discount) */
+  // Only apply 20% discount if the user has NEVER booked before
+  const isFirstBooking = currentUser && currentUser.hasBooked === false;
 
   const seatPrice =
     Number(String(event?.price || 0).replace(/[^\d]/g, "")) || 0;
@@ -40,7 +42,7 @@ const SeatLayout = ({ event, user }) => {
     ? selectedSeats.length * seatPrice
     : ticketCount * seatPrice;
 
-  const discount = isFirstLogin ? subtotal * 0.2 : 0;
+  const discount = isFirstBooking ? subtotal * 0.2 : 0;
   const totalAmount = subtotal - discount;
 
   /* FETCH BOOKED SEATS */
