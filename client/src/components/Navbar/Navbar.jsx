@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useFavorites } from '../../context/FavoritesContext';
+import { HeartIcon } from '@heroicons/react/24/outline';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
 import logo from '../../assets/logo.png';
 import ManageAccountModal from '../ManageAccount/ManageAccountModal';
 import './Navbar.css';
 
 const Navbar = () => {
+  const { favorites } = useFavorites();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
@@ -59,6 +62,14 @@ const Navbar = () => {
             <li><Link to="/" className="nav-link-item">Home</Link></li>
             <li><Link to="/events" className="nav-link-item">Events</Link></li>
             <li><Link to="/my-bookings" className="nav-link-item">My Bookings</Link></li>
+            {favorites.length > 0 && (
+              <li>
+                <Link to="/favorites" className="nav-link-item favorites-link">
+
+                  Favorites
+                </Link>
+              </li>
+            )}
             <li><Link to="/contact" className="nav-link-item">Contact</Link></li>
           </ul>
         </div>
@@ -102,6 +113,7 @@ const Navbar = () => {
           <li><Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link></li>
           <li><Link to="/events" onClick={() => setIsMenuOpen(false)}>Events</Link></li>
           <li><Link to="/my-bookings" onClick={() => setIsMenuOpen(false)}>My Bookings</Link></li>
+          {favorites.length > 0 && <li><Link to="/favorites" onClick={() => setIsMenuOpen(false)}>Favorites</Link></li>}
           <li><Link to="/contact" onClick={() => setIsMenuOpen(false)}>Contact</Link></li>
           {isLoggedIn && <li><button className="mobile-manage-btn" onClick={() => { setIsAccountModalOpen(true); setIsMenuOpen(false); }}>Manage Account</button></li>}
         </ul>

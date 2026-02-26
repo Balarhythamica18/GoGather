@@ -6,10 +6,11 @@
 }
 
 .my-bookings-container h2 {
-    font-size: 2.25rem;
+    font-size: 2.5rem;
     font-weight: 800;
     color: #1e293b;
-    margin-bottom: 2rem;
+    margin-top: 100px;
+    margin-bottom: 2.5rem;
     text-align: left;
 }
 
@@ -21,7 +22,7 @@
 
 .premium-booking-card {
     display: grid;
-    grid-template-columns: 240px 1fr 200px;
+    grid-template-columns: 240px 1fr 200px 200px;
     background: #ffffff;
     border-radius: 20px;
     overflow: hidden;
@@ -106,6 +107,44 @@
     font-weight: 800;
     color: #0f172a;
     margin-bottom: 12px;
+}
+
+.card-status-info {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-left: 1px dashed #e2e8f0;
+}
+
+.status-container {
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.status-container.confirmed {
+    background: #f0fdf4;
+}
+
+.status-container.cancelled {
+    background: #fef2f2;
+}
+
+.status-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.status-note {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.4;
 }
 
 .view-ticket-btn {
@@ -224,7 +263,8 @@
         height: 180px;
     }
 
-    .card-actions {
+    .card-actions,
+    .card-status-info {
         border-left: none;
         border-top: 1px dashed #e2e8f0;
     }

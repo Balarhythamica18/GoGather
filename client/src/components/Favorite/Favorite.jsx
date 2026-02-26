@@ -1,30 +1,65 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useFavorites } from "../../context/FavoritesContext";
 import "./Favorite.css";
 
 const Favorite = () => {
   const { favorites, removeFavorite } = useFavorites();
+  const navigate = useNavigate();
 
   if (favorites.length === 0) {
-    return <h2 style={{ padding: "20px" }}>No favorite events ❤️</h2>;
+    return (
+      <div className="favorite-empty">
+        <h2>No favorite events yet ❤️</h2>
+        <p>Start exploring and add some events to your favorites!</p>
+        <button className="favorite-book-btn" onClick={() => navigate("/events")}>
+          Explore Events
+        </button>
+      </div>
+    );
   }
 
   return (
     <div className="favorite-page">
       <h1>My Favorites</h1>
 
-      {favorites.map((event) => (
-        <div key={event.id} className="favorite-card">
-          <img src={event.image} alt={event.title} />
-          
-          <div>
-            <p>{event.title}</p>
-            <button>Book Now</button>
-          </div>
+      <div className="favorites-grid">
+        {favorites.map((event) => (
+          <div key={event.id} className="favorite-card">
+            <div className="favorite-image-container">
+              <img
+                src={event.image}
+                alt={event.title}
+                onClick={() => navigate(`/events/${event.category || 'all'}/${event.id}`)}
+                style={{ cursor: 'pointer' }}
+              />
+              <button
+                className="remove-fav-btn"
+                onClick={() => removeFavorite(event.id)}
+                title="Remove from favorites"
+              >
+                ✕
+              </button>
+            </div>
 
-          <button onClick={() => removeFavorite(event.id)}>❌</button>
-        </div>
-      ))}
+            <div className="favorite-details">
+              <h3 onClick={() => navigate(`/events/${event.category || 'all'}/${event.id}`)} style={{ cursor: 'pointer' }}>
+                {event.title}
+              </h3>
+              <p className="favorite-location">📍 {event.location}</p>
+              <div className="favorite-footer">
+                <span className="favorite-price">{event.price}</span>
+                <button
+                  className="favorite-book-btn"
+                  onClick={() => navigate(`/events/${event.category || 'all'}/${event.id}`)}
+                >
+                  Book Now
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

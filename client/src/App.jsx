@@ -15,7 +15,7 @@ import "./App.css";
 import Home from "./pages/Home";
 import Events from "./pages/Events";
 import Eventdetails from "./pages/Eventdetails";
-import Favorites from "./pages/Favorites";
+import FavoritePage from "./pages/FavoritePage";
 import MyBookings from "./pages/MyBookings";
 import SeatLayoutPage from "./pages/SeatLayoutPage";
 
@@ -75,7 +75,7 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/events" element={<Events />} />
           <Route path="/events/:category/:id" element={<Eventdetails />} />
-          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/favorites" element={<FavoritePage />} />
           <Route path="/my-bookings" element={<MyBookings />} />
           <Route path="/seats/:category/:id" element={<SeatLayoutPage />} />
           <Route path="/contact" element={<ContactForm />} />

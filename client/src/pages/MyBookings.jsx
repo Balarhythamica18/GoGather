@@ -26,6 +26,37 @@ const MyBookings = () => {
     }
   };
 
+  const handleCancel = async (bookingId) => {
+    if (!window.confirm("Are you sure you want to cancel this booking? Refund will be calculated based on the policy.")) return;
+
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.post("/api/bookings/cancel", { bookingId }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert(`Booking Cancelled Successfully!\n\nPolicy Applied: ${res.data.refundPolicy}\nRefund Amount: ₹${res.data.refundAmount}`);
+      fetchBookings(); // Refresh list
+    } catch (err) {
+      console.error("Cancel error:", err);
+      alert(err.response?.data?.error || "Failed to cancel booking");
+    }
+  };
+
+  const handleDelete = async (bookingId) => {
+    if (!window.confirm("Are you sure you want to remove this booking from your history? This action cannot be undone.")) return;
+
+    const token = localStorage.getItem("token");
+    try {
+      await axios.delete(`/api/bookings/${bookingId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchBookings(); // Refresh list
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert(err.response?.data?.error || "Failed to delete booking record");
+    }
+  };
+
   if (loading) return <div className="my-bookings-container"><h2>Loading your experiences...</h2></div>;
 
   return (
@@ -43,8 +74,8 @@ const MyBookings = () => {
             <div key={booking._id} className="premium-booking-card">
               <div className="card-image-section">
                 <img src={booking.event?.image} alt={booking.event?.title} />
-                <span className={`status-badge ${booking.isUsed ? 'used' : 'confirmed'}`}>
-                  {booking.isUsed ? 'Already Used' : 'Upcoming'}
+                <span className={`status-badge ${booking.status} ${booking.isUsed ? 'used' : ''}`}>
+                  {booking.status === 'cancelled' ? 'Cancelled' : (booking.isUsed ? 'Already Used' : 'Upcoming')}
                 </span>
               </div>
 
@@ -68,6 +99,28 @@ const MyBookings = () => {
                 </div>
               </div>
 
+              <div className="card-status-info">
+                <div className={`status-container ${booking.status}`}>
+                  {booking.status === 'cancelled' ? (
+                    <>
+                      <div className="status-header">
+                        <X size={20} color="#ef4444" />
+                        <span style={{ color: '#ef4444', fontWeight: 700 }}>Cancelled</span>
+                      </div>
+                      <p className="status-note">Note: Refund of ₹{booking.amount} has been initiated to your original payment method.</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="status-header">
+                        <CheckCircle2 size={20} color="#10b981" />
+                        <span style={{ color: '#10b981', fontWeight: 700 }}>Confirmed</span>
+                      </div>
+                      <p className="status-note">Your booking is secured. You can view your ticket for entry.</p>
+                    </>
+                  )}
+                </div>
+              </div>
+
               <div className="card-actions">
                 <div className="price-tag">₹{booking.amount || booking.event?.price}</div>
                 {booking.discountApplied && (
@@ -78,10 +131,61 @@ const MyBookings = () => {
                 <button
                   className="view-ticket-btn"
                   onClick={() => setSelectedTicket(booking)}
+                  disabled={booking.status === 'cancelled'}
                 >
                   <QrCode size={18} />
-                  View Ticket
+                  {booking.status === 'cancelled' ? 'Cancelled' : 'View Ticket'}
                 </button>
+                {booking.status !== 'cancelled' && !booking.isUsed && (
+                  <button
+                    className="cancel-ticket-btn"
+                    onClick={() => handleCancel(booking._id)}
+                    style={{
+                      marginTop: '8px',
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '10px',
+                      border: '1px solid #fee2e2',
+                      background: '#fff',
+                      color: '#ef4444',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      fontSize: '0.85rem'
+                    }}
+                  >
+                    <X size={16} />
+                    Cancel Ticket
+                  </button>
+                )}
+                {booking.status === 'cancelled' && (
+                  <button
+                    className="delete-ticket-btn"
+                    onClick={() => handleDelete(booking._id)}
+                    style={{
+                      marginTop: '8px',
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '10px',
+                      border: '1px solid #f1f5f9',
+                      background: '#f8fafc',
+                      color: '#64748b',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      fontSize: '0.85rem'
+                    }}
+                  >
+                    <X size={16} />
+                    Delete Record
+                  </button>
+                )}
               </div>
             </div>
           ))

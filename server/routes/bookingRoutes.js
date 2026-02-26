@@ -24,8 +24,7 @@ router.get("/seats/:eventId", async (req, res) => {
 router.get("/my-bookings", authMiddleware, async (req, res) => {
   try {
     const bookings = await Booking.find({
-      userId: req.user.id,
-      status: "confirmed"
+      userId: req.user.id
     }).populate("eventId");
 
     // Transform to match front-end expectations if necessary
@@ -191,6 +190,134 @@ router.patch("/verify-entry", async (req, res) => {
   } catch (err) {
     console.error("Verify Entry Error:", err);
     res.status(500).json({ error: "Server error during verification" });
+  }
+});
+
+// 5️⃣ Cancel Ticket & Process Refund
+router.post("/cancel", authMiddleware, async (req, res) => {
+  const { bookingId } = req.body;
+
+  try {
+    const booking = await Booking.findById(bookingId).populate("eventId");
+    if (!booking) return res.status(404).json({ error: "Booking not found" });
+    if (booking.userId.toString() !== req.user.id) return res.status(403).json({ error: "Unauthorized access" });
+    if (booking.status === "cancelled") return res.status(400).json({ error: "Booking is already cancelled" });
+
+    const event = booking.eventId;
+
+    // Calculate time difference for refund
+    // Assumes event.date is "YYYY-MM-DD" and event.time is "HH:mm"
+    // Handle different dash/slash separators or Month names if possible
+    let eventDateStr = event.date;
+    // Replace Month names if they exist (simple check)
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    months.forEach((m, i) => {
+      if (eventDateStr.includes(m)) {
+        eventDateStr = eventDateStr.replace(m, i + 1).replace(" ", "-");
+      }
+    });
+
+    const eventDateTime = new Date(`${eventDateStr}T${event.time || "00:00"}:00`);
+    const now = new Date();
+    const diffInHours = (eventDateTime - now) / (1000 * 60 * 60);
+
+    // Grace Period: Fully refundable within 2 hours of booking, if event is >24h away
+    const bookingTime = new Date(booking.createdAt);
+    const hoursSinceBooking = (now - bookingTime) / (1000 * 60 * 60);
+
+    let refundPercentage = 0;
+    let refundPolicy = "Non-refundable (Less than 24 hours before event)";
+
+    if (hoursSinceBooking <= 2 && diffInHours >= 24) {
+      refundPercentage = 100;
+      refundPolicy = "100% Refund (Grace Period: within 2 hours of booking)";
+    } else if (diffInHours >= 48) {
+      refundPercentage = 90;
+      refundPolicy = "90% Refund (Greater than 48 hours notice)";
+    } else if (diffInHours >= 24) {
+      refundPercentage = 50;
+      refundPolicy = "50% Refund (24-48 hours notice)";
+    }
+
+    const refundAmount = (booking.amount * refundPercentage) / 100;
+
+    // Update booking status
+    booking.status = "cancelled";
+    await booking.save();
+
+    // Send Cancellation Email
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "gogatherticketbooking@gmail.com",
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: `"GoGather Support" <gogatherticketbooking@gmail.com>`,
+      to: req.user.email || booking.userEmail,
+      subject: `Booking Cancelled: ${event.title} 🎟️`,
+      html: `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+          <div style="background-color: #f1f5f9; padding: 25px; text-align: center;">
+            <h2 style="color: #475569; margin: 0;">Booking Cancelled</h2>
+            <p style="color: #64748b; margin-top: 5px;">Your refund has been initiated</p>
+          </div>
+          <div style="padding: 25px;">
+            <p>Hello,</p>
+            <p>Your booking for <strong>${event.title}</strong> has been cancelled.</p>
+            
+            <div style="background-color: #f8fafc; border-radius: 8px; padding: 15px; margin: 20px 0;">
+              <h4 style="margin: 0 0 10px; color: #1e293b;">Refund Summary</h4>
+              <table style="width: 100%; font-size: 14px;">
+                <tr><td style="color: #64748b;">Paid Amount:</td><td style="text-align: right; font-weight: 600;">₹${booking.amount}</td></tr>
+                <tr><td style="color: #64748b;">Policy Applied:</td><td style="text-align: right; font-weight: 600;">${refundPercentage}%</td></tr>
+                <tr><td style="color: #64748b; padding-top: 8px; font-weight: 700;">Refundable:</td><td style="text-align: right; color: #10b981; font-weight: 700; padding-top: 8px;">₹${refundAmount}</td></tr>
+              </table>
+              <p style="font-size: 11px; color: #94a3b8; margin-top: 10px;">* Refunds usually reflect in 5-7 business days.</p>
+            </div>
+
+            <p style="font-size: 14px; line-height: 1.6; color: #475569;">
+              Thank you for using GoGather. We hope to see you at another event soon!
+            </p>
+          </div>
+        </div>
+      `,
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (emailErr) {
+      console.error("Cancellation email error:", emailErr);
+    }
+
+    res.json({
+      success: true,
+      message: "Booking cancelled successfully",
+      refundAmount,
+      refundPercentage,
+      refundPolicy
+    });
+  } catch (err) {
+    console.error("Cancel Booking Error:", err);
+    res.status(500).json({ error: "Failed to cancel booking" });
+  }
+});
+
+// 6️⃣ Delete Cancelled Booking
+router.delete("/:id", authMiddleware, async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) return res.status(404).json({ error: "Booking not found" });
+    if (booking.userId.toString() !== req.user.id) return res.status(403).json({ error: "Unauthorized" });
+    if (booking.status !== "cancelled") return res.status(400).json({ error: "Only cancelled bookings can be deleted" });
+
+    await Booking.findByIdAndDelete(req.params.id);
+    res.json({ message: "Booking removed from history" });
+  } catch (err) {
+    console.error("Delete booking error:", err);
+    res.status(500).json({ error: "Failed to delete booking" });
   }
 });
 

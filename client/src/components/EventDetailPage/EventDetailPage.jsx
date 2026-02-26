@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./EventDetailPage.css";
+import { useFavorites } from "../../context/FavoritesContext";
+import { Heart } from "lucide-react";
 
 const EventDetailPage = () => {
   const { id, category } = useParams();
   const [event, setEvent] = useState(null);
-  const [isFav, setIsFav] = useState(false);
+  const { addFavorite, removeFavorite, isFavorite } = useFavorites();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -103,11 +105,26 @@ const EventDetailPage = () => {
               </button>
 
               <button
-                className={`edp-fav-btn ${isFav ? "active" : ""}`}
-                onClick={() => setIsFav(!isFav)}
+                className={`edp-fav-btn ${isFavorite(id) ? "active" : ""}`}
+                onClick={() =>
+                  isFavorite(id)
+                    ? removeFavorite(id)
+                    : addFavorite({
+                      id: event._id,
+                      title: event.title,
+                      image: event.image,
+                      price: event.price,
+                      location: event.location,
+                      category: category
+                    })
+                }
                 aria-label="Add to favourites"
               >
-                {isFav ? "❤️" : "🤍"}
+                <Heart
+                  size={24}
+                  fill={isFavorite(id) ? "#ff007a" : "none"}
+                  color={isFavorite(id) ? "#ff007a" : "#666"}
+                />
               </button>
             </div>
           )}

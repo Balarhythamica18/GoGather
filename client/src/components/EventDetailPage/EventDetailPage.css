@@ -101,7 +101,7 @@
 .edp-book-btn {
   flex: 1;
   padding: 14px;
-  background:#ff007a;
+  background: #ff007a;
   color: #ffffff;
   border: none;
   border-radius: 12px;
@@ -129,8 +129,8 @@
 }
 
 .edp-fav-btn.active {
-  background: #ffe6ef;
-  border-color: #ff0066;
+  background: #fff0f6;
+  border-color: #ff007a;
 }
 
 /* DECLARATION */
@@ -159,7 +159,7 @@
   align-items: center;
   gap: 6px;
   margin-top: 10px;
-  color:#777;
+  color: #777;
 }
 
 .edp-price-value {
@@ -172,7 +172,8 @@
   font-size: 12px;
   color: #777;
   position: relative;
-  top: 2px; /* slight visual alignment */
+  top: 2px;
+  /* slight visual alignment */
 }
 
 
@@ -181,18 +182,22 @@
 /* Tablets */
 @media (max-width: 1024px) {
   .edp-wrapper {
-    flex-direction: column; /* LEFT on top, RIGHT below */
+    flex-direction: column;
+    /* LEFT on top, RIGHT below */
     padding: 80px 40px;
   }
 
-  .edp-left, .edp-right {
+  .edp-left,
+  .edp-right {
     flex: 1;
   }
 
   .edp-sticky-box {
-    position: relative; /* remove sticky */
+    position: relative;
+    /* remove sticky */
     top: 0;
-    margin-top: 30px; /* spacing between left and right */
+    margin-top: 30px;
+    /* spacing between left and right */
   }
 
   .edp-image-box img {
@@ -215,7 +220,8 @@
     font-size: 20px;
   }
 
-  .edp-section p, .edp-info p {
+  .edp-section p,
+  .edp-info p {
     font-size: 14px;
   }
 
@@ -249,7 +255,8 @@
     font-size: 18px;
   }
 
-  .edp-section p, .edp-info p {
+  .edp-section p,
+  .edp-info p {
     font-size: 13px;
   }
 

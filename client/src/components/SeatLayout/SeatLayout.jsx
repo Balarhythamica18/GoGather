@@ -171,7 +171,9 @@ const SeatLayout = ({ event, user }) => {
     <div className={`seat-wrapper ${!isSeatBased ? "center-summary" : ""}`}>
       {isSeatBased && (
         <div className="seat-left">
-          <h2>{event?.title}</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2>{event?.title}</h2>
+          </div>
           <p className="seat-location">{event?.location}</p>
 
           <div className="screen">SCREEN THIS WAY</div>
@@ -227,6 +229,11 @@ const SeatLayout = ({ event, user }) => {
           <strong>Total Amount</strong>
           <span>₹{totalAmount}</span>
         </p>
+
+        <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+          * <strong>Refund Policy:</strong> 100% refund within 2h of booking.
+          Thereafter, 90% refund ({">"}48h) or 50% refund (24-48h). Non-refundable if {"<"}24h.
+        </div>
 
         <button
           className="pay-btn"
