@@ -226,20 +226,13 @@ export const getMyStats = async (req, res) => {
     // 2. Fetch all bookings for these events
     const bookings = await Booking.find({ eventId: { $in: eventIds }, status: "confirmed" }).populate("eventId");
 
-    // 3. Calculate stats
+    // 3. Calculate stats accurately using historical booking data
     let totalRevenue = 0;
     let totalBookingsCount = 0;
 
     bookings.forEach(booking => {
-      totalBookingsCount += (booking.ticketCount || (booking.seats ? booking.seats.length : 1));
-
-      if (booking.eventId && booking.eventId.price) {
-        // Price might be "Rs.500" or "500" or "Free"
-        const priceStr = String(booking.eventId.price).replace(/[^0-9.]/g, '');
-        const price = parseFloat(priceStr) || 0;
-        const count = booking.ticketCount || (booking.seats ? booking.seats.length : 1);
-        totalRevenue += price * count;
-      }
+      totalBookingsCount += (booking.ticketCount || booking.seats?.length || 1);
+      totalRevenue += booking.amount || 0;
     });
 
     const stats = {

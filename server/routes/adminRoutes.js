@@ -155,16 +155,11 @@ router.get(
       const onlineOrganizers = await User.countDocuments({ isOnline: true, role: "organizer" });
       const onlineUsers = await User.countDocuments({ isOnline: true, role: "user" });
 
-      // Calculate revenue (Rough estimate: Confirmed Bookings * Event Price)
-      // Note: This is an approximation since price exists on Event, not historical price on Booking
-      const confirmedBookingsData = await Booking.find({ status: "confirmed" }).populate("eventId");
+      // Calculate revenue accurately using the 'amount' field in confirmed bookings
+      const confirmedBookingsData = await Booking.find({ status: "confirmed" });
       let totalRevenue = 0;
       confirmedBookingsData.forEach(booking => {
-        if (booking.eventId && booking.eventId.price) {
-          const price = parseFloat(booking.eventId.price.replace(/[^0-9.]/g, '')) || 0;
-          const count = booking.ticketCount || (booking.seats ? booking.seats.length : 1);
-          totalRevenue += price * count;
-        }
+        totalRevenue += booking.amount || 0;
       });
 
       res.json({

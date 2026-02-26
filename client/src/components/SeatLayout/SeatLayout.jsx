@@ -118,23 +118,50 @@ const SeatLayout = ({ event, user }) => {
   };
 
   /* PAYMENT */
-  const handlePayment = () => {
+  const handlePayment = async () => {
     if (!event?._id || !currentUser?._id) {
       alert("User or event missing — login again");
       return;
     }
 
-    const bookingData = {
+    const bookingPayload = {
       userId: currentUser._id,
-      userEmail: currentUser.email,
       eventId: event._id,
       seats: selectedSeats,
-      ticketCount,
+      ticketCount: ticketCount || 1,
       amount: totalAmount,
     };
 
-    localStorage.setItem("bookingData", JSON.stringify(bookingData));
-    navigate("/payment");
+    try {
+      // 1. Create a pending booking in the database
+      const response = await fetch("/api/bookings/create-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookingPayload),
+      });
+
+      if (!response.ok) throw new Error("Failed to initiate booking");
+
+      const data = await response.json();
+
+      // 2. Prepare data for PaymentPage
+      const bookingData = {
+        bookingId: data.bookingId, // Real ID from DB
+        userId: currentUser._id,
+        userEmail: currentUser.email,
+        eventId: event._id,
+        seats: selectedSeats,
+        ticketCount,
+        amount: data.amount, // Use amount from server (it might have first-timer discount)
+        eventName: event.title,
+      };
+
+      localStorage.setItem("bookingData", JSON.stringify(bookingData));
+      navigate("/payment", { state: { bookingData } });
+    } catch (err) {
+      console.error("Booking initiation error:", err);
+      alert("Failed to start booking process. Please try again.");
+    }
   };
 
   /* EVENT SAFETY */
@@ -162,15 +189,14 @@ const SeatLayout = ({ event, user }) => {
                   return (
                     <button
                       key={seatId}
-                      className={`seat ${
-                        selectedSeats.includes(seatId)
-                          ? "selected"
-                          : isBooked
+                      className={`seat ${selectedSeats.includes(seatId)
+                        ? "selected"
+                        : isBooked
                           ? "booked"
                           : isLocked
-                          ? "locked"
-                          : ""
-                      }`}
+                            ? "locked"
+                            : ""
+                        }`}
                       disabled={isBooked || isLocked}
                       onClick={() => toggleSeat(seatId)}
                     >

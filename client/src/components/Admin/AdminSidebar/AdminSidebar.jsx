@@ -8,6 +8,7 @@ import {
   CheckCircle,
   LogOut,
   ShieldCheck,
+  QrCode,
 } from "lucide-react";
 
 const AdminSidebar = () => {
@@ -22,6 +23,7 @@ const AdminSidebar = () => {
     { id: "shows", icon: Calendar, label: "List Shows", path: "/admin/list-shows" },
     { id: "bookings", icon: ClipboardList, label: "List Bookings", path: "/admin/list-bookings" },
     { id: "approvals", icon: CheckCircle, label: "Event Approvals", path: "/admin/event-approvals" },
+    { id: "scanner", icon: QrCode, label: "Scan Entry", path: "/admin/scan-entry" },
   ];
 
   const handleLogout = () => {

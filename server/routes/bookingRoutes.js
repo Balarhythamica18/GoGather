@@ -3,6 +3,8 @@ import Booking from "../models/Booking.js";
 import User from "../models/User.js"; // if needed
 import QRCode from "qrcode"; // npm install qrcode
 import nodemailer from "nodemailer";
+import authMiddleware from "../middleware/authMiddleware.js";
+
 
 const router = express.Router();
 
@@ -18,46 +20,94 @@ router.get("/seats/:eventId", async (req, res) => {
   }
 });
 
-// 2️⃣ Create a booking (payment placeholder)
+// 1.1️⃣ Get bookings for the logged-in user
+router.get("/my-bookings", authMiddleware, async (req, res) => {
+  try {
+    const bookings = await Booking.find({
+      userId: req.user.id,
+      status: "confirmed"
+    }).populate("eventId");
+
+    // Transform to match front-end expectations if necessary
+    const formattedBookings = bookings.map(b => ({
+      ...b._doc,
+      event: b.eventId // MyBookings.jsx expects booking.event
+    }));
+
+    res.json(formattedBookings);
+  } catch (error) {
+    console.error("Fetch my bookings error:", error);
+    res.status(500).json({ error: "Failed to fetch your bookings" });
+  }
+});
+
+// 2️⃣ Create a booking with 20% discount for first-timers
 router.post("/create-payment", async (req, res) => {
-  const { userId, eventId, seats, ticketCount } = req.body;
+  const { userId, eventId, seats, ticketCount, amount } = req.body;
 
   try {
+    // Check if this is the user's first confirmed booking
+    const previousBookings = await Booking.countDocuments({ userId, status: "confirmed" });
+    const isFirstBooking = previousBookings === 0;
+
+    let finalAmount = amount;
+    let discountApplied = false;
+
+    if (isFirstBooking) {
+      finalAmount = amount * 0.8; // 20% Off
+      discountApplied = true;
+    }
+
     const booking = new Booking({
       userId,
       eventId,
       seats,
       ticketCount,
+      amount: finalAmount,
+      discountApplied,
       status: "pending",
     });
 
     await booking.save();
-    // Normally here you'd create a payment order with a gateway
-    res.json({ bookingId: booking._id, message: "Payment order created (placeholder)" });
+    res.json({
+      bookingId: booking._id,
+      amount: finalAmount,
+      discountApplied,
+      message: discountApplied ? "20% first-booking discount applied! 🎉" : "Booking initiated"
+    });
   } catch (err) {
+    console.error("Create Payment Error:", err);
     res.status(500).json({ error: "Failed to create booking" });
   }
 });
 
-// 3️⃣ Verify payment, generate QR code, and email ticket
+// 3️⃣ Verify payment, generate QR code, and email professional ticket
 router.post("/verify-payment", async (req, res) => {
   const { bookingId, paymentId, userEmail } = req.body;
 
   try {
-    const booking = await Booking.findById(bookingId);
+    if (!bookingId || bookingId.length !== 24) {
+      return res.status(400).json({ error: "Invalid booking ID format" });
+    }
+    const booking = await Booking.findById(bookingId).populate("eventId");
     if (!booking) return res.status(404).json({ error: "Booking not found" });
 
     booking.paymentId = paymentId;
     booking.status = "confirmed";
 
-    // Generate QR code as base64
-    const qrData = `BookingID:${bookingId}|User:${booking.userId}|Event:${booking.eventId}`;
+    // Generate professional QR data
+    const qrData = JSON.stringify({
+      id: bookingId,
+      user: booking.userId,
+      event: booking.eventId?._id,
+      v: "1.0"
+    });
     const qrCodeBase64 = await QRCode.toDataURL(qrData);
     booking.qrCode = qrCodeBase64;
 
     await booking.save();
 
-    // Send email with QR code
+    // Professional HTML Email Template
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -66,23 +116,81 @@ router.post("/verify-payment", async (req, res) => {
       },
     });
 
-    await transporter.sendMail({
-      from: `"GoGather Ticket Booking" <gogatherticketbooking@gmail.com>`,
+    const event = booking.eventId;
+    const mailOptions = {
+      from: `"GoGather" <gogatherticketbooking@gmail.com>`,
       to: userEmail,
-      subject: "Your Ticket - GoGather 🎫",
+      subject: `Your Ticket for ${event?.title || "Event"} 🎫`,
       html: `
-        <h2>Your booking is confirmed!</h2>
-        <p>Booking ID: ${booking._id}</p>
-        <p>Status: ${booking.status}</p>
-        <p>QR Code:</p>
-        <img src="${qrCodeBase64}" alt="QR Code"/>
-      `,
-    });
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+          <div style="background: linear-gradient(135deg, #db2777 0%, #be185d 100%); padding: 40px 20px; text-align: center; color: white;">
+            <h1 style="margin: 0; font-size: 28px; letter-spacing: 1px;">GoGather</h1>
+            <p style="margin: 10px 0 0; opacity: 0.9;">Your entry pass is confirmed!</p>
+          </div>
+          
+          <div style="padding: 30px;">
+            <div style="margin-bottom: 30px; text-align: center;">
+              <img src="${qrCodeBase64}" alt="QR Entry Pass" style="width: 200px; height: 200px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 12px;"/>
+              <p style="color: #64748b; font-size: 12px; margin-top: 10px;">Show this QR at the venue for entry</p>
+            </div>
 
-    res.json({ message: "Payment verified, QR code sent", qrCode: qrCodeBase64 });
+            <div style="background-color: #f8fafc; border-radius: 12px; padding: 20px; margin-bottom: 30px;">
+              <h3 style="margin: 0 0 15px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Booking Details</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="padding: 8px 0; color: #64748b;">Event:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${event?.title}</td></tr>
+                <tr><td style="padding: 8px 0; color: #64748b;">Date & Time:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${event?.date} at ${event?.time}</td></tr>
+                <tr><td style="padding: 8px 0; color: #64748b;">Location:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${event?.location}</td></tr>
+                <tr><td style="padding: 8px 0; color: #64748b;">Seats:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${booking.seats?.join(", ") || booking.ticketCount + " Tickets"}</td></tr>
+                <tr><td style="padding: 8px 0; color: #64748b;">Amount:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">₹${booking.amount}</td></tr>
+                <tr><td style="padding: 8px 0; color: #64748b;">Booking ID:</td><td style="padding: 8px 0; text-align: right; font-family: monospace; color: #64748b;">#${booking._id.toString().slice(-8).toUpperCase()}</td></tr>
+              </table>
+            </div>
+
+            <div style="text-align: center; color: #94a3b8; font-size: 14px;">
+              <p>Thank you for choosing GoGather. Enjoy the show!</p>
+              <div style="margin-top: 20px; font-size: 12px;">
+                &copy; 2026 GoGather Inc. All rights reserved.
+              </div>
+            </div>
+          </div>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.json({ message: "Payment verified, professional ticket sent!", qrCode: qrCodeBase64, booking });
   } catch (err) {
-    console.error(err);
+    console.error("Verify Payment Error:", err);
     res.status(500).json({ error: "Failed to verify payment" });
+  }
+});
+
+// 4️⃣ Verify Entry (QR Scan)
+router.patch("/verify-entry", async (req, res) => {
+  const { bookingId } = req.body;
+
+  try {
+    const booking = await Booking.findById(bookingId).populate("eventId userId");
+    if (!booking) return res.status(404).json({ error: "Invalid Ticket" });
+    if (booking.status !== "confirmed") return res.status(400).json({ error: "Ticket not confirmed" });
+    if (booking.isUsed) return res.status(400).json({ error: "Ticket already used" });
+
+    booking.isUsed = true;
+    await booking.save();
+
+    res.json({
+      success: true,
+      message: "Access Granted! ✅",
+      details: {
+        userName: booking.userId?.name,
+        eventName: booking.eventId?.title,
+        seats: booking.seats?.join(", ") || booking.ticketCount
+      }
+    });
+  } catch (err) {
+    console.error("Verify Entry Error:", err);
+    res.status(500).json({ error: "Server error during verification" });
   }
 });
 

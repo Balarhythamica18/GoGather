@@ -1,0 +1,138 @@
+.confirmation-container {
+    min-height: 100vh;
+    background: radial-gradient(circle at top right, #f8fafc 0%, #f1f5f9 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.confirmation-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+    padding: 3rem 2rem;
+    text-align: center;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background: #ecfdf5;
+    color: #10b981;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 1.5rem auto;
+    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.1);
+}
+
+.confirmation-card h2 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.confirmation-card .subtitle {
+    color: #64748b;
+    margin-bottom: 2.5rem;
+}
+
+.ticket-info {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px dashed #cbd5e1;
+    text-align: left;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.info-row:last-child {
+    margin-bottom: 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.info-row label {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.info-row span {
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.qr-section {
+    margin: 2rem 0;
+}
+
+.qr-section img {
+    width: 180px;
+    height: 180px;
+    border-radius: 12px;
+    padding: 10px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 1rem;
+    background: #db2777;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.action-btn:hover {
+    background: #be185d;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(219, 39, 119, 0.2);
+}
+
+.email-note {
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}

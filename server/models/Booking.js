@@ -29,6 +29,18 @@ const bookingSchema = new mongoose.Schema(
       enum: ["pending", "confirmed", "cancelled"],
       default: "pending",
     },
+    amount: {
+      type: Number,
+      required: true,
+    },
+    discountApplied: {
+      type: Boolean,
+      default: false,
+    },
+    isUsed: {
+      type: Boolean,
+      default: false,
+    },
     qrCode: {
       type: String, // store QR code as base64 string
       default: "",
