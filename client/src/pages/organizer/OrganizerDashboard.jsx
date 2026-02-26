@@ -13,7 +13,13 @@ import {
   Clock,
   AlertCircle,
   Users,
-  DollarSign
+  DollarSign,
+  User,
+  Mail,
+  Lock,
+  Shield,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import StatCard from "../../components/organizer/StatCard";
 import DashboardSidebar from "../../components/organizer/DashboardSidebar";
@@ -35,6 +41,23 @@ const OrganizerDashboard = () => {
   const [eventToDelete, setEventToDelete] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("events"); // 'events' or 'settings'
+
+  // Settings State
+  const [settingsForm, setSettingsForm] = useState({
+    name: "",
+    email: "",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsError, setSettingsError] = useState("");
+  const [settingsSuccess, setSettingsSuccess] = useState("");
+  const [focusedInput, setFocusedInput] = useState(null);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -112,6 +135,11 @@ const OrganizerDashboard = () => {
           });
           setOrganizerName(profile.data.name || "");
           setOrganizerEmail(profile.data.email || "");
+          setSettingsForm(prev => ({
+            ...prev,
+            name: profile.data.name || "",
+            email: profile.data.email || ""
+          }));
         } catch (err) {
           console.error("Error fetching profile:", err.response?.data || err.message);
         }
@@ -125,6 +153,66 @@ const OrganizerDashboard = () => {
     event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     event.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setSettingsLoading(true);
+    setSettingsError("");
+    setSettingsSuccess("");
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.put("http://localhost:5000/api/auth/update-profile", {
+        name: settingsForm.name,
+        email: settingsForm.email
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setOrganizerName(res.data.user.name);
+      setOrganizerEmail(res.data.user.email);
+      localStorage.setItem("userName", res.data.user.name);
+      setSettingsSuccess("Profile updated successfully! ✅");
+    } catch (err) {
+      setSettingsError(err.response?.data?.message || "Failed to update profile");
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (settingsForm.newPassword !== settingsForm.confirmPassword) {
+      setSettingsError("New passwords do not match");
+      return;
+    }
+
+    setSettingsLoading(true);
+    setSettingsError("");
+    setSettingsSuccess("");
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put("http://localhost:5000/api/auth/update-profile", {
+        currentPassword: settingsForm.currentPassword,
+        password: settingsForm.newPassword
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setSettingsSuccess("Password changed successfully! ✅");
+      setSettingsForm(prev => ({
+        ...prev,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      }));
+    } catch (err) {
+      setSettingsError(err.response?.data?.message || "Failed to change password");
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
 
   return (
     <div style={styles.layout}>
@@ -140,126 +228,315 @@ const OrganizerDashboard = () => {
             <h1 style={styles.title}>Welcome back, {organizerName || "Organizer"}!</h1>
             <p style={styles.subtitle}>Here's what's happening with your events today.</p>
           </div>
-          <button style={styles.primaryButton} onClick={() => navigate("/add-event")}>
-            <Plus size={18} />
-            Add New Event
-          </button>
+          <div style={styles.headerActions}>
+            <div style={styles.tabSwitcher}>
+              <button
+                style={{ ...styles.tabBtn, ...(activeTab === 'events' ? styles.tabBtnActive : {}) }}
+                onClick={() => setActiveTab('events')}
+              >
+                Dashboard
+              </button>
+              <button
+                style={{ ...styles.tabBtn, ...(activeTab === 'settings' ? styles.tabBtnActive : {}) }}
+                onClick={() => setActiveTab('settings')}
+              >
+                Settings
+              </button>
+            </div>
+            <button style={styles.primaryButton} onClick={() => navigate("/add-event")}>
+              <Plus size={18} />
+              Add New Event
+            </button>
+          </div>
         </header>
 
-        {/* Stats Grid */}
-        <div style={styles.statsGrid}>
-          <StatCard
-            title="Total Posted"
-            value={stats.totalEvents}
-            icon={Calendar}
-            color="#ff007a"
-          />
-          <StatCard
-            title="Approved Events"
-            value={stats.approvedEvents}
-            icon={CheckCircle}
-            color="#ff007a"
-          />
-          <StatCard
-            title="Total Bookings"
-            value={stats.totalBookings}
-            icon={Users}
-            color="#ff007a"
-          />
-          <StatCard
-            title="Total Revenue"
-            value={`₹${stats.totalRevenue.toLocaleString()}`}
-            icon={DollarSign}
-            color="#ff007a"
-          />
-        </div>
+        {activeTab === 'events' ? (
+          <>
+            {/* Stats Grid */}
+            <div style={styles.statsGrid}>
+              <StatCard
+                title="Total Posted"
+                value={stats.totalEvents}
+                icon={Calendar}
+                color="#ff007a"
+              />
+              <StatCard
+                title="Approved Events"
+                value={stats.approvedEvents}
+                icon={CheckCircle}
+                color="#ff007a"
+              />
+              <StatCard
+                title="Total Bookings"
+                value={stats.totalBookings}
+                icon={Users}
+                color="#ff007a"
+              />
+              <StatCard
+                title="Total Revenue"
+                value={`₹${stats.totalRevenue.toLocaleString()}`}
+                icon={DollarSign}
+                color="#ff007a"
+              />
+            </div>
 
-        {/* Content Section */}
-        <div style={styles.contentSection}>
-          <div style={styles.sectionHeader}>
-            <h2 style={styles.sectionTitle}>Manage Events</h2>
-            <div style={styles.controls}>
-              <div style={styles.searchWrapper}>
-                <Search size={18} color="#94a3b8" />
-                <input
-                  type="text"
-                  placeholder="Search events..."
-                  style={styles.searchInput}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+            {/* Content Section */}
+            <div style={styles.contentSection}>
+              <div style={styles.sectionHeader}>
+                <h2 style={styles.sectionTitle}>Manage Events</h2>
+                <div style={styles.controls}>
+                  <div style={styles.searchWrapper}>
+                    <Search size={18} color="#94a3b8" />
+                    <input
+                      type="text"
+                      placeholder="Search events..."
+                      style={styles.searchInput}
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  <button style={styles.secondaryButton}>
+                    <Filter size={18} />
+                    Filter
+                  </button>
+                </div>
               </div>
-              <button style={styles.secondaryButton}>
-                <Filter size={18} />
-                Filter
-              </button>
+
+              {loading ? (
+                <div style={styles.loadingWrapper}>
+                  <p>Loading your events...</p>
+                </div>
+              ) : filteredEvents.length === 0 ? (
+                <div style={styles.emptyState}>
+                  <div style={styles.emptyIcon}>📅</div>
+                  <h3>No events found</h3>
+                  <p>You haven't created any events yet or none match your search.</p>
+                  <button style={styles.primaryButton} onClick={() => navigate("/add-event")}>
+                    Create Your First Event
+                  </button>
+                </div>
+              ) : (
+                <div style={styles.eventGrid}>
+                  {filteredEvents.map((event) => (
+                    <div key={event._id} style={styles.eventCard}>
+                      <div style={styles.cardImageWrapper}>
+                        <img src={event.image} alt={event.title} style={styles.cardImage} />
+                        <div style={{
+                          ...styles.statusTag,
+                          ...(event.status === "approved" ? styles.statusApproved :
+                            event.status === "rejected" ? styles.statusRejected : styles.statusPending)
+                        }}>
+                          {event.status === "approved" ? <CheckCircle size={12} /> :
+                            event.status === "rejected" ? <AlertCircle size={12} /> : <Clock size={12} />}
+                          {event.status || "pending"}
+                        </div>
+                      </div>
+
+                      <div style={styles.cardBody}>
+                        <h3 style={styles.eventTitle}>{event.title}</h3>
+                        <div style={styles.eventMeta}>
+                          <span><Calendar size={14} /> {event.date} {event.month}</span>
+                          <span><MapPin size={14} /> {event.location}</span>
+                        </div>
+
+                        <div style={styles.cardFooter}>
+                          <div style={styles.priceTag}>
+                            {event.price ? `₹${event.price}` : 'Free'}
+                          </div>
+                          <div style={styles.actionButtons}>
+                            <button
+                              style={styles.iconButton}
+                              onClick={() => navigate(`/add-event/${event._id}`)}
+                              title="Edit Event"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              style={{ ...styles.iconButton, color: '#f43f5e' }}
+                              onClick={() => handleDelete(event)}
+                              title="Delete Event"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <div style={styles.settingsSection}>
+            <div style={styles.sectionHeader}>
+              <h2 style={styles.sectionTitle}>Account Settings</h2>
+              <p style={styles.sectionSubtitle}>Manage your personal information and security.</p>
+            </div>
+
+            {settingsError && <div style={styles.errorBanner}>{settingsError}</div>}
+            {settingsSuccess && <div style={styles.successBanner}>{settingsSuccess}</div>}
+
+            <div style={styles.settingsGrid}>
+              {/* Profile Settings */}
+              <div style={styles.settingsCard}>
+                <div style={styles.cardHeader}>
+                  <div style={styles.iconCircle}>
+                    <User size={20} color="#ff007a" />
+                  </div>
+                  <h3 style={styles.cardTitle}>Profile Information</h3>
+                </div>
+                <form onSubmit={handleUpdateProfile} style={styles.settingsForm}>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Full Name</label>
+                    <div style={styles.inputWrapper}>
+                      <User size={18} style={styles.inputIcon} />
+                      <input
+                        type="text"
+                        style={{
+                          ...styles.premiumInput,
+                          ...(focusedInput === 'name' ? styles.premiumInputFocus : {})
+                        }}
+                        placeholder="Your Name"
+                        value={settingsForm.name}
+                        onFocus={() => setFocusedInput('name')}
+                        onBlur={() => setFocusedInput(null)}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, name: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Email Address</label>
+                    <div style={styles.inputWrapper}>
+                      <Mail size={18} style={styles.inputIcon} />
+                      <input
+                        type="email"
+                        style={{
+                          ...styles.premiumInput,
+                          ...(focusedInput === 'email' ? styles.premiumInputFocus : {})
+                        }}
+                        placeholder="email@example.com"
+                        value={settingsForm.email}
+                        onFocus={() => setFocusedInput('email')}
+                        onBlur={() => setFocusedInput(null)}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, email: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    style={styles.premiumSubmitBtn}
+                    disabled={settingsLoading}
+                  >
+                    {settingsLoading ? "Updating..." : "Update Profile"}
+                  </button>
+                </form>
+              </div>
+
+              {/* Security Settings */}
+              <div style={styles.settingsCard}>
+                <div style={styles.cardHeader}>
+                  <div style={styles.iconCircle}>
+                    <Shield size={20} color="#ff007a" />
+                  </div>
+                  <h3 style={styles.cardTitle}>Security & Password</h3>
+                </div>
+                <form onSubmit={handleChangePassword} style={styles.settingsForm}>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Current Password</label>
+                    <div style={styles.inputWrapper}>
+                      <Lock size={18} style={styles.inputIcon} />
+                      <input
+                        type={showCurrentPassword ? "text" : "password"}
+                        style={{
+                          ...styles.premiumInput,
+                          paddingRight: '45px',
+                          ...(focusedInput === 'currentPassword' ? styles.premiumInputFocus : {})
+                        }}
+                        placeholder="••••••••"
+                        value={settingsForm.currentPassword}
+                        onFocus={() => setFocusedInput('currentPassword')}
+                        onBlur={() => setFocusedInput(null)}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, currentPassword: e.target.value })}
+                        required
+                      />
+                      <button
+                        type="button"
+                        style={styles.eyeButton}
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      >
+                        {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>New Password</label>
+                    <div style={styles.inputWrapper}>
+                      <Lock size={18} style={styles.inputIcon} />
+                      <input
+                        type={showNewPassword ? "text" : "password"}
+                        style={{
+                          ...styles.premiumInput,
+                          paddingRight: '45px',
+                          ...(focusedInput === 'newPassword' ? styles.premiumInputFocus : {})
+                        }}
+                        placeholder="Min. 8 characters"
+                        value={settingsForm.newPassword}
+                        onFocus={() => setFocusedInput('newPassword')}
+                        onBlur={() => setFocusedInput(null)}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, newPassword: e.target.value })}
+                        required
+                      />
+                      <button
+                        type="button"
+                        style={styles.eyeButton}
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                      >
+                        {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+                  <div style={styles.inputGroup}>
+                    <label style={styles.label}>Confirm New Password</label>
+                    <div style={styles.inputWrapper}>
+                      <Lock size={18} style={styles.inputIcon} />
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        style={{
+                          ...styles.premiumInput,
+                          paddingRight: '45px',
+                          ...(focusedInput === 'confirmPassword' ? styles.premiumInputFocus : {})
+                        }}
+                        placeholder="Confirm new password"
+                        value={settingsForm.confirmPassword}
+                        onFocus={() => setFocusedInput('confirmPassword')}
+                        onBlur={() => setFocusedInput(null)}
+                        onChange={(e) => setSettingsForm({ ...settingsForm, confirmPassword: e.target.value })}
+                        required
+                      />
+                      <button
+                        type="button"
+                        style={styles.eyeButton}
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    style={styles.premiumSubmitBtn}
+                    disabled={settingsLoading}
+                  >
+                    {settingsLoading ? "Saving..." : "Change Password"}
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
-
-          {loading ? (
-            <div style={styles.loadingWrapper}>
-              <p>Loading your events...</p>
-            </div>
-          ) : filteredEvents.length === 0 ? (
-            <div style={styles.emptyState}>
-              <div style={styles.emptyIcon}>📅</div>
-              <h3>No events found</h3>
-              <p>You haven't created any events yet or none match your search.</p>
-              <button style={styles.primaryButton} onClick={() => navigate("/add-event")}>
-                Create Your First Event
-              </button>
-            </div>
-          ) : (
-            <div style={styles.eventGrid}>
-              {filteredEvents.map((event) => (
-                <div key={event._id} style={styles.eventCard}>
-                  <div style={styles.cardImageWrapper}>
-                    <img src={event.image} alt={event.title} style={styles.cardImage} />
-                    <div style={{
-                      ...styles.statusTag,
-                      ...(event.status === "approved" ? styles.statusApproved :
-                        event.status === "rejected" ? styles.statusRejected : styles.statusPending)
-                    }}>
-                      {event.status === "approved" ? <CheckCircle size={12} /> :
-                        event.status === "rejected" ? <AlertCircle size={12} /> : <Clock size={12} />}
-                      {event.status || "pending"}
-                    </div>
-                  </div>
-
-                  <div style={styles.cardBody}>
-                    <h3 style={styles.eventTitle}>{event.title}</h3>
-                    <div style={styles.eventMeta}>
-                      <span><Calendar size={14} /> {event.date} {event.month}</span>
-                      <span><MapPin size={14} /> {event.location}</span>
-                    </div>
-
-                    <div style={styles.cardFooter}>
-                      <div style={styles.priceTag}>
-                        {event.price ? `₹${event.price}` : 'Free'}
-                      </div>
-                      <div style={styles.actionButtons}>
-                        <button
-                          style={styles.iconButton}
-                          onClick={() => navigate(`/add-event/${event._id}`)}
-                          title="Edit Event"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          style={{ ...styles.iconButton, color: '#f43f5e' }}
-                          onClick={() => handleDelete(event)}
-                          title="Delete Event"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        )}
       </main>
 
       {/* Confirmation Modal */}
@@ -313,6 +590,33 @@ const styles = {
     fontSize: '16px',
     color: '#64748b',
     margin: 0,
+  },
+  headerActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '20px',
+  },
+  tabSwitcher: {
+    display: 'flex',
+    backgroundColor: '#fff',
+    padding: '4px',
+    borderRadius: '12px',
+    border: '1px solid #e2e8f0',
+  },
+  tabBtn: {
+    padding: '8px 16px',
+    borderRadius: '8px',
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: '#64748b',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
+  tabBtnActive: {
+    backgroundColor: '#fff1f2',
+    color: '#ff007a',
   },
   primaryButton: {
     display: 'flex',
@@ -437,6 +741,128 @@ const styles = {
   statusRejected: {
     backgroundColor: 'rgba(244, 63, 94, 0.9)',
     color: '#fff',
+  },
+  settingsSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '32px',
+  },
+  sectionSubtitle: {
+    fontSize: '14px',
+    color: '#64748b',
+    marginTop: '4px',
+  },
+  settingsGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '24px',
+  },
+  settingsForm: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  },
+  errorBanner: {
+    padding: '16px',
+    backgroundColor: '#fef2f2',
+    color: '#ef4444',
+    borderRadius: '12px',
+    border: '1px solid #fee2e2',
+    fontSize: '14px',
+    fontWeight: '500',
+  },
+  successBanner: {
+    padding: '16px 20px',
+    backgroundColor: '#ecfdf5',
+    color: '#059669',
+    borderRadius: '12px',
+    border: '1px solid #d1fae5',
+    fontSize: '14px',
+    fontWeight: '600',
+    marginBottom: '24px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  settingsCard: {
+    backgroundColor: '#fff',
+    borderRadius: '20px',
+    padding: '30px',
+    boxShadow: '0 4px 20px -5px rgba(0, 0, 0, 0.07)',
+    border: '1px solid #f1f5f9',
+  },
+  cardHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '15px',
+    marginBottom: '25px',
+    paddingBottom: '15px',
+    borderBottom: '1px solid #f8fafc',
+  },
+  iconCircle: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '12px',
+    backgroundColor: '#fff1f2',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inputWrapper: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+  },
+  inputIcon: {
+    position: 'absolute',
+    left: '14px',
+    color: '#94a3b8',
+    transition: 'color 0.2s',
+  },
+  premiumInput: {
+    width: '100%',
+    padding: '12px 16px 12px 42px',
+    borderRadius: '12px',
+    border: '1.5px solid #e2e8f0',
+    fontSize: '15px',
+    color: '#1e293b',
+    backgroundColor: '#f8fafc',
+    outline: 'none',
+    transition: 'all 0.2s ease',
+    fontFamily: 'inherit',
+  },
+  premiumInputFocus: {
+    borderColor: '#ff007a',
+    backgroundColor: '#fff',
+    boxShadow: '0 0 0 4px rgba(255, 0, 122, 0.1)',
+  },
+  premiumSubmitBtn: {
+    padding: '12px 24px',
+    backgroundColor: '#ff007a',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '12px',
+    fontWeight: '700',
+    fontSize: '14px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 4px 12px rgba(255, 0, 122, 0.2)',
+    width: 'fit-content',
+    marginTop: '5px',
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: '14px',
+    backgroundColor: 'transparent',
+    border: 'none',
+    color: '#94a3b8',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '4px',
+    transition: 'color 0.2s',
+    zIndex: 2,
   },
   cardBody: {
     padding: '20px',

@@ -12,6 +12,8 @@ export const chatWithAI = async (req, res) => {
             error: "Configuration Error",
             reply: "⚠️ AI configuration error. Please contact support.",
         });
+    } else {
+        console.log("DEBUG: GEMINI_KEY is present (length:", apiKey.length, ")");
     }
 
     try {
@@ -91,7 +93,7 @@ ${eventsContext || "NO EVENTS CURRENTLY IN GOGATHER DATABASE."}
         console.log("AI SYSTEM INSTRUCTION SET");
 
         const model = genAI.getGenerativeModel({
-            model: "gemini-flash-latest", // Using 'gemini-flash-latest' as it has active quota in 2026
+            model: "gemini-1.5-flash", // Correct model name
             systemInstruction: systemInstruction,
             generationConfig: {
                 temperature: 0.1,
@@ -142,7 +144,8 @@ ${eventsContext || "NO EVENTS CURRENTLY IN GOGATHER DATABASE."}
         res.status(error.status || 500).json({
             error: "AI Service Error",
             reply: replyMessage,
-            details: error.message
+            details: error.message,
+            status: error.status
         });
     }
 };

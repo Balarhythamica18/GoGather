@@ -14,7 +14,8 @@ import {
   User as UserIcon,
   Mail,
   Phone,
-  Trash2
+  Trash2,
+  CheckCircle
 } from "lucide-react";
 
 const AddEvent = () => {
@@ -41,43 +42,66 @@ const AddEvent = () => {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [modalType, setModalType] = useState("create"); // "create" or "update"
 
   useEffect(() => {
-    if (!id) return;
-    const load = async () => {
-      try {
-        const res = await axios.get(`http://localhost:5000/api/events/${id}`);
-        const ev = res.data;
+    if (id) {
+      const load = async () => {
+        try {
+          const res = await axios.get(`http://localhost:5000/api/events/${id}`);
+          const ev = res.data;
 
-        let isoDate = "";
-        if (ev.month && ev.date) {
-          isoDate = `${ev.month}-${String(ev.date).padStart(2, "0")}`;
+          let isoDate = "";
+          if (ev.month && ev.date) {
+            isoDate = `${ev.month}-${String(ev.date).padStart(2, "0")}`;
+          }
+
+          setForm({
+            date: isoDate,
+            time: ev.time || "",
+            title: ev.title || "",
+            location: ev.location || "",
+            address: ev.address || "",
+            category: ev.category || "",
+            customCategory: "",
+            price: ev.price || "",
+            description: ev.description || "",
+            aboutEvent: ev.aboutEvent || "",
+            keyHighlights: ev.keyHighlights || [],
+            image: ev.image || "",
+            organizerName: ev.organizerDetails?.name || "",
+            organizerEmail: ev.organizerDetails?.contactEmail || "",
+            organizerPhone: ev.organizerDetails?.contactPhone || "",
+          });
+          setImage(null);
+          if (ev.image) setPreview(ev.image);
+        } catch (err) {
+          console.error("Error loading event for edit:", err);
         }
-
-        setForm({
-          date: isoDate,
-          time: ev.time || "",
-          title: ev.title || "",
-          location: ev.location || "",
-          address: ev.address || "",
-          category: ev.category || "",
-          customCategory: "",
-          price: ev.price || "",
-          description: ev.description || "",
-          aboutEvent: ev.aboutEvent || "",
-          keyHighlights: ev.keyHighlights || [],
-          image: ev.image || "",
-          organizerName: ev.organizerDetails?.name || "",
-          organizerEmail: ev.organizerDetails?.contactEmail || "",
-          organizerPhone: ev.organizerDetails?.contactPhone || "",
-        });
-        setImage(null);
-        if (ev.image) setPreview(ev.image);
-      } catch (err) {
-        console.error("Error loading event for edit:", err);
-      }
-    };
-    load();
+      };
+      load();
+    } else {
+      // For new event, pre-fill with organizer profile info
+      const fetchProfile = async () => {
+        const token = localStorage.getItem("token");
+        if (token) {
+          try {
+            const res = await axios.get("http://localhost:5000/api/auth/me", {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            setForm(prev => ({
+              ...prev,
+              organizerName: res.data.name || "",
+              organizerEmail: res.data.email || ""
+            }));
+          } catch (err) {
+            console.error("Error fetching profile for pre-fill:", err);
+          }
+        }
+      };
+      fetchProfile();
+    }
   }, [id]);
 
   const handleChange = (e) => {
@@ -123,12 +147,12 @@ const AddEvent = () => {
 
       if (id) {
         await axios.put(`http://localhost:5000/api/events/${id}`, formData, config);
-        alert("Event updated successfully!");
+        setModalType("update");
       } else {
         await axios.post("http://localhost:5000/api/events", formData, config);
-        alert("Event created successfully!");
+        setModalType("create");
       }
-      navigate("/dashboard");
+      setShowSuccess(true);
     } catch (err) {
       console.error(err);
       alert("Error saving event: " + (err.response?.data?.message || err.message));
@@ -351,6 +375,31 @@ const AddEvent = () => {
           </div>
         </form>
       </div>
+
+      {/* Success Modal */}
+      {showSuccess && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <div style={styles.successIconWrapper}>
+              <CheckCircle size={48} color="#10b981" />
+            </div>
+            <h2 style={styles.modalTitle}>
+              {modalType === "create" ? "Event Published!" : "Event Updated!"}
+            </h2>
+            <p style={styles.modalMessage}>
+              {modalType === "create"
+                ? "Your event has been submitted successfully and is now waiting for admin approval."
+                : "Your event details have been successfully updated."}
+            </p>
+            <button
+              style={styles.modalActionBtn}
+              onClick={() => navigate("/dashboard")}
+            >
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -620,6 +669,65 @@ const styles = {
     fontSize: "16px",
     fontWeight: "700",
     cursor: "not-allowed",
+  },
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+    backdropFilter: 'blur(4px)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: '24px',
+    padding: '40px',
+    width: '90%',
+    maxWidth: '440px',
+    textAlign: 'center',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    animation: 'modalSlideUp 0.3s ease-out',
+  },
+  successIconWrapper: {
+    width: '80px',
+    height: '80px',
+    borderRadius: '50%',
+    backgroundColor: '#f0fdf4',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: '0 auto 24px',
+  },
+  modalTitle: {
+    fontSize: '24px',
+    fontWeight: '800',
+    color: '#1e293b',
+    marginBottom: '12px',
+    letterSpacing: '-0.02em',
+  },
+  modalMessage: {
+    fontSize: '16px',
+    color: '#64748b',
+    lineHeight: '1.6',
+    marginBottom: '32px',
+  },
+  modalActionBtn: {
+    width: '100%',
+    padding: '14px',
+    borderRadius: '12px',
+    border: 'none',
+    backgroundColor: '#ff007a',
+    color: '#fff',
+    fontSize: '16px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 10px 15px -3px rgba(255, 0, 122, 0.3)',
   },
 };
 

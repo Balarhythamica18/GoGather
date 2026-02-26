@@ -54,7 +54,7 @@ export default function Chatbot() {
 
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.post("http://localhost:5000/api/ai/chat", {
+            const res = await axios.post("/api/ai/chat", {
                 message: input.trim(),
             }, {
                 headers: {

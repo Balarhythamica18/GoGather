@@ -150,6 +150,9 @@ export const updateProfile = async (req, res) => {
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    const nameChanged = name && name !== user.name;
+    const emailChanged = email && email !== user.email;
+
     // Handle Name Update
     if (name) user.name = name;
 
@@ -183,6 +186,24 @@ export const updateProfile = async (req, res) => {
     }
 
     await user.save();
+
+    // Sync changes to existing events if name or email changed
+    if (nameChanged || emailChanged) {
+      try {
+        const Event = (await import("../models/Event.js")).default;
+        const updateData = {};
+        if (nameChanged) updateData["organizerDetails.name"] = name;
+        if (emailChanged) updateData["organizerDetails.contactEmail"] = email;
+
+        await Event.updateMany(
+          { organizer: userId },
+          { $set: updateData }
+        );
+      } catch (syncError) {
+        console.error("Failed to sync profile change to events:", syncError);
+        // We don't fail the profile update if sync fails, but we log it
+      }
+    }
 
     res.json({
       message: "Profile updated successfully ✅",
