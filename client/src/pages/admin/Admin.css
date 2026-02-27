@@ -31,11 +31,14 @@
     padding: 12px;
     border: 1px solid var(--admin-border);
     box-shadow: var(--admin-shadow);
-    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .admin-table {
     width: 100%;
+    min-width: 600px;
+    /* Ensure table doesn't shrink too much, forcing scroll */
     border-collapse: collapse;
     text-align: left;
 }

@@ -112,6 +112,23 @@ const EventApprovals = () => {
                     gap: 24px;
                     margin-top: 24px;
                 }
+                @media (max-width: 600px) {
+                    .approvals-grid {
+                        display: flex !important;
+                        overflow-x: auto !important;
+                        gap: 16px !important;
+                        padding-bottom: 12px;
+                        margin-bottom: 24px;
+                        -webkit-overflow-scrolling: touch;
+                        scrollbar-width: thin;
+                        padding-left: 4px;
+                        padding-right: 4px;
+                    }
+                    .approval-card {
+                        flex: 0 0 300px !important;
+                        min-width: 300px !important;
+                    }
+                }
                 .approval-card {
                     background: #fff;
                     border: 1px solid #e2e8f0;

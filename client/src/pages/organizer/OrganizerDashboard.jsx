@@ -232,6 +232,23 @@ const OrganizerDashboard = () => {
               display: flex !important;
             }
           }
+          @media (max-width: 600px) {
+            .responsive-stats-grid, .responsive-event-grid {
+              display: flex !important;
+              overflow-x: auto !important;
+              gap: 16px !important;
+              padding-bottom: 12px;
+              margin-bottom: 24px;
+              -webkit-overflow-scrolling: touch;
+              scrollbar-width: thin;
+              padding-left: 4px;
+              padding-right: 4px;
+            }
+            .responsive-stats-grid > div, .responsive-event-grid > div {
+              flex: 0 0 280px !important;
+              min-width: 280px !important;
+            }
+          }
         `}</style>
         {/* Header */}
         <header style={styles.header}>
@@ -273,7 +290,7 @@ const OrganizerDashboard = () => {
         {activeTab === 'events' ? (
           <>
             {/* Stats Grid */}
-            <div style={styles.statsGrid}>
+            <div style={styles.statsGrid} className="responsive-stats-grid">
               <StatCard
                 title="Total Posted"
                 value={stats.totalEvents}
@@ -336,7 +353,7 @@ const OrganizerDashboard = () => {
                   </button>
                 </div>
               ) : (
-                <div style={styles.eventGrid}>
+                <div style={styles.eventGrid} className="responsive-event-grid">
                   {filteredEvents.map((event) => (
                     <div key={event._id} style={styles.eventCard}>
                       <div style={styles.cardImageWrapper}>

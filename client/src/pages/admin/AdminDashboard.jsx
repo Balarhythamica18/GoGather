@@ -54,6 +54,25 @@ const AdminDashboard = () => {
 
     return (
         <div style={styles.container}>
+            <style>{`
+                @media (max-width: 600px) {
+                    .responsive-stats-grid, .responsive-content-grid {
+                        display: flex !important;
+                        overflow-x: auto !important;
+                        gap: 16px !important;
+                        padding-bottom: 12px;
+                        margin-bottom: 24px;
+                        -webkit-overflow-scrolling: touch;
+                        scrollbar-width: thin;
+                        padding-left: 4px;
+                        padding-right: 4px;
+                    }
+                    .responsive-stats-grid > div, .responsive-content-grid > div {
+                        flex: 0 0 280px !important;
+                        min-width: 280px !important;
+                    }
+                }
+            `}</style>
             <header style={styles.header}>
                 <div>
                     <h1 style={styles.title}>System Overview</h1>
@@ -65,7 +84,7 @@ const AdminDashboard = () => {
                 </div>
             </header>
 
-            <div style={styles.statsGrid}>
+            <div style={styles.statsGrid} className="responsive-stats-grid">
                 <StatCard
                     title="Total Platform Users"
                     value={stats.users}
@@ -92,7 +111,7 @@ const AdminDashboard = () => {
                 />
             </div>
 
-            <div style={styles.contentGrid}>
+            <div style={styles.contentGrid} className="responsive-content-grid">
                 <div style={styles.card}>
                     <h3 style={styles.cardTitle}>User Distribution</h3>
                     <div style={styles.userStats}>
