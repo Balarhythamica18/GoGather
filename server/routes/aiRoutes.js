@@ -1,9 +1,10 @@
 import express from "express";
-import { chatWithAI } from "../controllers/geminiController.js";
+import { unifiedChat } from "../controllers/aiController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/chat", authMiddleware, chatWithAI);
+router.post("/chat", authMiddleware, unifiedChat);
+
 
 export default router;
