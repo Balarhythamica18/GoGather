@@ -131,7 +131,7 @@ const server = http.createServer(app);
 
 // Initialize Socket.IO
 const io = new Server(server, {
-  cors: { origin: "*" }, // replace * with your frontend origin for production
+  cors: { origin: "https://gogather-client.onrender.com" }, 
 });
 app.set("socketio", io);
 
