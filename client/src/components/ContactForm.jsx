@@ -23,7 +23,7 @@ export default function Contact() {
     setSuccess("");
 
     try {
-      await axios.post("http://localhost:5000/api/contact", formData);
+      await axios.post("https://gogather-server.onrender.com/api/contact", formData);
       setSuccess("Your message has been sent successfully!");
       setFormData({
         name: "",
