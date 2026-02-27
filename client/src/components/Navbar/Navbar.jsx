@@ -122,7 +122,6 @@ const Navbar = () => {
           <li><Link to="/my-bookings" onClick={() => setIsMenuOpen(false)}>My Bookings</Link></li>
           {favorites.length > 0 && <li><Link to="/favorites" onClick={() => setIsMenuOpen(false)}>Favorites</Link></li>}
           <li><Link to="/contact" onClick={() => setIsMenuOpen(false)}>Contact</Link></li>
-          <li><Link to="/squad-chat" onClick={() => setIsMenuOpen(false)} style={{ color: '#60a5fa' }}>Squad Chat</Link></li>
           {isLoggedIn && <li><button className="mobile-manage-btn" onClick={() => { setIsAccountModalOpen(true); setIsMenuOpen(false); }}>Manage Account</button></li>}
         </ul>
       </div>

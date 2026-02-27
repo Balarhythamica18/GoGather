@@ -2,7 +2,7 @@
 .seat-wrapper {
   display: flex;
   gap: 32px;
-  padding: 140px 80px;
+  padding: 120px 5% 40px;
   min-height: 70vh;
   background: white;
 }
@@ -43,20 +43,21 @@
   transform: translateX(-50%);
   width: 90%;
   height: 20px;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(255, 255, 255, 0.6),
-    transparent
-  );
+  background: radial-gradient(ellipse at center,
+      rgba(255, 255, 255, 0.6),
+      transparent);
   filter: blur(6px);
 }
 
 @keyframes screenGlow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow:
       0 12px 30px rgba(0, 0, 0, 0.25),
       inset 0 -6px 15px rgba(0, 0, 0, 0.15);
   }
+
   50% {
     box-shadow:
       0 15px 45px rgba(74, 108, 247, 0.45),
@@ -279,4 +280,77 @@
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 1024px) {
+  .seat-wrapper {
+    padding: 100px 20px 40px;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 900px) {
+  .seat-wrapper {
+    flex-direction: column;
+    align-items: center;
+    padding-top: 100px;
+  }
+
+  .seat-left {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .seat-right {
+    width: 100%;
+    position: static;
+    margin-top: 20px;
+  }
+
+  .seat-layout {
+    overflow-x: auto;
+    padding-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .seat-row {
+    min-width: fit-content;
+  }
+}
+
+@media (max-width: 480px) {
+  .seat-wrapper {
+    padding: 90px 10px 40px;
+  }
+
+  .seat-left {
+    padding: 15px;
+  }
+
+  .screen {
+    width: 90%;
+    font-size: 12px;
+    height: 40px;
+    line-height: 40px;
+  }
+
+  .seat {
+    width: 30px;
+    height: 30px;
+    margin: 0 4px;
+    font-size: 11px;
+    border-radius: 6px;
+  }
+
+  .row-label {
+    width: 24px;
+    font-size: 12px;
+  }
+
+  .seat-right {
+    padding: 20px 16px;
+  }
 }
