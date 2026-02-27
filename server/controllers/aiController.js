@@ -62,27 +62,28 @@ export const unifiedChat = async (req, res) => {
     const groqKey = process.env.GROQ_API_KEY?.trim();
     const eventsContext = await getGoGatherContext();
 
+    console.log(`[AI] Request received: "${message}"`);
+
     // Strategy 1: Attempt Gemini
     if (geminiKey) {
         try {
             console.log("Attempting Gemini AI...");
             const genAI = new GoogleGenerativeAI(geminiKey);
             const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash-latest", // Use latest for better availability
+                model: "gemini-1.5-flash-latest",
                 systemInstruction: SYSTEM_PROMPT + "\n\n[DATABASE]\n" + eventsContext
             });
             const result = await model.generateContent(message);
             const response = await result.response;
-            return res.status(200).json({ reply: response.text(), provider: "gemini" });
+            const text = response.text();
+
+            if (text && text.trim().length > 0) {
+                console.log("Gemini succeeded.");
+                return res.status(200).json({ reply: text, provider: "gemini" });
+            }
+            console.warn("Gemini returned empty text, falling back...");
         } catch (error) {
             console.error("Gemini Failure:", error.message);
-            // If it's a 404/403, and we have Groq, fall through
-            if (!groqKey) {
-                return res.status(500).json({
-                    error: "AI Error",
-                    reply: "⚠️ Gemini API Error (" + (error.status || "404") + "). To fix this instantly, please add a `GROQ_API_KEY` to your `.env` for fallback support."
-                });
-            }
         }
     }
 
@@ -91,7 +92,7 @@ export const unifiedChat = async (req, res) => {
         try {
             console.log("Attempting Groq AI Fallback...");
             const response = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
-                model: "llama-3.3-70b-versatile",
+                model: "llama-3-70b-8192", // Use a more stable Groq model
                 messages: [
                     { role: "system", content: SYSTEM_PROMPT + "\n\n[DATABASE]\n" + eventsContext },
                     { role: "user", content: message }
@@ -99,18 +100,22 @@ export const unifiedChat = async (req, res) => {
             }, {
                 headers: { Authorization: `Bearer ${groqKey}` }
             });
-            return res.status(200).json({ reply: response.data.choices[0].message.content, provider: "groq" });
+
+            const text = response.data.choices[0].message.content;
+            if (text && text.trim().length > 0) {
+                console.log("Groq succeeded.");
+                return res.status(200).json({ reply: text, provider: "groq" });
+            }
+            console.warn("Groq returned empty text.");
         } catch (error) {
             console.error("Groq Failure:", error.response?.data || error.message);
-            return res.status(500).json({
-                error: "AI Error",
-                reply: "⚠️ All AI providers failed. Please add a valid GROQ_API_KEY to .env for fallback."
-            });
         }
     }
 
-    return res.status(500).json({
-        error: "Configuration Error",
-        reply: "⚠️ AI is not configured. Please provide a valid GEMINI_KEY or GROQ_API_KEY."
+    // If we reach here, both failed or no keys
+    console.error("All AI strategies failed.");
+    return res.status(200).json({
+        reply: "⚠️ I'm having trouble connecting to my brain right now. Please ensure your `GEMINI_KEY` or `GROQ_API_KEY` are correctly set in the Render Dashboard.",
+        provider: "error-fallback"
     });
 };
