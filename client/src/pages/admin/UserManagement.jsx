@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Trash2, AlertTriangle, X, Activity } from "lucide-react";
 import toast from "react-hot-toast";
+import { API_BASE_URL } from "../../config";
 import "./Admin.css";
 
 const UserManagement = () => {
@@ -25,7 +26,7 @@ const UserManagement = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get("/api/admin/users", {
+            const res = await axios.get(`${API_BASE_URL}/api/admin/users`, {
                 headers: { Authorization: `Bearer ${token}` },
                 params: {
                     ...filters,
@@ -33,9 +34,9 @@ const UserManagement = () => {
                     limit: 10
                 }
             });
-            setUsers(res.data.users);
-            setTotalPages(res.data.totalPages);
-            setTotalEntries(res.data.totalEntries);
+            setUsers(res.data.users || []);
+            setTotalPages(res.data.totalPages || 1);
+            setTotalEntries(res.data.totalEntries || 0);
         } catch (error) {
             console.error("Error fetching users:", error);
             const errorMsg = error.response?.data?.message || error.response?.data?.error || "Failed to load users";
@@ -61,7 +62,7 @@ const UserManagement = () => {
 
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get(`/api/admin/users/${user._id}/info`, {
+            const res = await axios.get(`${API_BASE_URL}/api/admin/users/${user._id}/info`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setImpactData(res.data);
@@ -78,7 +79,7 @@ const UserManagement = () => {
         setIsDeleting(true);
         try {
             const token = localStorage.getItem("token");
-            await axios.delete(`/api/admin/users/${selectedUser._id}`, {
+            await axios.delete(`${API_BASE_URL}/api/admin/users/${selectedUser._id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setUsers(users.filter(u => u._id !== selectedUser._id));

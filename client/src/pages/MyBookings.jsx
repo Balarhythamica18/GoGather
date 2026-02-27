@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Calendar, MapPin, Ticket, X, QrCode, ShieldCheck, CheckCircle2, AlertTriangle } from "lucide-react";
 import { getImageUrl } from "../utils/imageUtils";
+import { API_BASE_URL } from "../config";
 import "./MyBookings.css";
 
 const MyBookings = () => {
@@ -18,10 +19,10 @@ const MyBookings = () => {
   const fetchBookings = async () => {
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.get("/api/bookings/my-bookings", {
+      const res = await axios.get(`${API_BASE_URL}/api/bookings/my-bookings`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setBookings(res.data);
+      setBookings(res.data || []);
     } catch (err) {
       console.error("Fetch bookings error:", err);
     } finally {
@@ -38,7 +39,7 @@ const MyBookings = () => {
         setConfirmModal(prev => ({ ...prev, show: false }));
         const token = localStorage.getItem("token");
         try {
-          const res = await axios.post("/api/bookings/cancel", { bookingId }, {
+          const res = await axios.post(`${API_BASE_URL}/api/bookings/cancel`, { bookingId }, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setResultModal({
@@ -74,7 +75,7 @@ const MyBookings = () => {
         setConfirmModal(prev => ({ ...prev, show: false }));
         const token = localStorage.getItem("token");
         try {
-          await axios.delete(`/api/bookings/${bookingId}`, {
+          await axios.delete(`${API_BASE_URL}/api/bookings/${bookingId}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           fetchBookings();

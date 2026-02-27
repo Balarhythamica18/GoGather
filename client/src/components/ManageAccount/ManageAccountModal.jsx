@@ -3,6 +3,7 @@ import axios from "axios";
 import { X, Mail, Lock, User, Eye, EyeOff, Trash2, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { API_BASE_URL } from "../../config";
 import "./ManageAccountModal.css";
 
 const ManageAccountModal = ({ isOpen, onClose }) => {
@@ -45,7 +46,7 @@ const ManageAccountModal = ({ isOpen, onClose }) => {
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.put("/api/auth/update-profile", {
+            const res = await axios.put(`${API_BASE_URL}/api/auth/update-profile`, {
                 name: form.name,
                 email: form.email,
                 password: form.newPassword || undefined,
@@ -78,7 +79,7 @@ const ManageAccountModal = ({ isOpen, onClose }) => {
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
-            await axios.delete("/api/auth/delete-account", {
+            await axios.delete(`${API_BASE_URL}/api/auth/delete-account`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 

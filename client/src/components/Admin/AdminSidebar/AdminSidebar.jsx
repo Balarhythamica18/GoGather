@@ -42,7 +42,9 @@ const AdminSidebar = () => {
 
     fetchPendingCount();
 
-    const socket = io(API_BASE_URL);
+    const socket = io(API_BASE_URL, {
+      transports: ['polling', 'websocket']
+    });
     socket.on("pendingCountUpdate", ({ count }) => {
       setPendingCount(count);
     });

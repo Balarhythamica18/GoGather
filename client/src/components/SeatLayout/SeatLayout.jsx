@@ -5,7 +5,9 @@ import { API_BASE_URL } from "../../config";
 import "./SeatLayout.css";
 
 const rows = ["A", "B", "C", "D", "E"];
-const socket = io(API_BASE_URL);
+const socket = io(API_BASE_URL, {
+  transports: ['polling', 'websocket']
+});
 
 /* ⭐ SAFE PARSE HELPER (PREVENT JSON CRASH) */
 const safeParse = (value) => {

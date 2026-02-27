@@ -131,7 +131,8 @@ const server = http.createServer(app);
 
 // Initialize Socket.IO
 const io = new Server(server, {
-  cors: { origin: "https://gogather-client.onrender.com" }, 
+  cors: { origin: "https://gogather-client.onrender.com" },
+  transports: ['polling', 'websocket']
 });
 app.set("socketio", io);
 

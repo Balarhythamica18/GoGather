@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Activity, ClipboardList, User, Calendar, MapPin, Tag } from 'lucide-react';
+import { API_BASE_URL } from '../../../config';
 
 const ListBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -10,10 +11,10 @@ const ListBookings = () => {
     const fetchBookings = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("/api/admin/bookings/all", {
+        const res = await axios.get(`${API_BASE_URL}/api/admin/bookings/all`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setBookings(res.data);
+        setBookings(res.data || []);
       } catch (error) {
         console.error("Error fetching bookings:", error);
       } finally {

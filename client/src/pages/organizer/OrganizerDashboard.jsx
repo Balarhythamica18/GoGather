@@ -71,7 +71,7 @@ const OrganizerDashboard = () => {
         // Fetch events
         try {
           const eventsRes = await axios.get(`${API_BASE_URL}/api/events/my`, config);
-          setEvents(eventsRes.data);
+          setEvents(eventsRes.data || []);
         } catch (err) {
           console.error("Error fetching events:", err);
         }
@@ -79,13 +79,20 @@ const OrganizerDashboard = () => {
         // Fetch stats
         try {
           const statsRes = await axios.get(`${API_BASE_URL}/api/events/stats`, config);
-          setStats(statsRes.data);
+          setStats(statsRes.data || {
+            totalEvents: 0,
+            approvedEvents: 0,
+            pendingEvents: 0,
+            rejectedEvents: 0,
+            totalBookings: 0,
+            totalRevenue: 0
+          });
         } catch (err) {
           console.error("Error fetching stats:", err);
         }
       } else {
         const res = await axios.get(`${API_BASE_URL}/api/events`);
-        setEvents(res.data);
+        setEvents(res.data || []);
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);

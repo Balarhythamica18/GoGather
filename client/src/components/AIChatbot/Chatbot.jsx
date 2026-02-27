@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { MessageSquare, Send, X, Bot, Loader2, MinusCircle, Maximize2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { API_BASE_URL } from "../../config";
 import "./Chatbot.css";
 
 export default function Chatbot() {
@@ -54,7 +55,7 @@ export default function Chatbot() {
 
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.post("/api/ai/chat", {
+            const res = await axios.post(`${API_BASE_URL}/api/ai/chat`, {
                 message: input.trim(),
             }, {
                 headers: {

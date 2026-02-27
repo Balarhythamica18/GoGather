@@ -3,6 +3,7 @@ import axios from 'axios';
 import './ListShows.css';
 import { FiSearch, FiFilter, FiX, FiCalendar, FiMapPin, FiTag, FiDollarSign } from 'react-icons/fi';
 import { Activity, ChevronLeft, ChevronRight } from 'lucide-react';
+import { API_BASE_URL } from '../../../config';
 
 const ListShows = () => {
   const [events, setEvents] = useState([]);
@@ -28,7 +29,7 @@ const ListShows = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("/api/admin/events", {
+      const res = await axios.get(`${API_BASE_URL}/api/admin/events`, {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           ...queryParams,
@@ -36,9 +37,9 @@ const ListShows = () => {
           limit: 10
         }
       });
-      setEvents(res.data.events);
-      setTotalPages(res.data.totalPages);
-      setTotalEntries(res.data.totalEntries);
+      setEvents(res.data.events || []);
+      setTotalPages(res.data.totalPages || 1);
+      setTotalEntries(res.data.totalEntries || 0);
     } catch (error) {
       console.error("Error fetching events:", error);
     } finally {

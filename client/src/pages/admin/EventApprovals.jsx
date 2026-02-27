@@ -14,10 +14,10 @@ const EventApprovals = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.get("/api/admin/events/pending", {
+            const res = await axios.get(`${API_BASE_URL}/api/admin/events/pending`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setPendingEvents(res.data);
+            setPendingEvents(res.data || []);
         } catch (error) {
             console.error("Error fetching pending events:", error);
             toast.error("Failed to load pending events");
@@ -34,7 +34,7 @@ const EventApprovals = () => {
         setProcessingId(id);
         try {
             const token = localStorage.getItem("token");
-            await axios.patch(`/api/admin/events/${id}/status`, { status }, {
+            await axios.patch(`${API_BASE_URL}/api/admin/events/${id}/status`, { status }, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setPendingEvents(pendingEvents.filter(e => e._id !== id));

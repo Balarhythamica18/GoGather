@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import axios from "axios";
 import { ShieldCheck, User, Ticket, Calendar, AlertCircle } from "lucide-react";
+import { API_BASE_URL } from "../../config";
 import "./QRScannerPage.css";
 
 const QRScannerPage = () => {
@@ -44,7 +45,7 @@ const QRScannerPage = () => {
         setError(null);
         try {
             const token = localStorage.getItem("token");
-            const res = await axios.patch("/api/bookings/verify-entry",
+            const res = await axios.patch(`${API_BASE_URL}/api/bookings/verify-entry`,
                 { bookingId },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
