@@ -11,7 +11,7 @@ const UpcomingEvents = () => {
   useEffect(() => {
     const fetchUpcoming = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/events");
+        const res = await axios.get("https://gogather-server.onrender.com/api/events");
 
         const upcomingFiltered = res.data.filter((event) => {
           if (event.declaration) return true;
