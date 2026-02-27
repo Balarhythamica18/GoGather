@@ -52,7 +52,7 @@ const Register = () => {
         password: form.password,
         confirmPassword: form.confirmPassword,
         role
-      });
+      }, { timeout: 15000 }); // 15 second timeout to prevent infinite hanging
 
       setSuccess("Account created successfully! Please verify your email.");
 

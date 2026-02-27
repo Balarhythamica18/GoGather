@@ -18,10 +18,16 @@ export const sendOTPEmail = async (email, name, otp) => {
         console.log(`Attempting to send OTP email to ${email}...`);
         const transporter = nodemailer.createTransport({
             service: "gmail",
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
             auth: {
                 user: "gogatherticketbooking@gmail.com",
                 pass: process.env.EMAIL_PASS,
             },
+            connectionTimeout: 5000, // 5 seconds
+            greetingTimeout: 5000,   // 5 seconds
+            socketTimeout: 10000,    // 10 seconds
         });
 
         console.log("Transporter created. Sending mail...");
