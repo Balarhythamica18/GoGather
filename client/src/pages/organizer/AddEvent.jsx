@@ -49,7 +49,7 @@ const AddEvent = () => {
         if (id) {
             const load = async () => {
                 try {
-                    const res = await axios.get(`http://localhost:5000/api/events/${id}`);
+                    const res = await axios.get(`https://gogather-server.onrender.com/api/events/${id}`);
                     const ev = res.data;
 
                     let isoDate = "";
@@ -87,7 +87,7 @@ const AddEvent = () => {
                 const token = localStorage.getItem("token");
                 if (token) {
                     try {
-                        const res = await axios.get("http://localhost:5000/api/auth/me", {
+                        const res = await axios.get("https://gogather-server.onrender.com/api/auth/me", {
                             headers: { Authorization: `Bearer ${token}` }
                         });
                         setForm(prev => ({
@@ -146,10 +146,10 @@ const AddEvent = () => {
             };
 
             if (id) {
-                await axios.put(`http://localhost:5000/api/events/${id}`, formData, config);
+                await axios.put(https://gogather-server.onrender.com/api/events/${id}`, formData, config);
                 setModalType("update");
             } else {
-                await axios.post("http://localhost:5000/api/events", formData, config);
+                await axios.post("https://gogather-server.onrender.com/api/events", formData, config);
                 setModalType("create");
             }
             setShowSuccess(true);
