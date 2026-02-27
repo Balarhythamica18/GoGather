@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { CheckCircle, XCircle, Clock, MapPin, User, Mail, Calendar } from "lucide-react";
 import toast from "react-hot-toast";
+import { getImageUrl } from "../../utils/imageUtils";
 import "../admin/Admin.css";
 
 const EventApprovals = () => {
@@ -62,7 +63,7 @@ const EventApprovals = () => {
                     {pendingEvents.map((event) => (
                         <div key={event._id} className="approval-card">
                             <div className="approval-card__image">
-                                <img src={event.image || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=400"} alt={event.title} />
+                                <img src={event.image ? getImageUrl(event.image) : "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=400"} alt={event.title} />
                                 <div className="status-badge-mini"><Clock size={12} /> Pending Review</div>
                             </div>
 

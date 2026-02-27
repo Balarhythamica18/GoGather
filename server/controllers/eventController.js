@@ -18,7 +18,7 @@ export const createEvent = async (req, res) => {
       month = `${year}-${monthNum}`;
     }
 
-    const imageUrl = req.file ? `http://localhost:5000/uploads/${req.file.filename}` : null;
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
     // Attach organizer from authenticated user when available
     const eventData = {
@@ -175,7 +175,7 @@ export const updateEvent = async (req, res) => {
 
     // Image: if a new file uploaded, use it; else if image field provided, use it; otherwise preserve existing
     if (req.file) {
-      event.image = `http://localhost:5000/uploads/${req.file.filename}`;
+      event.image = `/uploads/${req.file.filename}`;
     } else if (otherData.image) {
       event.image = otherData.image;
     }

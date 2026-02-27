@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
+import { getImageUrl } from "../../utils/imageUtils";
 import { useNavigate, useParams } from "react-router-dom";
 import { addressOptions, getAddressesByLocation } from "../../data/addressOptions";
 import {
@@ -311,7 +312,7 @@ const AddEvent = () => {
                                 <div style={styles.imageUploadArea}>
                                     {(preview || form.image) ? (
                                         <div style={styles.previewWrapper}>
-                                            <img src={preview || form.image} alt="Preview" style={styles.previewImage} />
+                                            <img src={preview || getImageUrl(form.image)} alt="Preview" style={styles.previewImage} />
                                             <button
                                                 type="button"
                                                 style={styles.removeImageBtn}

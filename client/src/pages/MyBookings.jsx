@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Calendar, MapPin, Ticket, X, QrCode, ShieldCheck, CheckCircle2, AlertTriangle } from "lucide-react";
+import { getImageUrl } from "../utils/imageUtils";
 import "./MyBookings.css";
 
 const MyBookings = () => {
@@ -106,7 +107,7 @@ const MyBookings = () => {
           bookings.map((booking) => (
             <div key={booking._id} className="premium-booking-card">
               <div className="card-image-section">
-                <img src={booking.event?.image} alt={booking.event?.title} />
+                <img src={getImageUrl(booking.event?.image)} alt={booking.event?.title} />
                 <span className={`status-badge ${booking.status} ${booking.isUsed ? 'used' : ''}`}>
                   {booking.status === 'cancelled' ? 'Cancelled' : (booking.isUsed ? 'Already Used' : 'Upcoming')}
                 </span>

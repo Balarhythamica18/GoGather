@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
+import { getImageUrl } from "../../utils/imageUtils";
 import {
   Calendar,
   MapPin,
@@ -358,7 +359,7 @@ const OrganizerDashboard = () => {
                   {filteredEvents.map((event) => (
                     <div key={event._id} style={styles.eventCard}>
                       <div style={styles.cardImageWrapper}>
-                        <img src={event.image} alt={event.title} style={styles.cardImage} />
+                        <img src={getImageUrl(event.image)} alt={event.title} style={styles.cardImage} />
                         <div style={{
                           ...styles.statusTag,
                           ...(event.status === "approved" ? styles.statusApproved :

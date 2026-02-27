@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
+import { getImageUrl } from "../../utils/imageUtils";
 import "./ComedyShow.css";
 
 const ComedyShow = () => {
@@ -79,7 +80,7 @@ const ComedyShow = () => {
           <article key={show._id} className="card">
             <div className="card__image">
               <img
-                src={show.image}
+                src={getImageUrl(show.image)}
                 alt={show.title}
                 onError={(e) => (e.target.src = "/top/placeholder.png")}
               />

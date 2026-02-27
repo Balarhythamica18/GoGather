@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
+import { getImageUrl } from "../../utils/imageUtils";
 import "./Event.css";
 
 const Event = () => {
@@ -187,7 +188,7 @@ const Event = () => {
             )}
 
             <img
-              src={event.image}
+              src={getImageUrl(event.image)}
               alt={event.title}
               className="event-image"
             />

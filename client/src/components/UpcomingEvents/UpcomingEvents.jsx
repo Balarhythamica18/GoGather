@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
+import { getImageUrl } from "../../utils/imageUtils";
 import "./UpcomingEvents.css";
 
 const UpcomingEvents = () => {
@@ -76,7 +77,7 @@ const UpcomingEvents = () => {
           >
             <div className="event-img">
               <div className="upcoming-badge">Upcoming</div>
-              <img src={event.image} alt={event.title} />
+              <img src={getImageUrl(event.image)} alt={event.title} />
               <div className="location-box">📍 {event.location}</div>
             </div>
 

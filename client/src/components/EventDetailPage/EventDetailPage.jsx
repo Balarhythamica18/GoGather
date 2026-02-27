@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
+import { getImageUrl } from "../../utils/imageUtils";
 import "./EventDetailPage.css";
 import { useFavorites } from "../../context/FavoritesContext";
 import { Heart } from "lucide-react";
@@ -49,7 +50,7 @@ const EventDetailPage = () => {
     <div className="edp-wrapper">
       <div className="edp-left">
         <div className="edp-image-box">
-          <img src={event.image} alt={event.title} />
+          <img src={getImageUrl(event.image)} alt={event.title} />
         </div>
 
         {event.aboutEvent && (

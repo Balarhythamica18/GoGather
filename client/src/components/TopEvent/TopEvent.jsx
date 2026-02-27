@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
+import { getImageUrl } from "../../utils/imageUtils";
 import "./TopEvent.css";
 
 const TopEvent = () => {
@@ -83,7 +84,7 @@ const TopEvent = () => {
           <article key={ev._id} className="card">
             <div className="card__image">
               <img
-                src={ev.image}
+                src={getImageUrl(ev.image)}
                 alt={ev.title}
                 onClick={() => navigate(`/events/top/${ev._id}`)}
                 onError={(e) => (e.target.src = "/top/placeholder.png")}
