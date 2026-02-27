@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../../config";
 import "./UpcomingEvents.css";
 
 const UpcomingEvents = () => {
@@ -11,7 +12,7 @@ const UpcomingEvents = () => {
   useEffect(() => {
     const fetchUpcoming = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/events");
+        const res = await axios.get(`${API_BASE_URL}/api/events`);
 
         const upcomingFiltered = res.data.filter((event) => {
           if (event.declaration) return true;

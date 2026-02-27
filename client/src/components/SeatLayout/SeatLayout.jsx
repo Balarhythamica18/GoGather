@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import io from "socket.io-client";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../config";
 import "./SeatLayout.css";
 
 const rows = ["A", "B", "C", "D", "E"];
-const socket = io("http://localhost:5000");
+const socket = io(API_BASE_URL);
 
 /* ⭐ SAFE PARSE HELPER (PREVENT JSON CRASH) */
 const safeParse = (value) => {

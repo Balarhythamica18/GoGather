@@ -1,6 +1,7 @@
 import io from "socket.io-client";
+import { API_BASE_URL } from "./config";
 
 // Centralized socket connection
-const socket = io("http://localhost:5000");
+const socket = io(API_BASE_URL);
 
 export default socket;

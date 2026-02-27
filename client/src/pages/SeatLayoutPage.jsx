@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 import SeatLayout from "../components/SeatLayout/SeatLayout";
 
 const SeatLayoutPage = () => {
@@ -14,7 +15,7 @@ const SeatLayoutPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.get(`http://localhost:5000/api/events/${id}`);
+        const res = await axios.get(`${API_BASE_URL}/api/events/${id}`);
         setEvent(res.data);
       } catch (err) {
         setError(err.response?.data?.message || err.message);

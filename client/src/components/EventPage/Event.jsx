@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../../config";
 import "./Event.css";
 
 const Event = () => {
@@ -26,7 +27,7 @@ const Event = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/events")
+      .get(`${API_BASE_URL}/api/events`)
       .then((res) => setEvents(res.data))
       .catch((err) => console.error(err));
   }, []);

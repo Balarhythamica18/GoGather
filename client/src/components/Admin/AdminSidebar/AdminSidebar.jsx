@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import io from "socket.io-client";
+import { API_BASE_URL } from "../../../config";
 import {
   LayoutDashboard,
   Users,
@@ -41,7 +42,7 @@ const AdminSidebar = () => {
 
     fetchPendingCount();
 
-    const socket = io("http://localhost:5000");
+    const socket = io(API_BASE_URL);
     socket.on("pendingCountUpdate", ({ count }) => {
       setPendingCount(count);
     });

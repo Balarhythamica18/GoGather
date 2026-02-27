@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../../config";
 import {
   Calendar,
   MapPin,
@@ -68,7 +69,7 @@ const OrganizerDashboard = () => {
       if (token) {
         // Fetch events
         try {
-          const eventsRes = await axios.get("http://localhost:5000/api/events/my", config);
+          const eventsRes = await axios.get(`${API_BASE_URL}/api/events/my`, config);
           setEvents(eventsRes.data);
         } catch (err) {
           console.error("Error fetching events:", err);
@@ -76,13 +77,13 @@ const OrganizerDashboard = () => {
 
         // Fetch stats
         try {
-          const statsRes = await axios.get("http://localhost:5000/api/events/stats", config);
+          const statsRes = await axios.get(`${API_BASE_URL}/api/events/stats`, config);
           setStats(statsRes.data);
         } catch (err) {
           console.error("Error fetching stats:", err);
         }
       } else {
-        const res = await axios.get("http://localhost:5000/api/events");
+        const res = await axios.get(`${API_BASE_URL}/api/events`);
         setEvents(res.data);
       }
     } catch (error) {
@@ -101,7 +102,7 @@ const OrganizerDashboard = () => {
     try {
       const token = localStorage.getItem("token");
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      await axios.delete(`http://localhost:5000/api/events/${eventToDelete._id}`, config);
+      await axios.delete(`${API_BASE_URL}/api/events/${eventToDelete._id}`, config);
       fetchData();
       setShowConfirmation(false);
       setEventToDelete(null);
@@ -130,7 +131,7 @@ const OrganizerDashboard = () => {
       const token = localStorage.getItem("token");
       if (token) {
         try {
-          const profile = await axios.get("http://localhost:5000/api/auth/me", {
+          const profile = await axios.get(`${API_BASE_URL}/api/auth/me`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           setOrganizerName(profile.data.name || "");
@@ -162,7 +163,7 @@ const OrganizerDashboard = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.put("http://localhost:5000/api/auth/update-profile", {
+      const res = await axios.put(`${API_BASE_URL}/api/auth/update-profile`, {
         name: settingsForm.name,
         email: settingsForm.email
       }, {
@@ -193,7 +194,7 @@ const OrganizerDashboard = () => {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.put("http://localhost:5000/api/auth/update-profile", {
+      await axios.put(`${API_BASE_URL}/api/auth/update-profile`, {
         currentPassword: settingsForm.currentPassword,
         password: settingsForm.newPassword
       }, {

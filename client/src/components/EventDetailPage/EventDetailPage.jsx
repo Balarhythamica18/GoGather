@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from "../../config";
 import "./EventDetailPage.css";
 import { useFavorites } from "../../context/FavoritesContext";
 import { Heart } from "lucide-react";
@@ -22,7 +23,7 @@ const EventDetailPage = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/api/events/${id}`)
+      .get(`${API_BASE_URL}/api/events/${id}`)
       .then((res) => setEvent(res.data))
       .catch((err) => console.error(err));
   }, [id]);
