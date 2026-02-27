@@ -1,6 +1,7 @@
 import Event from "../models/Event.js";
 import User from "../models/User.js";
 import Booking from "../models/Booking.js";
+import { sendEventPendingNotification } from "../services/notificationService.js";
 
 export const createEvent = async (req, res) => {
   try {
@@ -55,6 +56,15 @@ export const createEvent = async (req, res) => {
     console.log("Creating event with image:", eventData.image);
 
     const event = await Event.create(eventData);
+
+    // Notify Admin
+    const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
+    sendEventPendingNotification(
+      adminEmail,
+      { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
+      { title: event.title, location: event.location, date: event.date, month: event.month }
+    );
+
     res.status(201).json(event);
   } catch (error) {
     console.error("Error creating event:", error.message);
@@ -194,6 +204,14 @@ export const updateEvent = async (req, res) => {
     // Reset status to pending if an organizer edits the event
     if (req.user?.role !== "admin") {
       event.status = "pending";
+
+      // Notify Admin about the edit
+      const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
+      sendEventPendingNotification(
+        adminEmail,
+        { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
+        { title: `${event.title} (Updated)`, location: event.location, date: event.date, month: event.month }
+      );
     } else if (otherData.status) {
       // Allow admins to update status directly if needed (though usually handled via admin routes)
       event.status = otherData.status;
@@ -234,6 +252,7 @@ export const getMyStats = async (req, res) => {
       totalBookingsCount += (booking.ticketCount || booking.seats?.length || 1);
       totalRevenue += booking.amount || 0;
     });
+    totalRevenue = Math.round(totalRevenue * 100) / 100;
 
     const stats = {
       totalEvents: events.length,

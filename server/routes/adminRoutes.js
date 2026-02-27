@@ -4,6 +4,7 @@ import { authorizeRoles } from "../middleware/roleMiddleware.js";
 import User from "../models/User.js";
 import Event from "../models/Event.js";
 import Booking from "../models/Booking.js";
+import { sendEventStatusUpdateNotification } from "../services/notificationService.js";
 
 const router = express.Router();
 
@@ -158,9 +159,12 @@ router.get(
       // Calculate revenue accurately using the 'amount' field in confirmed bookings
       const confirmedBookingsData = await Booking.find({ status: "confirmed" });
       let totalRevenue = 0;
+      let totalBookingsCount = 0;
       confirmedBookingsData.forEach(booking => {
+        totalBookingsCount += (booking.ticketCount || booking.seats?.length || 1);
         totalRevenue += booking.amount || 0;
       });
+      totalRevenue = Math.round(totalRevenue * 100) / 100;
 
       res.json({
         users: {
@@ -268,16 +272,21 @@ router.patch(
         return res.status(400).json({ message: "Invalid status" });
       }
 
-      const event = await Event.findByIdAndUpdate(
-        req.params.id,
-        { status },
-        { new: true }
-      );
-
+      const event = await Event.findById(req.params.id).populate("organizer", "email name");
       if (!event) return res.status(404).json({ message: "Event not found" });
+
+      event.status = status;
+      await event.save();
+
+      // Notify Organizer
+      const organizerEmail = event.organizer?.email || event.organizerDetails?.contactEmail;
+      if (organizerEmail) {
+        sendEventStatusUpdateNotification(organizerEmail, event.title, status);
+      }
 
       res.json({ message: `Event ${status} successfully`, event });
     } catch (error) {
+      console.error("Error updating event status:", error);
       res.status(500).json({ message: "Error updating event status" });
     }
   }

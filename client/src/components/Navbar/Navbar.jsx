@@ -45,6 +45,7 @@ const Navbar = () => {
     localStorage.removeItem("role");
     localStorage.removeItem("name");
     localStorage.removeItem("user");
+    window.dispatchEvent(new Event("storageChange")); // Notify other components
     setIsLoggedIn(false);
     setUsername("");
     navigate("/");

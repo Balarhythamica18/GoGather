@@ -53,7 +53,7 @@ router.post("/create-payment", async (req, res) => {
     let discountApplied = false;
 
     if (isFirstBooking) {
-      finalAmount = amount * 0.8; // 20% Off
+      finalAmount = Math.round(amount * 0.8 * 100) / 100; // 20% Off, Rounded
       discountApplied = true;
     }
 
@@ -239,7 +239,7 @@ router.post("/cancel", authMiddleware, async (req, res) => {
       refundPolicy = "50% Refund (24-48 hours notice)";
     }
 
-    const refundAmount = (booking.amount * refundPercentage) / 100;
+    const refundAmount = Math.round((booking.amount * refundPercentage) / 100 * 100) / 100;
 
     // Update booking status
     booking.status = "cancelled";

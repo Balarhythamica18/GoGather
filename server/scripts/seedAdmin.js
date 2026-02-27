@@ -16,7 +16,10 @@ const seedAdmin = async () => {
         const existingAdmin = await User.findOne({ email: adminEmail });
 
         if (existingAdmin) {
-            console.log("Admin already exists. Skipping... ✅");
+            console.log("Admin already exists. Updating verification status... 🔄");
+            existingAdmin.isVerified = true;
+            await existingAdmin.save();
+            console.log("Admin status updated successfully! ✅");
             process.exit(0);
         }
 
@@ -27,6 +30,7 @@ const seedAdmin = async () => {
             email: adminEmail,
             password: hashedPassword,
             role: "admin",
+            isVerified: true,
         });
 
         await adminUser.save();
