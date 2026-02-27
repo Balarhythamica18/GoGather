@@ -41,7 +41,7 @@ const AdminSidebar = () => {
 
     fetchPendingCount();
 
-    const socket = io("http://localhost:5000");
+    const socket = io("https://gogather-server.onrender.com");
     socket.on("pendingCountUpdate", ({ count }) => {
       setPendingCount(count);
     });
