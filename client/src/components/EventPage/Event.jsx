@@ -42,7 +42,7 @@ const Event = () => {
             const eventDate = new Date(`${event.month}-${event.date}`);
             const currentDate = new Date();
             const oneMonthLater = new Date(
-              currentDate.getTime() + 30 * 24 * 60 * 60 * 1000
+              currentDate.getTime() + 45 * 24 * 60 * 60 * 1000
             );
 
             if (eventDate > oneMonthLater) {
@@ -209,7 +209,11 @@ const Event = () => {
                   })()}
                 </span>
                 {event.price && (
-                  <span className="event-price">{event.price}</span>
+                  <span className="event-price">
+                    {typeof event.price === 'string' && event.price.toLowerCase() === 'free'
+                      ? "Free"
+                      : `Rs.${event.price}`}
+                  </span>
                 )}
               </div>
 

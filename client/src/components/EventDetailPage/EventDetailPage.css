@@ -2,7 +2,7 @@
 .edp-wrapper {
   display: flex;
   gap: 50px;
-  padding: 120px;
+  padding: 40px 120px;
   background: #fafafa;
 }
 
@@ -179,12 +179,11 @@
 
 /* ===================== RESPONSIVE STYLES ===================== */
 
-/* Tablets */
 @media (max-width: 1024px) {
   .edp-wrapper {
     flex-direction: column;
     /* LEFT on top, RIGHT below */
-    padding: 80px 40px;
+    padding: 30px 40px;
   }
 
   .edp-left,
@@ -208,7 +207,7 @@
 /* Small Tablets / Large Phones */
 @media (max-width: 768px) {
   .edp-wrapper {
-    padding: 60px 30px;
+    padding: 25px 30px;
     gap: 30px;
   }
 
@@ -243,7 +242,7 @@
 /* Mobile Phones */
 @media (max-width: 480px) {
   .edp-wrapper {
-    padding: 90px 20px;
+    padding: 20px 20px;
     gap: 20px;
   }
 

@@ -1,6 +1,5 @@
-/* Page */
 .events-page {
-  padding: 120px 60px;
+  padding: 40px 60px;
   background-color: #ffffff;
 }
 
@@ -410,10 +409,9 @@
 /* Responsive Styles */
 /* ========================= */
 
-/* Tablets */
 @media (max-width: 1024px) {
   .events-page {
-    padding: 80px 40px;
+    padding: 30px 40px;
   }
 
   .events-title {
@@ -436,7 +434,7 @@
 /* Small tablets / large phones */
 @media (max-width: 768px) {
   .events-page {
-    padding: 60px 30px;
+    padding: 25px 30px;
   }
 
   .events-grid {
@@ -457,7 +455,7 @@
 /* Mobile phones */
 @media (max-width: 480px) {
   .events-page {
-    padding: 40px 20px;
+    padding: 20px 20px;
   }
 
   .events-grid {

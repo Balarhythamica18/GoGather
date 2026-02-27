@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Calendar, MapPin, Ticket, X, QrCode, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Calendar, MapPin, Ticket, X, QrCode, ShieldCheck, CheckCircle2, AlertTriangle } from "lucide-react";
 import "./MyBookings.css";
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [confirmModal, setConfirmModal] = useState({ show: false, title: "", message: "", onConfirm: null });
+  const [resultModal, setResultModal] = useState({ show: false, type: "success", title: "", message: "", data: null });
 
   useEffect(() => {
     fetchBookings();
@@ -27,34 +29,65 @@ const MyBookings = () => {
   };
 
   const handleCancel = async (bookingId) => {
-    if (!window.confirm("Are you sure you want to cancel this booking? Refund will be calculated based on the policy.")) return;
-
-    const token = localStorage.getItem("token");
-    try {
-      const res = await axios.post("/api/bookings/cancel", { bookingId }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      alert(`Booking Cancelled Successfully!\n\nPolicy Applied: ${res.data.refundPolicy}\nRefund Amount: ₹${res.data.refundAmount}`);
-      fetchBookings(); // Refresh list
-    } catch (err) {
-      console.error("Cancel error:", err);
-      alert(err.response?.data?.error || "Failed to cancel booking");
-    }
+    setConfirmModal({
+      show: true,
+      title: "Cancel Booking",
+      message: "Are you sure you want to cancel this booking? Refund will be calculated based on the policy.",
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, show: false }));
+        const token = localStorage.getItem("token");
+        try {
+          const res = await axios.post("/api/bookings/cancel", { bookingId }, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setResultModal({
+            show: true,
+            type: "success",
+            title: "Booking Cancelled",
+            message: "Your booking has been cancelled successfully.",
+            data: {
+              policy: res.data.refundPolicy,
+              amount: res.data.refundAmount
+            }
+          });
+          fetchBookings();
+        } catch (err) {
+          console.error("Cancel error:", err);
+          setResultModal({
+            show: true,
+            type: "error",
+            title: "Cancellation Failed",
+            message: err.response?.data?.error || "Failed to cancel booking"
+          });
+        }
+      }
+    });
   };
 
   const handleDelete = async (bookingId) => {
-    if (!window.confirm("Are you sure you want to remove this booking from your history? This action cannot be undone.")) return;
-
-    const token = localStorage.getItem("token");
-    try {
-      await axios.delete(`/api/bookings/${bookingId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      fetchBookings(); // Refresh list
-    } catch (err) {
-      console.error("Delete error:", err);
-      alert(err.response?.data?.error || "Failed to delete booking record");
-    }
+    setConfirmModal({
+      show: true,
+      title: "Delete Record",
+      message: "Are you sure you want to remove this booking from your history? This action cannot be undone.",
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, show: false }));
+        const token = localStorage.getItem("token");
+        try {
+          await axios.delete(`/api/bookings/${bookingId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          fetchBookings();
+        } catch (err) {
+          console.error("Delete error:", err);
+          setResultModal({
+            show: true,
+            type: "error",
+            title: "Delete Failed",
+            message: err.response?.data?.error || "Failed to delete booking record"
+          });
+        }
+      }
+    });
   };
 
   if (loading) return <div className="my-bookings-container"><h2>Loading your experiences...</h2></div>;
@@ -193,35 +226,70 @@ const MyBookings = () => {
       </div>
 
       {/* Ticket Modal */}
-      {selectedTicket && (
-        <div className="ticket-modal-overlay" onClick={() => setSelectedTicket(null)}>
-          <div className="ticket-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <button className="close-modal" onClick={() => setSelectedTicket(null)}><X size={20} /></button>
-              <ShieldCheck size={32} style={{ marginBottom: '12px' }} />
-              <h3 style={{ margin: 0 }}>Entry Pass</h3>
-              <p style={{ margin: '4px 0 0', opacity: 0.8, fontSize: '0.9rem' }}>{selectedTicket.event?.title}</p>
+      {/* Confirmation Modal */}
+      {confirmModal.show && (
+        <div className="ticket-modal-overlay" onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))}>
+          <div className="ticket-modal confirm-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header confirm">
+              <button className="close-modal" onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))}><X size={20} /></button>
+              <AlertTriangle size={32} style={{ marginBottom: '12px', color: '#fff' }} />
+              <h3 style={{ margin: 0 }}>{confirmModal.title}</h3>
             </div>
             <div className="modal-body">
-              <div className="qr-frame">
-                <img src={selectedTicket.qrCode} alt="Ticket QR" />
+              <p style={{ color: '#64748b', lineHeight: '1.6', marginBottom: '24px' }}>{confirmModal.message}</p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  className="modal-btn cancel"
+                  onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))}
+                  style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Go Back
+                </button>
+                <button
+                  className="modal-btn confirm"
+                  onClick={confirmModal.onConfirm}
+                  style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)' }}
+                >
+                  Yes, Confirm
+                </button>
               </div>
-              <div style={{ marginBottom: '20px' }}>
-                <p style={{ margin: '0 0 4px', fontWeight: 700, color: '#1e293b' }}>
-                  {selectedTicket.isUsed ? "Pass Used ✅" : "Scan at Entry"}
-                </p>
-                <span className="ticket-id">#{selectedTicket._id.toString().slice(-8).toUpperCase()}</span>
-              </div>
-              <div style={{ textAlign: 'left', borderTop: '1px solid #f1f5f9', paddingTop: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Seats</span>
-                  <span style={{ fontWeight: 700 }}>{selectedTicket.seats?.join(", ") || selectedTicket.ticketCount}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Result Modal */}
+      {resultModal.show && (
+        <div className="ticket-modal-overlay" onClick={() => setResultModal(prev => ({ ...prev, show: false }))}>
+          <div className="ticket-modal result-modal" onClick={e => e.stopPropagation()}>
+            <div className={`modal-header ${resultModal.type}`}>
+              <button className="close-modal" onClick={() => setResultModal(prev => ({ ...prev, show: false }))}><X size={20} /></button>
+              {resultModal.type === "success" ? <CheckCircle2 size={40} /> : <X size={40} />}
+              <h3 style={{ margin: '12px 0 0' }}>{resultModal.title}</h3>
+            </div>
+            <div className="modal-body">
+              <p style={{ color: '#64748b', lineHeight: '1.6', marginBottom: resultModal.data ? '20px' : '0' }}>{resultModal.message}</p>
+
+              {resultModal.data && (
+                <div style={{ background: '#f0fdf4', padding: '16px', borderRadius: '16px', border: '1px solid #dcfce7', textAlign: 'left', marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem' }}>
+                    <span style={{ color: '#166534', fontWeight: 600 }}>Policy</span>
+                    <span style={{ color: '#166534' }}>{resultModal.data.policy}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem' }}>
+                    <span style={{ color: '#166534', fontWeight: 700 }}>Refund Amount</span>
+                    <span style={{ color: '#166534', fontWeight: 800 }}>₹{resultModal.data.amount}</span>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Full Name</span>
-                  <span style={{ fontWeight: 700 }}>{JSON.parse(localStorage.getItem("user"))?.name}</span>
-                </div>
-              </div>
+              )}
+
+              <button
+                className="modal-btn"
+                onClick={() => setResultModal(prev => ({ ...prev, show: false }))}
+                style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: '#1e293b', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

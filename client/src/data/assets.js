@@ -11,7 +11,7 @@ export const comedyEvents = [
     location: "Chennai",
     address: "The Comedy Club, Nungambakkam, Chennai, Tamil Nadu",
     category: "comedy",
-    price: "₹699",
+    price: 699,
     aboutEvent:
       "Laugh Riot Night 2026 brings together some of the sharpest comedic minds for an evening packed with humor, relatable stories, and witty punchlines. Designed for comedy lovers of all ages, this event promises a lively atmosphere, professional production, and unforgettable laughs.",
     keyHighlights: [
@@ -43,7 +43,7 @@ export const comedyEvents = [
     location: "Bangalore",
     address: "Giggle Hub, MG Road, Bangalore, Karnataka",
     category: "comedy",
-    price: "₹899",
+    price: 899,
     aboutEvent:
       "Punchline Masters is a power-packed stand-up showcase featuring seasoned comics delivering their best material. With nonstop laughs and a vibrant crowd, this show is crafted for audiences who enjoy smart, high-energy humor.",
     keyHighlights: [
@@ -75,7 +75,7 @@ export const comedyEvents = [
     location: "Hyderabad",
     address: "Comedy Central, Banjara Hills, Hyderabad, Telangana",
     category: "comedy",
-    price: "₹799",
+    price: 799,
     aboutEvent:
       "The Ultimate Comedy Jam is an explosive mix of scripted jokes and spontaneous humor. Expect surprise punchlines, comic improvisations, and a night where no two moments feel the same.",
     keyHighlights: [
@@ -107,7 +107,7 @@ export const comedyEvents = [
     location: "Pune",
     address: "The Laugh Lounge, Koregaon Park, Pune, Maharashtra",
     category: "comedy",
-    price: "₹999",
+    price: 999,
     aboutEvent:
       "No Filter Comedy Roast 2026 is a bold, uncensored comedy experience where comedians unleash razor-sharp roasts and fearless humor. Ideal for audiences who enjoy edgy and unapologetic comedy.",
     keyHighlights: [
@@ -139,7 +139,7 @@ export const comedyEvents = [
     location: "Coimbatore",
     address: "Laugh Arena, RS Puram, Coimbatore, Tamil Nadu",
     category: "comedy",
-    price: "₹499",
+    price: 499,
     aboutEvent:
       "Giggles Factory is a comedy marathon featuring a diverse lineup of emerging talents and professional comedians. This show focuses on variety, affordability, and continuous entertainment.",
     keyHighlights: [
@@ -171,7 +171,7 @@ export const comedyEvents = [
     location: "Chennai",
     address: "Chennai Convention Center, Chennai, Tamil Nadu",
     category: "comedy",
-    price: "₹1199",
+    price: 1199,
     aboutEvent:
       "Laugh Till You Drop is a flagship mega comedy show featuring some of the biggest names in Indian stand-up. With grand staging, premium seating, and top-tier performances, this event delivers a blockbuster comedy experience.",
     keyHighlights: [
@@ -407,7 +407,7 @@ export const topevents = [
     location: "Chennai",
     address: "Marina Beach Grounds, Chennai, Tamil Nadu",
     category: "food",
-    price: "₹799",
+    price: 799,
     aboutEvent:
       "Global Street Food Carnival 2026 is a grand food festival showcasing authentic street food from across the globe. With over 70 curated stalls, live chef counters, and cultural performances, the carnival offers an immersive culinary experience.",
     keyHighlights: [
@@ -441,7 +441,7 @@ export const topevents = [
     address:
       "Bangalore International Exhibition Centre, Bangalore, Karnataka",
     category: "food",
-    price: "₹1199",
+    price: 1199,
     aboutEvent:
       "India Food Fiesta – Chef’s Edition 2026 brings celebrity chefs and gourmet cuisine lovers together. Experience live cooking sessions, signature dishes, and premium tasting counters curated exclusively for food connoisseurs.",
     keyHighlights: [
@@ -475,7 +475,7 @@ export const topevents = [
     address:
       "Hussain Sagar Lakefront, Hyderabad, Telangana",
     category: "sport",
-    price: "₹599",
+    price: 599,
     aboutEvent:
       "National Fitness Run – 10K Challenge 2026 is a professionally organized marathon encouraging fitness and endurance. Participants receive race kits, medals, and post-run refreshments.",
     keyHighlights: [
@@ -509,7 +509,7 @@ export const topevents = [
     address:
       "Pune Indoor Sports Complex, Pune, Maharashtra",
     category: "sport",
-    price: "₹999",
+    price: 999,
     aboutEvent:
       "Pro Badminton Super League 2026 features India’s top badminton professionals competing in an electrifying league format.",
     keyHighlights: [
@@ -543,7 +543,7 @@ export const topevents = [
     address:
       "Coimbatore Art Gallery, Coimbatore, Tamil Nadu",
     category: "art",
-    price: "₹499",
+    price: 499,
     aboutEvent:
       "Art Beyond Imagination – Modern Art Expo 2026 showcases contemporary art forms including sculptures, installations, and mixed media works from over 50 artists.",
     keyHighlights: [
@@ -578,7 +578,7 @@ export const topevents = [
     address:
       "Chennai Cultural Center, Chennai, Tamil Nadu",
     category: "art",
-    price: "₹349",
+    price: 349,
     aboutEvent:
       "Colors of Culture – Indian Heritage Art Fair 2026 celebrates India’s rich artistic traditions through folk art, live painting sessions, cultural exhibits, and workshops.",
     keyHighlights: [
@@ -613,7 +613,7 @@ export const topevents = [
     address:
       "Bangalore Palace Grounds, Bangalore, Karnataka",
     category: "concert",
-    price: "₹1599",
+    price: 1599,
     aboutEvent:
       "Mega Night Live – All-Star Music Concert 2026 features India’s top singers delivering blockbuster performances in a high-energy concert setting.",
     keyHighlights: [
@@ -647,7 +647,7 @@ export const topevents = [
     address:
       "Gachibowli Athletic Stadium, Hyderabad, Telangana",
     category: "concert",
-    price: "₹1399",
+    price: 1399,
     aboutEvent:
       "SoundStorm Festival 2026 is a high-octane EDM and fusion music festival featuring renowned DJs and performers from India and across the globe.",
     keyHighlights: [
@@ -682,7 +682,7 @@ export const topevents = [
     address:
       "Chennai Convention Center, Chennai, Tamil Nadu",
     category: "motivational",
-    price: "₹699",
+    price: 699,
     aboutEvent:
       "Rise Again – Motivational Live Talk 2026 brings together renowned motivational speakers sharing insights on success, resilience, and personal growth.",
     keyHighlights: [
@@ -717,7 +717,7 @@ export const topevents = [
     address:
       "Coimbatore Convention Hall, Coimbatore, Tamil Nadu",
     category: "raw-stories",
-    price: "₹2999",
+    price: 2999,
     aboutEvent:
       "Human Stories – Raw & Real Journeys 2026 is a storytelling event where individuals share authentic life experiences that inspire empathy, courage, and reflection.",
     keyHighlights: [
@@ -760,33 +760,35 @@ export const dummyEventDashboardData = {
   totalRevenue: 87450,
   totalUsers: 42,
 
- activeEvents: getRandomEvents(allEvents, 4)
+  activeEvents: getRandomEvents(allEvents, 4)
 
 };
 
-export const dummybookingdata =[
-  { id: 107,
+export const dummybookingdata = [
+  {
+    id: 107,
     month: "APR",
     date: "28",
     title:
       "Mega Night Live – All-Star Music Concert 2026",
     description:
       "A power-packed concert with India’s leading singers performing live.",
-      price:1499,
-      tickets:2,
-      seats:"B12 B13",
+    price: 1499,
+    tickets: 2,
+    seats: "B12 B13",
     image: "/Top/Top7.jpeg",
 
   },
-   { id: 101,
+  {
+    id: 101,
     month: "FEB",
     date: "11",
     title:
       "Global Street Food Carnival 2026",
     description:
       "A vibrant celebration of world street foods with over 70+ stalls and live cooking shows.",
-      price:799,
-      tickets:2,
+    price: 799,
+    tickets: 2,
     image: "/Top/Top1.jpeg",
 
   }

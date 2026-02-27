@@ -47,7 +47,7 @@ const TopEvent = () => {
           );
           const currentDate = new Date();
           const oneMonthLater = new Date(
-            currentDate.getTime() + 30 * 24 * 60 * 60 * 1000
+            currentDate.getTime() + 45 * 24 * 60 * 60 * 1000
           );
           if (eventDate > oneMonthLater) return false;
         } catch (e) {
@@ -110,7 +110,11 @@ const TopEvent = () => {
                   <span className="cat">{ev.category}</span>
                 </div>
                 <div className="meta-right">
-                  <span className="price">{ev.price}</span>
+                  <span className="price">
+                    {typeof ev.price === 'string' && ev.price.toLowerCase() === 'free'
+                      ? "Free"
+                      : `Rs.${ev.price}`}
+                  </span>
                 </div>
               </div>
 

@@ -23,7 +23,7 @@ const UpcomingEvents = () => {
               );
               const currentDate = new Date();
               const oneMonthLater = new Date(
-                currentDate.getTime() + 30 * 24 * 60 * 60 * 1000
+                currentDate.getTime() + 45 * 24 * 60 * 60 * 1000
               );
 
               return eventDate > oneMonthLater;

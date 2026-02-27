@@ -29,7 +29,20 @@ const EventDetailPage = () => {
 
   if (!event) return <h2>Loading...</h2>;
 
-  const isUpcoming = category === "upcoming" || !!event.declaration;
+  const isUpcoming = (() => {
+    if (category === "upcoming" || !!event.declaration) return true;
+    if (event.month && event.date) {
+      try {
+        const eventDate = new Date(`${event.month}-${String(event.date).padStart(2, "0")}`);
+        const currentDate = new Date();
+        const tenDaysLater = new Date(currentDate.getTime() + 45 * 24 * 60 * 60 * 1000);
+        return eventDate > tenDaysLater;
+      } catch (e) {
+        console.error("Error parsing event date:", e);
+      }
+    }
+    return false;
+  })();
 
   return (
     <div className="edp-wrapper">
@@ -101,8 +114,12 @@ const EventDetailPage = () => {
             ) : (
               <div className="edp-price">
                 <strong>Price:</strong>
-                <span className="edp-price-value">{event.price}</span>
-                <span className="edp-onwards">onwards</span>
+                <span className="edp-price-value">
+                  {typeof event.price === 'string' && event.price.toLowerCase() === 'free'
+                    ? " Free"
+                    : ` Rs.${event.price}`}
+                </span>
+
               </div>
             )}
           </div>

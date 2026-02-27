@@ -208,7 +208,11 @@ const ListShows = () => {
                     </span>
                   </td>
                   <td>
-                    <span style={{ fontWeight: '700', color: '#ff007a' }}>{event.price === 'Free' ? 'Free' : `₹${event.price}`}</span>
+                    <span style={{ fontWeight: '700', color: '#ff007a' }}>
+                      {typeof event.price === 'string' && event.price.toLowerCase() === 'free'
+                        ? 'Free'
+                        : `Rs. ${event.price}`}
+                    </span>
                   </td>
                   <td>
                     <div style={{ fontSize: '13px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>

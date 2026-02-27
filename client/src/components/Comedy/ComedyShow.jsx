@@ -45,9 +45,7 @@ const ComedyShow = () => {
           `${event.month}-${String(event.date).padStart(2, "0")}`
         );
         const currentDate = new Date();
-        const oneMonthLater = new Date(
-          currentDate.getTime() + 30 * 24 * 60 * 60 * 1000
-        );
+        const oneMonthLater = new Date(currentDate.getTime() + 45 * 24 * 60 * 60 * 1000);
         if (eventDate > oneMonthLater) return false;
       } catch (e) {
         console.error("Error parsing date:", e);
@@ -106,7 +104,11 @@ const ComedyShow = () => {
                   <span className="cat">{show.category}</span>
                 </div>
                 <div className="meta-right">
-                  <span className="price">{show.price}</span>
+                  <span className="price">
+                    {typeof show.price === 'string' && show.price.toLowerCase() === 'free'
+                      ? "Free"
+                      : `Rs.${show.price}`}
+                  </span>
                 </div>
               </div>
 
