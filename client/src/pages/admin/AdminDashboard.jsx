@@ -30,11 +30,7 @@ const AdminDashboard = () => {
             try {
                 setLoading(true);
                 const token = localStorage.getItem("token");
-<<<<<<< HEAD
                 const res = await axios.get(`${API_BASE_URL}/api/admin/stats`, {
-=======
-                const res = await axios.get("https://gogather-server.onrender.com/api/admin/stats", {
->>>>>>> 1a81392fc39d31825bbe5489ab5a0d5006c7352e
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setStats({

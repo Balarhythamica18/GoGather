@@ -24,11 +24,7 @@ export default function Contact() {
     setSuccess("");
 
     try {
-<<<<<<< HEAD
       await axios.post(`${API_BASE_URL}/api/contact`, formData);
-=======
-      await axios.post("https://gogather-server.onrender.com/api/contact", formData);
->>>>>>> 1a81392fc39d31825bbe5489ab5a0d5006c7352e
       setSuccess("Your message has been sent successfully!");
       setFormData({
         name: "",

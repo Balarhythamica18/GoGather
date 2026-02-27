@@ -15,11 +15,7 @@ const SeatLayoutPage = () => {
       setLoading(true);
       setError(null);
       try {
-<<<<<<< HEAD
         const res = await axios.get(`${API_BASE_URL}/api/events/${id}`);
-=======
-        const res = await axios.get(`https://gogather-server.onrender.com/api/events/${id}`);
->>>>>>> 1a81392fc39d31825bbe5489ab5a0d5006c7352e
         setEvent(res.data);
       } catch (err) {
         setError(err.response?.data?.message || err.message);
