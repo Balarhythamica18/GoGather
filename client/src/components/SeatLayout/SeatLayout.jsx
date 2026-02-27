@@ -36,7 +36,8 @@ const SeatLayout = ({ event, user }) => {
 
   const isSeatBased =
     event?.category?.toLowerCase() !== "art" &&
-    event?.category?.toLowerCase() !== "sport";
+    event?.category?.toLowerCase() !== "sports" &&
+    event?.category?.toLowerCase() !== "food";
 
   const subtotal = isSeatBased
     ? selectedSeats.length * seatPrice
@@ -47,7 +48,7 @@ const SeatLayout = ({ event, user }) => {
 
   /* FETCH BOOKED SEATS */
   useEffect(() => {
-    if (!event?._id) return;
+    if (!event?._id || !isSeatBased) return;
 
     const fetchSeats = async () => {
       try {
@@ -62,11 +63,11 @@ const SeatLayout = ({ event, user }) => {
     };
 
     fetchSeats();
-  }, [event?._id]);
+  }, [event?._id, isSeatBased]);
 
   /* SOCKET EVENTS */
   useEffect(() => {
-    if (!event?._id) return;
+    if (!event?._id || !isSeatBased) return;
 
     socket.emit("joinEvent", event._id);
 
@@ -93,11 +94,11 @@ const SeatLayout = ({ event, user }) => {
       socket.off("seatLocked", onLock);
       socket.off("seatUnlocked", onUnlock);
     };
-  }, [event?._id]);
+  }, [event?._id, isSeatBased]);
 
   /* TOGGLE SEAT */
   const toggleSeat = (seat) => {
-    if (!event?._id) return;
+    if (!event?._id || !isSeatBased) return;
     if (bookedSeats.includes(seat) || lockedSeats[seat]) return;
 
     const isAlreadySelected = selectedSeats.includes(seat);
@@ -130,7 +131,7 @@ const SeatLayout = ({ event, user }) => {
       userId: currentUser._id,
       eventId: event._id,
       seats: selectedSeats,
-      ticketCount: ticketCount || 1,
+      ticketCount: isSeatBased ? selectedSeats.length : ticketCount,
       amount: totalAmount,
     };
 
@@ -153,7 +154,7 @@ const SeatLayout = ({ event, user }) => {
         userEmail: currentUser.email,
         eventId: event._id,
         seats: selectedSeats,
-        ticketCount,
+        ticketCount: isSeatBased ? selectedSeats.length : ticketCount,
         amount: data.amount, // Use amount from server (it might have first-timer discount)
         eventName: event.title,
       };
@@ -171,7 +172,7 @@ const SeatLayout = ({ event, user }) => {
 
   return (
     <div className={`seat-wrapper ${!isSeatBased ? "center-summary" : ""}`}>
-      {isSeatBased && (
+      {isSeatBased ? (
         <div className="seat-left">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2>{event?.title}</h2>
@@ -212,6 +213,13 @@ const SeatLayout = ({ event, user }) => {
             ))}
           </div>
         </div>
+      ) : (
+        <div className="seat-left empty-view" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px' }}>
+          <div style={{ textAlign: 'center' }}>
+            <h2 style={{ fontSize: '24px', color: '#1e293b', marginBottom: '12px' }}>{event?.title}</h2>
+            <p style={{ color: '#64748b' }}>Select number of tickets in the summary section.</p>
+          </div>
+        </div>
       )}
 
       <div className="seat-right">
@@ -221,9 +229,20 @@ const SeatLayout = ({ event, user }) => {
         <p><strong>Location</strong><span>{event?.location}</span></p>
         <p><strong>Address</strong><span>{event?.address}</span></p>
 
-        <p><strong>Seats</strong>
-          <span>{selectedSeats.length ? selectedSeats.join(", ") : "None"}</span>
-        </p>
+        {isSeatBased ? (
+          <p><strong>Seats</strong>
+            <span>{selectedSeats.length ? selectedSeats.join(", ") : "None"}</span>
+          </p>
+        ) : (
+          <div className="ticket-counter">
+            <p><strong>Tickets</strong></p>
+            <div className="counter-controls">
+              <button onClick={decreaseTickets}>-</button>
+              <span>{ticketCount}</span>
+              <button onClick={increaseTickets}>+</button>
+            </div>
+          </div>
+        )}
 
         <p><strong>Price</strong><span>₹{seatPrice}</span></p>
 
@@ -239,11 +258,12 @@ const SeatLayout = ({ event, user }) => {
 
         <button
           className="pay-btn"
-          disabled={selectedSeats.length === 0}
+          disabled={isSeatBased ? selectedSeats.length === 0 : ticketCount === 0}
           onClick={handlePayment}
         >
           Proceed to Payment
         </button>
+
       </div>
     </div>
   );
