@@ -34,7 +34,7 @@ export const sendWelcomeEmail = async (email, name) => {
                         </p>
                         
                         <div style="margin: 30px 0; text-align: center;">
-                            <a href="http://localhost:5173/events" style="background-color: #6366f1; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">Explore Events</a>
+                            <https://gogather-client.onrender.com/events" style="background-color: #6366f1; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">Explore Events</a>
                         </div>
                         
                         <p style="color: #555; font-size: 16px; line-height: 1.6;">
