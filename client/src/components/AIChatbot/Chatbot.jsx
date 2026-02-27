@@ -156,7 +156,10 @@ export default function Chatbot() {
 
                             {loading && (
                                 <div className="thinking-indicator">
-                                    <Loader2 size={16} className="spinner" />
+                                    <div className="modern-spinner">
+                                        <div className="spinner-ring"></div>
+                                        <div className="spinner-ring-inner"></div>
+                                    </div>
                                     <span>AI is drafting a reply...</span>
                                 </div>
                             )}

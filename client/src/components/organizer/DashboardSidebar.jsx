@@ -3,9 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard,
     PlusCircle,
-    Calendar,
-    Users,
-    Settings,
     LogOut,
 } from 'lucide-react';
 
@@ -23,8 +20,6 @@ const DashboardSidebar = ({ organizerName, onLogout }) => {
     const menuItems = [
         { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
         { id: 'add-event', icon: PlusCircle, label: 'Add Event', path: '/add-event' },
-        { id: 'attendees', icon: Users, label: 'Attendees', path: '#' },
-        { id: 'settings', icon: Settings, label: 'Settings', path: '#' },
     ];
 
     return (
