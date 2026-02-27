@@ -1,11 +1,13 @@
 /* Page Center */
 .auth-container {
-  min-height: 100vh;
+  min-height: calc(100vh - 70px - 200px);
+  /* Flex height minus navbar and footer estimate */
   display: flex;
   justify-content: center;
   align-items: center;
   background: #f8fafc;
-  padding: 20px;
+  padding: 80px 20px;
+  /* Increased top/bottom padding for "register top space" */
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
@@ -14,7 +16,7 @@
   width: 100%;
   max-width: 440px;
   background: #ffffff;
-  padding: 48px 40px;
+  padding: 40px 32px;
   border-radius: 24px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
   border: 1px solid #f1f5f9;
@@ -146,6 +148,37 @@
 
 .auth-switch a:hover {
   text-decoration: underline;
+}
+
+/* Google Auth Helpers */
+.google-auth-separator {
+  margin: 24px 0;
+  text-align: center;
+  position: relative;
+}
+
+.google-auth-separator hr {
+  border: 0;
+  border-top: 1px solid #f1f5f9;
+}
+
+.google-auth-separator span {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  padding: 0 12px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.google-login-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 8px;
 }
 
 /* Popups */

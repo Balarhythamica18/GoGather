@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
+import { toast } from "react-hot-toast";
 import "./Auth.css";
 
 const Login = () => {
@@ -53,7 +55,50 @@ const Login = () => {
       }, 1000);
 
     } catch (err) {
+      if (err.response?.status === 401 && err.response?.data?.unverified) {
+        setError(err.response.data.message);
+        setTimeout(() => {
+          navigate("/verify-otp", { state: { email: form.email } });
+        }, 2000);
+        return;
+      }
       setError(err.response?.data?.message || "Authentication failed. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      const res = await axios.post("/api/auth/google-login", {
+        token: credentialResponse.credential
+      });
+
+      if (!res.data?.token || !res.data?.user) {
+        setError("Invalid server response");
+        setLoading(false);
+        return;
+      }
+
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("name", res.data.user.name || "");
+      localStorage.setItem("role", res.data.user.role || "");
+
+      window.dispatchEvent(new Event("storageChange"));
+      setSuccess("Welcome back! Redirecting...");
+
+      setTimeout(() => {
+        if (res.data.user.role === "admin") {
+          navigate("/admin", { replace: true });
+        } else if (res.data.user.role === "organizer") {
+          navigate("/dashboard", { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
+      }, 1000);
+    } catch (err) {
+      setError(err.response?.data?.message || "Google Login failed");
       setLoading(false);
     }
   };
@@ -107,6 +152,26 @@ const Login = () => {
             {loading ? "Authenticating..." : "Login"}
           </button>
         </form>
+
+        <div className="google-auth-separator">
+          <hr />
+          <span>OR</span>
+        </div>
+
+        <div className="google-login-wrapper">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => {
+              setError("Google Login Failed");
+              toast.error("Google Login Failed");
+            }}
+            theme="outline"
+            shape="pill"
+            text="continue_with"
+            size="large"
+            width="100%"
+          />
+        </div>
 
         <p className="auth-switch">
           Don’t have an account? <Link to="/register">Create one for free</Link>

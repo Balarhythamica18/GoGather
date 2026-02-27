@@ -1,5 +1,6 @@
 import React from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import ScrollToTop from "./components/ScrollToTop";
@@ -22,6 +23,7 @@ import SeatLayoutPage from "./pages/SeatLayoutPage";
 /*  AUTH */
 import Login from "./pages/auth/Login.jsx";
 import Register from "./pages/auth/Register";
+import VerifyOTP from "./pages/auth/VerifyOTP";
 
 /*  ADMIN */
 import AdminProtectedRoute from "./components/common/AdminProtectedRoute";
@@ -62,55 +64,58 @@ const App = () => {
   );
 
   return (
-    <div className="app-layout">
-      <Toaster position="top-right" />
-      <ScrollToTop />
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <div className="app-layout">
+        <Toaster position="top-right" />
+        <ScrollToTop />
 
-      {!hideLayoutRoutes && <Navbar />}
+        {!hideLayoutRoutes && <Navbar />}
 
-      <main className="main-content">
-        <Routes>
+        <main className="main-content">
+          <Routes>
 
-          {/* 🌍 PUBLIC ROUTES */}
-          <Route path="/" element={<Home />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/events/:category/:id" element={<Eventdetails />} />
-          <Route path="/favorites" element={<FavoritePage />} />
-          <Route path="/my-bookings" element={<MyBookings />} />
-          <Route path="/seats/:category/:id" element={<SeatLayoutPage />} />
-          <Route path="/contact" element={<ContactForm />} />
-          <Route path="/payment" element={<PaymentPage />} />
-          <Route path="/confirmation" element={<ConfirmationPage />} />
+            {/* 🌍 PUBLIC ROUTES */}
+            <Route path="/" element={<Home />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/events/:category/:id" element={<Eventdetails />} />
+            <Route path="/favorites" element={<FavoritePage />} />
+            <Route path="/my-bookings" element={<MyBookings />} />
+            <Route path="/seats/:category/:id" element={<SeatLayoutPage />} />
+            <Route path="/contact" element={<ContactForm />} />
+            <Route path="/payment" element={<PaymentPage />} />
+            <Route path="/confirmation" element={<ConfirmationPage />} />
 
-          {/* 🔐 AUTH ROUTES */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+            {/* 🔐 AUTH ROUTES */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/verify-otp" element={<VerifyOTP />} />
 
-          {/* 👑 ADMIN AREA */}
-          <Route element={<AdminProtectedRoute />}>
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="users" element={<UserManagement />} />
-              <Route path="list-shows" element={<ListShows />} />
-              <Route path="list-bookings" element={<ListBookings />} />
-              <Route path="event-approvals" element={<EventApprovals />} />
-              <Route path="scan-entry" element={<QRScannerPage />} />
+            {/* 👑 ADMIN AREA */}
+            <Route element={<AdminProtectedRoute />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="list-shows" element={<ListShows />} />
+                <Route path="list-bookings" element={<ListBookings />} />
+                <Route path="event-approvals" element={<EventApprovals />} />
+                <Route path="scan-entry" element={<QRScannerPage />} />
+              </Route>
             </Route>
-          </Route>
 
-          {/* 🎤 ORGANIZER DASHBOARD */}
-          <Route path="/dashboard" element={<OrganizerDashboard />} />
-          <Route path="/my-events" element={<OrganizerDashboard />} />
-          <Route path="/add-event" element={<AddEvent />} />
-          <Route path="/add-event/:id" element={<AddEvent />} />
+            {/* 🎤 ORGANIZER DASHBOARD */}
+            <Route path="/dashboard" element={<OrganizerDashboard />} />
+            <Route path="/my-events" element={<OrganizerDashboard />} />
+            <Route path="/add-event" element={<AddEvent />} />
+            <Route path="/add-event/:id" element={<AddEvent />} />
 
-        </Routes>
-      </main>
+          </Routes>
+        </main>
 
-      <Chatbot />
+        <Chatbot />
 
-      {!hideLayoutRoutes && <Footer />}
-    </div>
+        {!hideLayoutRoutes && <Footer />}
+      </div>
+    </GoogleOAuthProvider>
   );
 };
 

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
+import { toast } from "react-hot-toast";
 import "./Auth.css";
 
 const Register = () => {
@@ -51,14 +53,51 @@ const Register = () => {
         role
       });
 
-      setSuccess("Account created successfully! Redirecting...");
+      setSuccess("Account created successfully! Please verify your email.");
 
       setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+        navigate("/verify-otp", { state: { email: form.email } });
+      }, 2000);
 
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      const res = await axios.post("/api/auth/google-login", {
+        token: credentialResponse.credential,
+        role: role // Use the currently selected role
+      });
+
+      if (!res.data?.token || !res.data?.user) {
+        setError("Invalid server response");
+        setLoading(false);
+        return;
+      }
+
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("name", res.data.user.name || "");
+      localStorage.setItem("role", res.data.user.role || "");
+
+      window.dispatchEvent(new Event("storageChange"));
+      setSuccess("Account verified with Google! Redirecting...");
+
+      setTimeout(() => {
+        if (res.data.user.role === "admin") {
+          navigate("/admin", { replace: true });
+        } else if (res.data.user.role === "organizer") {
+          navigate("/dashboard", { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
+      }, 1000);
+    } catch (err) {
+      setError(err.response?.data?.message || "Google Signup failed");
       setLoading(false);
     }
   };
@@ -154,6 +193,26 @@ const Register = () => {
             {loading ? "Creating Account..." : "Register Now"}
           </button>
         </form>
+
+        <div className="google-auth-separator">
+          <hr />
+          <span>OR</span>
+        </div>
+
+        <div className="google-login-wrapper">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => {
+              setError("Google Registration Failed");
+              toast.error("Google Registration Failed");
+            }}
+            theme="outline"
+            shape="pill"
+            text="signup_with"
+            size="large"
+            width="100%"
+          />
+        </div>
 
         <p className="auth-switch">
           Already have an account? <Link to="/login">Login here</Link>

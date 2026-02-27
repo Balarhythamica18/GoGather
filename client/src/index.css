@@ -42,9 +42,14 @@ body {
   flex-direction: column;
 }
 
+:root {
+  --navbar-height: 70px;
+}
+
 /* Push content below fixed navbar */
 .main-content {
   flex: 1;
   padding-top: var(--navbar-height);
+  padding-bottom: 40px;
+  /* Space above footer */
 }
-
