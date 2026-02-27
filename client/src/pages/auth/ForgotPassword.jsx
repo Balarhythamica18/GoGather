@@ -3,7 +3,8 @@ import axios from "axios";
 import { Mail, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import "./Auth.css";
+import { API_BASE_URL } from "../../config";
+import "./auth.css";
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState("");
@@ -15,7 +16,7 @@ const ForgotPassword = () => {
         setLoading(true);
 
         try {
-            const res = await axios.post("/api/auth/forgot-password", { email });
+            const res = await axios.post(`${API_BASE_URL}/api/auth/forgot-password`, { email });
             toast.success(res.data.message);
             navigate("/reset-password", { state: { email } });
         } catch (err) {

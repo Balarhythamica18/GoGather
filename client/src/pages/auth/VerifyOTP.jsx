@@ -3,7 +3,8 @@ import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Mail, CheckCircle, RefreshCw, ArrowLeft } from "lucide-react";
 import { toast } from "react-hot-toast";
-import "./Auth.css";
+import { API_BASE_URL } from "../../config";
+import "./auth.css";
 
 const VerifyOTP = () => {
     const navigate = useNavigate();
@@ -53,7 +54,7 @@ const VerifyOTP = () => {
         }
 
         try {
-            const res = await axios.post("/api/auth/verify-otp", {
+            const res = await axios.post(`${API_BASE_URL}/api/auth/verify-otp`, {
                 email,
                 otp: otpValue,
                 password: password || undefined
@@ -74,7 +75,7 @@ const VerifyOTP = () => {
     const handleResend = async () => {
         setResending(true);
         try {
-            const res = await axios.post("/api/auth/resend-otp", { email });
+            const res = await axios.post(`${API_BASE_URL}/api/auth/resend-otp`, { email });
             toast.success(res.data.message || "OTP resent to your email");
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to resend OTP");

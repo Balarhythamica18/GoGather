@@ -4,7 +4,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
 import { toast } from "react-hot-toast";
-import "./Auth.css";
+import { API_BASE_URL } from "../../config";
+import "./auth.css";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ const Login = () => {
 
     try {
       // Use relative path for better environment compatibility
-      const res = await axios.post("/api/auth/login", form);
+      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, form);
 
       if (!res.data?.token || !res.data?.user) {
         setError("Invalid server response");
@@ -70,7 +71,7 @@ const Login = () => {
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       setLoading(true);
-      const res = await axios.post("/api/auth/google-login", {
+      const res = await axios.post(`${API_BASE_URL}/api/auth/google-login`, {
         token: credentialResponse.credential
       });
 

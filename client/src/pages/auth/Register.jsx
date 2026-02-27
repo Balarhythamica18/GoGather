@@ -4,7 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
 import { toast } from "react-hot-toast";
-import "./Auth.css";
+import { API_BASE_URL } from "../../config";
+import "./auth.css";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ const Register = () => {
 
     setLoading(true);
     try {
-      await axios.post("/api/auth/register", {
+      await axios.post(`${API_BASE_URL}/api/auth/register`, {
         name: form.name,
         email: form.email,
         password: form.password,
@@ -68,7 +69,7 @@ const Register = () => {
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       setLoading(true);
-      const res = await axios.post("/api/auth/google-login", {
+      const res = await axios.post(`${API_BASE_URL}/api/auth/google-login`, {
         token: credentialResponse.credential,
         role: role // Use the currently selected role
       });

@@ -3,7 +3,8 @@ import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { toast } from "react-hot-toast";
-import "./Auth.css";
+import { API_BASE_URL } from "../../config";
+import "./auth.css";
 
 const ResetPassword = () => {
     const navigate = useNavigate();
@@ -43,7 +44,7 @@ const ResetPassword = () => {
 
         setLoading(true);
         try {
-            const res = await axios.post("/api/auth/reset-password", {
+            const res = await axios.post(`${API_BASE_URL}/api/auth/reset-password`, {
                 email,
                 otp: otpValue,
                 newPassword
