@@ -40,8 +40,11 @@ import EventApprovals from "./pages/admin/EventApprovals";
 import OrganizerDashboard from "./pages/organizer/OrganizerDashboard";
 import AddEvent from "./pages/organizer/AddEvent";
 
-import io from "socket.io-client";
-const socket = io("http://localhost:5000");
+import socket from "./socket";
+
+import SquadChat from "./components/Squads/SquadChat";
+
+import FloatingSquadChat from "./components/Squads/FloatingSquadChat";
 
 const App = () => {
   const location = useLocation();
@@ -110,9 +113,11 @@ const App = () => {
             <Route path="/add-event" element={<AddEvent />} />
             <Route path="/add-event/:id" element={<AddEvent />} />
 
+            <Route path="/squad-chat" element={<div className="p-10 text-center text-white">Squad Chat is now floating! Look for the icon at the bottom right.</div>} />
           </Routes>
         </main>
 
+        <FloatingSquadChat />
         <Chatbot />
 
         {!hideLayoutRoutes && <Footer />}

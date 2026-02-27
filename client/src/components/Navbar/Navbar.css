@@ -224,7 +224,6 @@
   transform: translateY(-100%);
   transition: transform 0.35s ease-in-out;
   z-index: 1000;
-  /* Increased to be above the navbar container if needed, but below popups */
   padding-top: 40px;
 }
 
@@ -284,5 +283,27 @@
 @media (min-width: 1440px) {
   .navbar-container {
     padding: 0 160px;
+  }
+}
+
+/* ===== FIX: NAVBAR VISIBILITY FOR SMALL & MEDIUM DEVICES ===== */
+@media (max-width: 1023px) {
+
+  .navbar-container {
+    z-index: 2000 !important;
+  }
+
+  .mobile-menu {
+    z-index: 1500 !important;
+  }
+
+  body {
+    padding-top: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding-top: 60px;
   }
 }

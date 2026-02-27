@@ -149,21 +149,59 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("seatUnlocked", { eventId, seat });
   });
 
-  socket.on("disconnect", async () => {
-    console.log("Client disconnected:", socket.id);
-    // If you have a way to track which user was on this socket
-    // For now, an improved way is to identify user on connection
+  // Squad Chat Events
+  socket.on("join-squad", ({ code, user }) => {
+    socket.join(code);
+    console.log(`[SQUAD] User ${user.name} joined squad: ${code}`);
+    // Notify others in the squad
+    socket.to(code).emit("squad-notification", {
+      type: "user-joined",
+      message: `${user.name} joined the squad!`,
+      timestamp: new Date()
+    });
+  });
+
+  socket.on("send-squad-message", ({ code, message, user, id }) => {
+    console.log(`[SQUAD] Msg from ${user.name} to room ${code}: ${message}`);
+    const messageData = {
+      id: id || (Date.now() + Math.random().toString(36).substr(2, 9)),
+      text: message,
+      sender: user,
+      timestamp: new Date()
+    };
+    // Send to everyone in the room including sender
+    io.to(code).emit("receive-squad-message", messageData);
+  });
+
+  socket.on("leave-squad", ({ code, user }) => {
+    socket.leave(code);
+    socket.to(code).emit("squad-notification", {
+      type: "user-left",
+      message: `${user.name} left the squad.`,
+      timestamp: new Date()
+    });
   });
 
   // Identify user to track online status
   socket.on("identify", async (userId) => {
     socket.userId = userId;
-    await (await import("./models/User.js")).default.findByIdAndUpdate(userId, { isOnline: true });
+    try {
+      const User = (await import("./models/User.js")).default;
+      await User.findByIdAndUpdate(userId, { isOnline: true });
+      console.log(`User ${userId} is now online`);
+    } catch (err) {
+      console.error("Error updating online status:", err);
+    }
   });
 
   socket.on("disconnect", async () => {
     if (socket.userId) {
-      await (await import("./models/User.js")).default.findByIdAndUpdate(socket.userId, { isOnline: false });
+      try {
+        const User = (await import("./models/User.js")).default;
+        await User.findByIdAndUpdate(socket.userId, { isOnline: false });
+      } catch (err) {
+        console.error("Error updating offline status:", err);
+      }
     }
     console.log("Client disconnected:", socket.id);
   });
