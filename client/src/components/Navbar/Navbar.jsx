@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useFavorites } from '../../context/FavoritesContext';
 import { HeartIcon } from '@heroicons/react/24/outline';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
@@ -14,6 +14,9 @@ const Navbar = () => {
   const [username, setUsername] = useState("");
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
 
   useEffect(() => {
     const updateUser = () => {
@@ -93,9 +96,11 @@ const Navbar = () => {
               </button>
             </div>
           ) : (
-            <button className="login-btn primary-nav-btn" onClick={() => navigate("/login")}>
-              Login
-            </button>
+            !isAuthPage && (
+              <button className="login-btn primary-nav-btn" onClick={() => navigate("/login")}>
+                Login
+              </button>
+            )
           )}
 
           <div

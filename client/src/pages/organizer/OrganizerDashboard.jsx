@@ -221,12 +221,32 @@ const OrganizerDashboard = () => {
         onLogout={handleLogout}
       />
 
-      <main style={styles.mainContent}>
+      <main style={styles.mainContent} className="organizer-main-content">
+        <style>{`
+          @media (max-width: 768px) {
+            .organizer-main-content {
+              margin-left: 0 !important;
+              padding: 24px 16px !important;
+            }
+            .sidebar-toggle-btn {
+              display: flex !important;
+            }
+          }
+        `}</style>
         {/* Header */}
         <header style={styles.header}>
-          <div>
-            <h1 style={styles.title}>Welcome back, {organizerName || "Organizer"}!</h1>
-            <p style={styles.subtitle}>Here's what's happening with your events today.</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button
+              className="sidebar-toggle-btn"
+              onClick={() => window.dispatchEvent(new Event("toggleOrganizerSidebar"))}
+              style={styles.toggleBtn}
+            >
+              ☰
+            </button>
+            <div>
+              <h1 style={styles.title}>Welcome back, {organizerName || "Organizer"}!</h1>
+              <p style={styles.subtitle}>Here's what's happening with your events today.</p>
+            </div>
           </div>
           <div style={styles.headerActions}>
             <div style={styles.tabSwitcher}>
@@ -572,6 +592,16 @@ const styles = {
     flex: 1,
     marginLeft: '260px',
     padding: '40px 60px',
+    transition: 'all 0.3s ease',
+  },
+  toggleBtn: {
+    display: 'none',
+    background: 'none',
+    border: 'none',
+    fontSize: '24px',
+    color: '#64748b',
+    cursor: 'pointer',
+    padding: '4px',
   },
   header: {
     display: 'flex',

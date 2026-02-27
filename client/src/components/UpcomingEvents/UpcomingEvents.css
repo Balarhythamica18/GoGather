@@ -14,6 +14,14 @@
   color: #0d0f5a;
 }
 
+@media (max-width: 480px) {
+  .upcoming-title {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+}
+
 .events-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -135,7 +143,7 @@
   font-size: 14px;
   font-weight: 600;
   border: 1px solid #d1d1d1;
-  background:#0d0f5a;
+  background: #0d0f5a;
   cursor: pointer;
   transition: 0.2s ease;
   color: #fff;

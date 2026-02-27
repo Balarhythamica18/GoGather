@@ -3,9 +3,40 @@ import "./AdminNavbar.css";
 
 const AdminNavbar = () => {
   return (
-    <header style={styles.header}>
+    <header className="admin-navbar" style={styles.header}>
+      <style>{`
+        @media (max-width: 768px) {
+          .admin-navbar {
+            left: 0 !important;
+            padding: 0 16px !important;
+          }
+          .admin-welcome {
+            display: none;
+          }
+        }
+      `}</style>
       <div style={styles.left}>
-        <span style={styles.welcome}>
+        <button
+          onClick={() => window.dispatchEvent(new Event("toggleAdminSidebar"))}
+          style={styles.hamburger}
+          className="admin-hamburger"
+        >
+          <style>{`
+            .admin-hamburger { display: none; }
+            @media (max-width: 768px) {
+              .admin-hamburger { 
+                display: flex !important;
+                background: none;
+                border: none;
+                cursor: pointer;
+                color: #64748b;
+                margin-right: 12px;
+              }
+            }
+          `}</style>
+          <span style={{ fontSize: '24px' }}>☰</span>
+        </button>
+        <span className="admin-welcome" style={styles.welcome}>
           Admin Control Center
         </span>
       </div>
@@ -30,6 +61,7 @@ const styles = {
     left: "260px",
     right: 0,
     zIndex: 100,
+    transition: "all 0.3s ease",
   },
   left: {
     display: "flex",

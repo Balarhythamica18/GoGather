@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard,
@@ -12,6 +12,13 @@ import {
 const DashboardSidebar = ({ organizerName, onLogout }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const [isOpen, setIsOpen] = useState(false);
+
+    useEffect(() => {
+        const handleToggle = () => setIsOpen(prev => !prev);
+        window.addEventListener("toggleOrganizerSidebar", handleToggle);
+        return () => window.removeEventListener("toggleOrganizerSidebar", handleToggle);
+    }, []);
 
     const menuItems = [
         { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
@@ -21,51 +28,96 @@ const DashboardSidebar = ({ organizerName, onLogout }) => {
     ];
 
     return (
-        <aside style={styles.sidebar}>
-            <div style={styles.logo}>
-                <div style={styles.logoIcon}>G</div>
-                <span style={styles.logoText}>GoGather</span>
-            </div>
+        <>
+            <div
+                className={`sidebar-overlay ${isOpen ? 'show' : ''}`}
+                onClick={() => setIsOpen(false)}
+                style={styles.overlay}
+            />
+            <aside className={`organizer-sidebar ${isOpen ? 'open' : ''}`} style={styles.sidebar}>
+                <style>{`
+                    @media (max-width: 768px) {
+                        .organizer-sidebar {
+                            transform: translateX(-100%);
+                            transition: transform 0.3s ease-in-out;
+                        }
+                        .organizer-sidebar.open {
+                            transform: translateX(0);
+                        }
+                        .sidebar-overlay {
+                            display: none;
+                            position: fixed;
+                            inset: 0;
+                            background: rgba(0, 0, 0, 0.4);
+                            backdrop-filter: blur(2px);
+                            z-index: 999;
+                        }
+                        .sidebar-overlay.show {
+                            display: block;
+                        }
+                        .mobile-close-btn {
+                            display: flex !important;
+                        }
+                    }
+                `}</style>
 
-            <nav style={styles.nav}>
-                {menuItems.map((item, index) => {
-                    // Precise matching for active state
-                    const isActive = location.pathname === item.path;
-
-                    return (
-                        <button
-                            key={index}
-                            onClick={() => item.path !== '#' && navigate(item.path)}
-                            style={{
-                                ...styles.navItem,
-                                backgroundColor: isActive ? '#fff0f6' : 'transparent',
-                                color: isActive ? '#ff007a' : '#64748b',
-                            }}
-                        >
-                            <item.icon size={20} color={isActive ? '#ff007a' : '#64748b'} />
-                            <span style={styles.navLabel}>{item.label}</span>
-                            {isActive && <div style={styles.activeIndicator} />}
-                        </button>
-                    )
-                })}
-            </nav>
-
-            <div style={styles.footer}>
-                <div style={styles.userInfo}>
-                    <div style={styles.avatar}>
-                        {organizerName?.charAt(0) || 'O'}
-                    </div>
-                    <div style={styles.userDetails}>
-                        <p style={styles.userName}>{organizerName || 'Organizer'}</p>
-                        <p style={styles.userRole}>Event Host</p>
-                    </div>
-                </div>
-                <button onClick={onLogout} style={styles.logoutBtn}>
-                    <LogOut size={18} />
-                    <span>Logout</span>
+                <button
+                    className="mobile-close-btn"
+                    onClick={() => setIsOpen(false)}
+                    style={styles.closeBtn}
+                >
+                    ✕
                 </button>
-            </div>
-        </aside>
+
+                <div style={styles.logo}>
+                    <div style={styles.logoIcon}>G</div>
+                    <span style={styles.logoText}>GoGather</span>
+                </div>
+
+                <nav style={styles.nav}>
+                    {menuItems.map((item, index) => {
+                        const isActive = location.pathname === item.path;
+
+                        return (
+                            <button
+                                key={index}
+                                onClick={() => {
+                                    if (item.path !== '#') {
+                                        navigate(item.path);
+                                        setIsOpen(false);
+                                    }
+                                }}
+                                style={{
+                                    ...styles.navItem,
+                                    backgroundColor: isActive ? '#fff0f6' : 'transparent',
+                                    color: isActive ? '#ff007a' : '#64748b',
+                                }}
+                            >
+                                <item.icon size={20} color={isActive ? '#ff007a' : '#64748b'} />
+                                <span style={styles.navLabel}>{item.label}</span>
+                                {isActive && <div style={styles.activeIndicator} />}
+                            </button>
+                        )
+                    })}
+                </nav>
+
+                <div style={styles.footer}>
+                    <div style={styles.userInfo}>
+                        <div style={styles.avatar}>
+                            {organizerName?.charAt(0) || 'O'}
+                        </div>
+                        <div style={styles.userDetails}>
+                            <p style={styles.userName}>{organizerName || 'Organizer'}</p>
+                            <p style={styles.userRole}>Event Host</p>
+                        </div>
+                    </div>
+                    <button onClick={onLogout} style={styles.logoutBtn}>
+                        <LogOut size={18} />
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </aside>
+        </>
     );
 };
 
@@ -81,7 +133,7 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         padding: '32px 16px',
-        zIndex: 100,
+        zIndex: 1000,
     },
     logo: {
         display: 'flex',
@@ -198,6 +250,25 @@ const styles = {
         width: '100%',
         textAlign: 'left',
     },
+    closeBtn: {
+        position: 'absolute',
+        top: '16px',
+        right: '16px',
+        background: '#f1f5f9',
+        border: 'none',
+        width: '32px',
+        height: '32px',
+        borderRadius: '8px',
+        display: 'none',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '18px',
+        color: '#64748b',
+        cursor: 'pointer',
+        zIndex: 10,
+    },
+    overlay: {
+    }
 };
 
 export default DashboardSidebar;

@@ -1,14 +1,21 @@
 /* Page Center */
 .auth-container {
   min-height: calc(100vh - 70px - 200px);
-  /* Flex height minus navbar and footer estimate */
   display: flex;
   justify-content: center;
   align-items: center;
   background: #f8fafc;
   padding: 80px 20px;
-  /* Increased top/bottom padding for "register top space" */
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 60px 16px 100px;
+    /* Extra bottom padding for chatbot/visibility toggle */
+  }
 }
 
 /* Card */
@@ -20,6 +27,17 @@
   border-radius: 24px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
   border: 1px solid #f1f5f9;
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 32px 20px;
+    border-radius: 16px;
+  }
+
+  .auth-card h2 {
+    font-size: 24px;
+  }
 }
 
 /* Heading */

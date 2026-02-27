@@ -18,6 +18,13 @@ const AdminSidebar = () => {
 
   const adminName = localStorage.getItem("name") || "Admin";
   const [pendingCount, setPendingCount] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleToggle = () => setIsOpen(prev => !prev);
+    window.addEventListener("toggleAdminSidebar", handleToggle);
+    return () => window.removeEventListener("toggleAdminSidebar", handleToggle);
+  }, []);
 
   useEffect(() => {
     const fetchPendingCount = async () => {
@@ -62,53 +69,97 @@ const AdminSidebar = () => {
   };
 
   return (
-    <aside style={styles.sidebar}>
-      <div style={styles.logo}>
-        <div style={styles.logoIcon}><ShieldCheck size={20} /></div>
-        <span style={styles.logoText}>GoGather Admin</span>
-      </div>
+    <>
+      <div
+        className={`sidebar-overlay ${isOpen ? 'show' : ''}`}
+        onClick={() => setIsOpen(false)}
+        style={styles.overlay}
+      />
+      <aside className={`admin-sidebar ${isOpen ? 'open' : ''}`} style={styles.sidebar}>
+        <style>{`
+          @media (max-width: 768px) {
+            .admin-sidebar {
+              transform: translateX(-100%);
+              transition: transform 0.3s ease-in-out;
+            }
+            .admin-sidebar.open {
+              transform: translateX(0);
+            }
+            .sidebar-overlay {
+              display: none;
+              position: fixed;
+              inset: 0;
+              background: rgba(0, 0, 0, 0.4);
+              backdrop-filter: blur(2px);
+              z-index: 999;
+            }
+            .sidebar-overlay.show {
+              display: block;
+            }
+            .mobile-close-btn {
+              display: flex !important;
+            }
+          }
+        `}</style>
 
-      <nav style={styles.nav}>
-        {menuItems.map((item, index) => {
-          const isActive = location.pathname === item.path;
-
-          return (
-            <button
-              key={index}
-              onClick={() => navigate(item.path)}
-              style={{
-                ...styles.navItem,
-                backgroundColor: isActive ? "#fff0f6" : "transparent",
-                color: isActive ? "#ff007a" : "#64748b",
-              }}
-            >
-              <item.icon size={20} color={isActive ? "#ff007a" : "#64748b"} />
-              <span style={styles.navLabel}>{item.label}</span>
-              {item.id === "approvals" && pendingCount > 0 && (
-                <div style={styles.badge}>{pendingCount}</div>
-              )}
-              {isActive && <div style={styles.activeIndicator} />}
-            </button>
-          );
-        })}
-      </nav>
-
-      <div style={styles.footer}>
-        <div style={styles.userInfo}>
-          <div style={styles.avatar}>
-            {adminName.charAt(0)}
-          </div>
-          <div style={styles.userDetails}>
-            <p style={styles.userName}>{adminName}</p>
-            <p style={styles.userRole}>System Administrator</p>
-          </div>
-        </div>
-        <button onClick={handleLogout} style={styles.logoutBtn}>
-          <LogOut size={18} />
-          <span>Logout</span>
+        <button
+          className="mobile-close-btn"
+          onClick={() => setIsOpen(false)}
+          style={styles.closeBtn}
+        >
+          ✕
         </button>
-      </div>
-    </aside>
+
+        <div style={styles.logo}>
+          <div style={styles.logoIcon}><ShieldCheck size={20} /></div>
+          <span style={styles.logoText}>GoGather Admin</span>
+        </div>
+
+        <nav style={styles.nav}>
+          {menuItems.map((item, index) => {
+            const isActive = location.pathname === item.path;
+
+            return (
+              <button
+                key={index}
+                onClick={() => {
+                  navigate(item.path);
+                  setIsOpen(false); // Close on navigation
+                }}
+                style={{
+                  ...styles.navItem,
+                  backgroundColor: isActive ? "#fff0f6" : "transparent",
+                  color: isActive ? "#ff007a" : "#64748b",
+                }}
+              >
+                <item.icon size={20} color={isActive ? "#ff007a" : "#64748b"} />
+                <span style={styles.navLabel}>{item.label}</span>
+                {item.id === "approvals" && pendingCount > 0 && (
+                  <div style={styles.badge}>{pendingCount}</div>
+                )}
+                {isActive && <div style={styles.activeIndicator} />}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div style={styles.footer}>
+          <div style={styles.userInfo}>
+            <div style={styles.avatar}>
+              {adminName.charAt(0)}
+            </div>
+            <div style={styles.userDetails}>
+              <p style={styles.userName}>{adminName}</p>
+              <p style={styles.userRole}>System Administrator</p>
+            </div>
+          </div>
+          <button onClick={handleLogout} style={styles.logoutBtn}>
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 };
 
@@ -250,6 +301,26 @@ const styles = {
     width: "100%",
     textAlign: "left",
   },
+  closeBtn: {
+    position: 'absolute',
+    top: '16px',
+    right: '16px',
+    background: '#f1f5f9',
+    border: 'none',
+    width: '32px',
+    height: '32px',
+    borderRadius: '8px',
+    display: 'none', // Shown via media query
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '18px',
+    color: '#64748b',
+    cursor: 'pointer',
+    zIndex: 10,
+  },
+  overlay: {
+    // Basic properties handled by media query
+  }
 };
 
 export default AdminSidebar;

@@ -117,6 +117,18 @@
   margin-top: auto;
 }
 
+@media (max-width: 480px) {
+  .event-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .event-buttons .btn {
+    width: 100%;
+    flex: none;
+  }
+}
+
 /* Button base */
 .btn {
   flex: 1;
@@ -186,6 +198,14 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+}
+
+@media (max-width: 480px) {
+  .eventpage-header {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
 }
 
 .eventpage-filter-icon-btn {
@@ -330,6 +350,7 @@
   background: rgba(0, 0, 0, 0.35);
   z-index: 1000;
 }
+
 /* ===== Pagination Wrapper ===== */
 .eventpage-pagination-wrapper {
   display: flex;
@@ -383,7 +404,7 @@
   font-weight: bold;
 }
 
-  
+
 
 /* ========================= */
 /* Responsive Styles */
