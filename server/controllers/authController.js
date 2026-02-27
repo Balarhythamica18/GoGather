@@ -90,8 +90,14 @@ export const login = async (req, res) => {
     if (!user) return res.status(400).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
+    if (!isMatch) {
+      if (user.googleId) {
+        return res.status(400).json({
+          message: "Invalid credentials. This account is linked with Google. Please use 'Continue with Google' or reset your password if you haven't set one.",
+        });
+      }
       return res.status(400).json({ message: "Invalid credentials" });
+    }
 
     if (!user.isVerified) {
       console.log(`[LOGIN] User ${email} not verified. Sending new OTP.`);
@@ -297,7 +303,7 @@ export const deleteAccount = async (req, res) => {
 =============================== */
 export const verifyOTP = async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    const { email, otp, password } = req.body;
 
     if (!email || !otp) {
       return res.status(400).json({ message: "Email and OTP are required" });
@@ -324,6 +330,18 @@ export const verifyOTP = async (req, res) => {
     user.isVerified = true;
     user.otp = null;
     user.otpExpires = null;
+
+    if (password) {
+      if (!validatePassword(password)) {
+        return res.status(400).json({
+          message:
+            "Password must be 8 characters, include one number and one special character",
+        });
+      }
+      user.password = await bcrypt.hash(password, 10);
+      user.isPasswordSet = true;
+    }
+
     await user.save();
 
     // Send Welcome Email
@@ -411,6 +429,7 @@ export const googleLogin = async (req, res) => {
         image: picture,
         otp,
         otpExpires,
+        isPasswordSet: false, // Explicitly set to false for new Google users
       });
 
       console.log(`[GOOGLE SIGNUP] Sending OTP email to ${email}`);
@@ -479,6 +498,71 @@ export const googleLogin = async (req, res) => {
   } catch (error) {
     console.error("Google Login error:", error);
     res.status(500).json({ message: "Google Authentication failed" });
+  }
+};
+
+/* ===============================
+   FORGOT PASSWORD
+=============================== */
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const otp = generateOTP();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+    await user.save();
+
+    await sendOTPEmail(user.email, user.name, otp);
+
+    res.json({ message: "Password reset code sent successfully to your email ✅" });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* ===============================
+   RESET PASSWORD
+=============================== */
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.otp !== otp || user.otpExpires < Date.now()) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    if (!validatePassword(newPassword)) {
+      return res.status(400).json({
+        message: "Password must be 8 characters, include one number and one special character",
+      });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.otp = null;
+    user.otpExpires = null;
+    user.isVerified = true;
+    user.isPasswordSet = true;
+    await user.save();
+
+    res.json({ message: "Password reset successfully ✅. You can now login with your new password." });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(500).json({ message: error.message });
   }
 };
 

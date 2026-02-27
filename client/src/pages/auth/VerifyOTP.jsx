@@ -10,6 +10,9 @@ const VerifyOTP = () => {
     const location = useLocation();
     const [email, setEmail] = useState("");
     const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [resending, setResending] = useState(false);
     const [error, setError] = useState("");
@@ -44,11 +47,16 @@ const VerifyOTP = () => {
             return setError("Please enter the 6-digit code");
         }
 
-        setLoading(true);
+        if (password && password !== confirmPassword) {
+            setLoading(false);
+            return setError("Passwords do not match");
+        }
+
         try {
             const res = await axios.post("/api/auth/verify-otp", {
                 email,
-                otp: otpValue
+                otp: otpValue,
+                password: password || undefined
             });
 
             toast.success(res.data.message || "Email verified successfully!");
@@ -129,6 +137,47 @@ const VerifyOTP = () => {
                                 className="otp-input"
                             />
                         ))}
+                    </div>
+
+                    <div style={{ marginBottom: "20px" }}>
+                        <p style={{ fontSize: "14px", color: "#666", marginBottom: "10px", textAlign: "left" }}>
+                            Set a password for your account (Optional). This allows you to login with both Google and Email/Password.
+                        </p>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="New Password (optional)"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            style={{
+                                width: "100%",
+                                padding: "12px",
+                                borderRadius: "8px",
+                                border: "1px solid #e2e8f0",
+                                marginBottom: "10px",
+                                outline: "none"
+                            }}
+                        />
+                        {password && (
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Confirm New Password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                style={{
+                                    width: "100%",
+                                    padding: "12px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #e2e8f0",
+                                    outline: "none"
+                                }}
+                            />
+                        )}
+                        {password && (
+                            <label style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "10px", fontSize: "14px", cursor: "pointer" }}>
+                                <input type="checkbox" checked={showPassword} onChange={() => setShowPassword(!showPassword)} />
+                                Show Password
+                            </label>
+                        )}
                     </div>
 
                     <button type="submit" className="auth-btn" disabled={loading}>

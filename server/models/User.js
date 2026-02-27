@@ -57,6 +57,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: true,
     sparse: true
+  },
+
+  isPasswordSet: {
+    type: Boolean,
+    default: true
   }
 
 }, { timestamps: true });

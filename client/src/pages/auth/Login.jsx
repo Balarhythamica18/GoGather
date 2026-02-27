@@ -160,6 +160,12 @@ const Login = () => {
           </button>
         </form>
 
+        <div style={{ textAlign: "right", marginTop: "10px" }}>
+          <Link to="/forgot-password" style={{ fontSize: "14px", color: "#6366f1", textDecoration: "none" }}>
+            Forgot Password?
+          </Link>
+        </div>
+
         <div className="google-auth-separator">
           <hr />
           <span>OR</span>
