@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import { generateOTP, sendOTPEmail } from "../services/otpService.js";
+import { sendWelcomeEmail } from "../services/welcomeService.js";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -325,6 +326,9 @@ export const verifyOTP = async (req, res) => {
     user.otpExpires = null;
     await user.save();
 
+    // Send Welcome Email
+    await sendWelcomeEmail(user.email, user.name);
+
     res.json({ message: "Email verified successfully ✅. You can now login." });
   } catch (error) {
     console.error("Verify OTP error:", error);
@@ -402,6 +406,9 @@ export const googleLogin = async (req, res) => {
         isVerified: true, // Google accounts are pre-verified
         image: picture,
       });
+
+      // Send Welcome Email for NEW Google user
+      await sendWelcomeEmail(email, name);
     } else {
       // Update existing user if needed
       if (!user.googleId) {

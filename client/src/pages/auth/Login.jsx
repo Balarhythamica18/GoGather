@@ -165,6 +165,7 @@ const Login = () => {
               setError("Google Login Failed");
               toast.error("Google Login Failed");
             }}
+            use_fedcm_for_prompt={true}
             theme="outline"
             shape="pill"
             text="continue_with"

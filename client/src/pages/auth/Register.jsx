@@ -206,6 +206,7 @@ const Register = () => {
               setError("Google Registration Failed");
               toast.error("Google Registration Failed");
             }}
+            use_fedcm_for_prompt={true}
             theme="outline"
             shape="pill"
             text="signup_with"
