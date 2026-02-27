@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import "./SeatLayout.css";
 
 const rows = ["A", "B", "C", "D", "E"];
-const socket = io("http://localhost:5000");
+const socket = io("https://gogather-server.onrender.com");
 
 /* ⭐ SAFE PARSE HELPER (PREVENT JSON CRASH) */
 const safeParse = (value) => {
