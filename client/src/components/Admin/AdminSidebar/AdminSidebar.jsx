@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
+import io from "socket.io-client";
 import {
   LayoutDashboard,
   Users,
@@ -8,7 +10,6 @@ import {
   CheckCircle,
   LogOut,
   ShieldCheck,
-  QrCode,
 } from "lucide-react";
 
 const AdminSidebar = () => {
@@ -16,6 +17,32 @@ const AdminSidebar = () => {
   const location = useLocation();
 
   const adminName = localStorage.getItem("name") || "Admin";
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("/api/admin/events/pending-count", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setPendingCount(res.data.count);
+      } catch (err) {
+        console.error("Error fetching pending count:", err);
+      }
+    };
+
+    fetchPendingCount();
+
+    const socket = io("http://localhost:5000");
+    socket.on("pendingCountUpdate", ({ count }) => {
+      setPendingCount(count);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   const menuItems = [
     { id: "dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
@@ -23,7 +50,6 @@ const AdminSidebar = () => {
     { id: "shows", icon: Calendar, label: "List Shows", path: "/admin/list-shows" },
     { id: "bookings", icon: ClipboardList, label: "List Bookings", path: "/admin/list-bookings" },
     { id: "approvals", icon: CheckCircle, label: "Event Approvals", path: "/admin/event-approvals" },
-    { id: "scanner", icon: QrCode, label: "Scan Entry", path: "/admin/scan-entry" },
   ];
 
   const handleLogout = () => {
@@ -58,6 +84,9 @@ const AdminSidebar = () => {
             >
               <item.icon size={20} color={isActive ? "#ff007a" : "#64748b"} />
               <span style={styles.navLabel}>{item.label}</span>
+              {item.id === "approvals" && pendingCount > 0 && (
+                <div style={styles.badge}>{pendingCount}</div>
+              )}
               {isActive && <div style={styles.activeIndicator} />}
             </button>
           );
@@ -152,6 +181,17 @@ const styles = {
     height: "20px",
     backgroundColor: "#ff007a",
     borderRadius: "4px 0 0 4px",
+  },
+  badge: {
+    backgroundColor: "#ff007a",
+    color: "#fff",
+    fontSize: "10px",
+    fontWeight: "800",
+    padding: "2px 6px",
+    borderRadius: "20px",
+    marginLeft: "8px",
+    minWidth: "18px",
+    textAlign: "center",
   },
   footer: {
     marginTop: "auto",

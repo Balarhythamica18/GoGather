@@ -98,6 +98,13 @@ const Login = () => {
         }
       }, 1000);
     } catch (err) {
+      if (err.response?.status === 401 && err.response?.data?.unverified) {
+        setError(err.response.data.message);
+        setTimeout(() => {
+          navigate("/verify-otp", { state: { email: err.response.data.email } });
+        }, 2000);
+        return;
+      }
       setError(err.response?.data?.message || "Google Login failed");
       setLoading(false);
     }

@@ -57,7 +57,14 @@ export const createEvent = async (req, res) => {
 
     const event = await Event.create(eventData);
 
-    // Notify Admin
+    // Notify Admin via Socket
+    const io = req.app.get("socketio");
+    if (io) {
+      const pendingCount = await Event.countDocuments({ status: "pending" });
+      io.emit("pendingCountUpdate", { count: pendingCount });
+    }
+
+    // Notify Admin via Email
     const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
     sendEventPendingNotification(
       adminEmail,

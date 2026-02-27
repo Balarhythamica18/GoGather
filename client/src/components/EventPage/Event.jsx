@@ -10,14 +10,12 @@ const Event = () => {
 
   const [filters, setFilters] = useState({
     name: "",
-    location: "",
     date: "",
     category: "",
   });
 
   const [appliedFilters, setAppliedFilters] = useState({
     name: "",
-    location: "",
     date: "",
     category: "",
   });
@@ -73,9 +71,6 @@ const Event = () => {
           event.title
             .toLowerCase()
             .includes(appliedFilters.name.toLowerCase()) &&
-          event.location
-            .toLowerCase()
-            .includes(appliedFilters.location.toLowerCase()) &&
           (appliedFilters.date === "" ||
             event.date === appliedFilters.date) &&
           (appliedFilters.category === "" ||
@@ -139,16 +134,6 @@ const Event = () => {
               setFilters({ ...filters, name: e.target.value })
             }
             placeholder="Search by name"
-          />
-
-          <label>Location</label>
-          <input
-            type="text"
-            value={filters.location}
-            onChange={(e) =>
-              setFilters({ ...filters, location: e.target.value })
-            }
-            placeholder="Search by location"
           />
 
           <label>Date</label>

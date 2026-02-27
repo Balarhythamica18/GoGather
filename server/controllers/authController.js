@@ -377,6 +377,7 @@ export const resendOTP = async (req, res) => {
    GOOGLE LOGIN
 =============================== */
 export const googleLogin = async (req, res) => {
+  console.log(">>> Google Login hit - V2 (Verification required for new users)");
   try {
     const { token, role } = req.body; // role is only needed for new accounts
 
@@ -395,25 +396,55 @@ export const googleLogin = async (req, res) => {
 
     if (!user) {
       // Create new user if they don't exist
-      // Since it's Google Auth, we don't need a password (stored as random hash)
       const randomPassword = await bcrypt.hash(Math.random().toString(36), 10);
+
+      const otp = generateOTP();
+      const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
       user = await User.create({
         name,
         email,
         password: randomPassword,
         googleId,
         role: role || "user",
-        isVerified: true, // Google accounts are pre-verified
+        isVerified: false, // Now requires verification
         image: picture,
+        otp,
+        otpExpires,
       });
 
-      // Send Welcome Email for NEW Google user
-      await sendWelcomeEmail(email, name);
+      console.log(`[GOOGLE SIGNUP] Sending OTP email to ${email}`);
+      await sendOTPEmail(email, name, otp);
+
+      return res.status(401).json({
+        message: "Account created with Google. Please verify your email with the code sent to you.",
+        unverified: true,
+        email: user.email
+      });
     } else {
+      // If user exists but is not verified
+      if (!user.isVerified) {
+        const otp = generateOTP();
+        const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+        user.otp = otp;
+        user.otpExpires = otpExpires;
+        if (!user.googleId) user.googleId = googleId;
+        if (!user.image) user.image = picture;
+        await user.save();
+
+        await sendOTPEmail(user.email, user.name, otp);
+
+        return res.status(401).json({
+          message: "Email not verified. A verification code has been sent to your email.",
+          unverified: true,
+          email: user.email
+        });
+      }
+
       // Update existing user if needed
       if (!user.googleId) {
         user.googleId = googleId;
-        user.isVerified = true;
         if (!user.image) user.image = picture;
         await user.save();
       }

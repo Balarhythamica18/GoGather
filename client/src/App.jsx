@@ -33,7 +33,6 @@ import ListShows from "./pages/admin/ListShows/ListShows";
 import ListBookings from "./pages/admin/ListBookings/ListBookings";
 import UserManagement from "./pages/admin/UserManagement";
 import EventApprovals from "./pages/admin/EventApprovals";
-import QRScannerPage from "./pages/admin/QRScannerPage";
 
 /*  ORGANIZER */
 import OrganizerDashboard from "./pages/organizer/OrganizerDashboard";
@@ -98,7 +97,6 @@ const App = () => {
                 <Route path="list-shows" element={<ListShows />} />
                 <Route path="list-bookings" element={<ListBookings />} />
                 <Route path="event-approvals" element={<EventApprovals />} />
-                <Route path="scan-entry" element={<QRScannerPage />} />
               </Route>
             </Route>
 

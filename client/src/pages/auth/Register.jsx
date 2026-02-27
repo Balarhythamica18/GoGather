@@ -97,6 +97,13 @@ const Register = () => {
         }
       }, 1000);
     } catch (err) {
+      if (err.response?.status === 401 && err.response?.data?.unverified) {
+        setSuccess("Google account created. Please verify your email.");
+        setTimeout(() => {
+          navigate("/verify-otp", { state: { email: err.response.data.email } });
+        }, 2000);
+        return;
+      }
       setError(err.response?.data?.message || "Google Signup failed");
       setLoading(false);
     }

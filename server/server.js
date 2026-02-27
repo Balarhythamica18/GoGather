@@ -133,6 +133,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: "*" }, // replace * with your frontend origin for production
 });
+app.set("socketio", io);
 
 // Socket.IO seat locking/unlocking
 io.on("connection", (socket) => {

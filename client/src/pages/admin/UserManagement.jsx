@@ -18,7 +18,6 @@ const UserManagement = () => {
     const [filters, setFilters] = useState({
         q: "",
         role: "all",
-        location: "",
         date: ""
     });
 
@@ -127,15 +126,6 @@ const UserManagement = () => {
                         onChange={(e) => { setFilters({ ...filters, date: e.target.value }); setPage(1); }}
                         style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '14px' }}
                         title="Filter by Joined Date"
-                    />
-                </div>
-                <div style={{ flex: 1, minWidth: '150px' }}>
-                    <input
-                        type="text"
-                        placeholder="Filter by location..."
-                        value={filters.location}
-                        onChange={(e) => { setFilters({ ...filters, location: e.target.value }); setPage(1); }}
-                        style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '14px' }}
                     />
                 </div>
             </div>

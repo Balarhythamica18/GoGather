@@ -244,6 +244,22 @@ router.delete(
   }
 );
 
+// Get count of pending events
+router.get(
+  "/events/pending-count",
+  authMiddleware,
+  authorizeRoles("admin"),
+  async (req, res) => {
+    try {
+      const count = await Event.countDocuments({ status: "pending" });
+      res.json({ count });
+    } catch (error) {
+      console.error("Error fetching pending count:", error);
+      res.status(500).json({ message: "Error fetching pending count" });
+    }
+  }
+);
+
 // Get all pending events for review
 router.get(
   "/events/pending",
@@ -277,6 +293,13 @@ router.patch(
 
       event.status = status;
       await event.save();
+
+      // Emit socket update for pending count
+      const io = req.app.get("socketio");
+      if (io) {
+        const pendingCount = await Event.countDocuments({ status: "pending" });
+        io.emit("pendingCountUpdate", { count: pendingCount });
+      }
 
       // Notify Organizer
       const organizerEmail = event.organizer?.email || event.organizerDetails?.contactEmail;
