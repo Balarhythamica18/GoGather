@@ -27,7 +27,11 @@ const Event = () => {
 
   useEffect(() => {
     axios
+<<<<<<< HEAD
       .get(`${API_BASE_URL}/api/events`)
+=======
+      .get("https://gogather-server.onrender.com/api/events")
+>>>>>>> 1a81392fc39d31825bbe5489ab5a0d5006c7352e
       .then((res) => setEvents(res.data))
       .catch((err) => console.error(err));
   }, []);

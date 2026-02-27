@@ -31,7 +31,7 @@ const AdminSidebar = () => {
     const fetchPendingCount = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("/api/admin/events/pending-count", {
+        const res = await axios.get(`${API_BASE_URL}/api/admin/events/pending-count`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setPendingCount(res.data.count);

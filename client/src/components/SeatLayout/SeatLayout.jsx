@@ -5,7 +5,11 @@ import { API_BASE_URL } from "../../config";
 import "./SeatLayout.css";
 
 const rows = ["A", "B", "C", "D", "E"];
+<<<<<<< HEAD
 const socket = io(API_BASE_URL);
+=======
+const socket = io("https://gogather-server.onrender.com");
+>>>>>>> 1a81392fc39d31825bbe5489ab5a0d5006c7352e
 
 /* ⭐ SAFE PARSE HELPER (PREVENT JSON CRASH) */
 const safeParse = (value) => {
