@@ -63,7 +63,20 @@ const App = () => {
     "/add-event"     // organizer add event
   ];
 
+  // Routes where Chat icons should be hidden
+  const noChatRoutes = [
+    "/login",
+    "/register",
+    "/verify-otp",
+    "/forgot-password",
+    "/reset-password"
+  ];
+
   const hideLayoutRoutes = noLayoutRoutes.some(path =>
+    location.pathname.toLowerCase().startsWith(path)
+  );
+
+  const hideChatIcons = noChatRoutes.some(path =>
     location.pathname.toLowerCase().startsWith(path)
   );
 
@@ -117,8 +130,8 @@ const App = () => {
           </Routes>
         </main>
 
-        <FloatingSquadChat />
-        <Chatbot />
+        {!hideChatIcons && <FloatingSquadChat />}
+        {!hideChatIcons && <Chatbot />}
 
         {!hideLayoutRoutes && <Footer />}
       </div>
