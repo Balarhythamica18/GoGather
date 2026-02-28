@@ -67,3 +67,59 @@ export const sendWelcomeEmail = async (email, name) => {
         return false;
     }
 };
+
+/**
+ * Send Login Success Email
+ */
+export const sendLoginSuccessEmail = async (email, name) => {
+    try {
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
+                pass: process.env.EMAIL_PASS,
+            },
+            connectionTimeout: 5000,
+            greetingTimeout: 5000,
+            socketTimeout: 10000,
+        });
+
+        const mailOptions = {
+            from: `"GoGather Login" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
+            to: email,
+            subject: "Successful Login to GoGather! 🔒",
+            html: `
+                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #ffffff;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h2 style="color: #6366f1; margin: 0;">Login Successful</h2>
+                        <p style="color: #666; font-size: 16px;">Hello ${name}, you just logged into your GoGather account.</p>
+                    </div>
+                    
+                    <div style="padding: 20px; background-color: #f9f9fb; border-radius: 8px;">
+                        <p style="color: #555; font-size: 14px; line-height: 1.6;">
+                            If this was you, you can safely ignore this email. You are now logged in and ready to discover events!
+                        </p>
+                        
+                        <div style="margin: 20px 0; text-align: center;">
+                            <a href="https://gogather-client.onrender.com/events" style="background-color: #6366f1; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">Go to Events</a>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; text-align: center; color: #999; font-size: 11px;">
+                        <p>© ${new Date().getFullYear()} GoGather Inc. All rights reserved.</p>
+                    </div>
+                </div>
+            `,
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`Login success email sent to ${email}`);
+        return true;
+    } catch (error) {
+        console.error("Error sending login success email:", error);
+        return false;
+    }
+};

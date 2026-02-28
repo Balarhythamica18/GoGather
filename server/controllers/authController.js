@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import { generateOTP, sendOTPEmail } from "../services/otpService.js";
-import { sendWelcomeEmail } from "../services/welcomeService.js";
+import { sendWelcomeEmail, sendLoginSuccessEmail } from "../services/welcomeService.js";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -48,34 +48,26 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const otp = generateOTP();
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-    console.log(`[REGISTER] Creating user: ${email} with OTP: ${otp}`);
-
     await User.create({
       name,
       email,
       password: hashedPassword,
       role: role || "user",
-      otp,
-      otpExpires,
-      isVerified: false,
+      isVerified: true, // Verification bypassed
     });
 
-    console.log(`[REGISTER] Sending OTP email to ${email}`);
-    const emailSent = await sendOTPEmail(email, name, otp);
-
-    if (!emailSent) {
-      return res.status(500).json({
-        message: "Account created but failed to send verification email. Please check your Render Environment Variables for EMAIL_PASS or try 'Resend OTP' later.",
-        email
-      });
+    console.log(`[REGISTER] Attempting to send welcome email to ${email}`);
+    try {
+      await sendWelcomeEmail(email, name);
+    } catch (emailErr) {
+      console.error("[REGISTER] Welcome email failed:", emailErr.message);
+      // We don't block registration if welcome email fails
     }
 
     res.status(201).json({
-      message: "Registered Successfully. Please check your email for verification code.",
-      email
+      message: "Registered Successfully. Welcome to GoGather!",
+      email,
+      isVerified: true
     });
   } catch (error) {
     console.error("Register error:", error);
@@ -107,29 +99,8 @@ export const login = async (req, res) => {
     }
 
     if (!user.isVerified) {
-      console.log(`[LOGIN] User ${email} not verified. Sending new OTP.`);
-
-      const otp = generateOTP();
-      const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-
-      user.otp = otp;
-      user.otpExpires = otpExpires;
+      user.isVerified = true;
       await user.save();
-
-      const emailSent = await sendOTPEmail(user.email, user.name, otp);
-
-      if (!emailSent) {
-        return res.status(500).json({
-          message: "Email not verified, but we failed to send a new code. Please check your Render Environment Variables for EMAIL_PASS.",
-          email: user.email
-        });
-      }
-
-      return res.status(401).json({
-        message: "Email not verified. A new verification code has been sent to your email.",
-        unverified: true,
-        email: user.email
-      });
     }
 
     const token = jwt.sign(
@@ -141,6 +112,13 @@ export const login = async (req, res) => {
     // Set online status
     user.isOnline = true;
     await user.save();
+
+    console.log(`[LOGIN] Attempting to send login success email to ${user.email}`);
+    try {
+      await sendLoginSuccessEmail(user.email, user.name);
+    } catch (e) {
+      console.error("[LOGIN] Login success email failed:", e.message);
+    }
 
     // Check if user has any confirmed bookings
     const Booking = (await import("../models/Booking.js")).default;
@@ -434,56 +412,27 @@ export const googleLogin = async (req, res) => {
       // Create new user if they don't exist
       const randomPassword = await bcrypt.hash(Math.random().toString(36), 10);
 
-      const otp = generateOTP();
-      const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-
       user = await User.create({
         name,
         email,
         password: randomPassword,
         googleId,
         role: role || "user",
-        isVerified: false, // Now requires verification
+        isVerified: true, // Verification bypassed
         image: picture,
-        otp,
-        otpExpires,
-        isPasswordSet: false, // Explicitly set to false for new Google users
+        isPasswordSet: false,
       });
 
-      console.log(`[GOOGLE SIGNUP] Sending OTP email to ${email}`);
-      await sendOTPEmail(email, name, otp);
-
-      return res.status(401).json({
-        message: "Account created with Google. Please verify your email with the code sent to you.",
-        unverified: true,
-        email: user.email
-      });
+      console.log(`[GOOGLE SIGNUP] New user created: ${email}`);
+      try {
+        await sendWelcomeEmail(email, name);
+      } catch (e) {
+        console.error("[GOOGLE SIGNUP] Welcome email failed:", e.message);
+      }
     } else {
-      // If user exists but is not verified
       if (!user.isVerified) {
-        const otp = generateOTP();
-        const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-
-        user.otp = otp;
-        user.otpExpires = otpExpires;
-        if (!user.googleId) user.googleId = googleId;
-        if (!user.image) user.image = picture;
+        user.isVerified = true;
         await user.save();
-
-        const emailSent = await sendOTPEmail(user.email, user.name, otp);
-
-        if (!emailSent) {
-          return res.status(500).json({
-            message: "Google account connected but failed to send verification code. Please check your Render Environment Variables for EMAIL_PASS.",
-            email: user.email
-          });
-        }
-
-        return res.status(401).json({
-          message: "Email not verified. A verification code has been sent to your email.",
-          unverified: true,
-          email: user.email
-        });
       }
 
       // Update existing user if needed
@@ -492,6 +441,13 @@ export const googleLogin = async (req, res) => {
         if (!user.image) user.image = picture;
         await user.save();
       }
+    }
+
+    // Send login success email
+    try {
+      await sendLoginSuccessEmail(user.email, user.name);
+    } catch (e) {
+      console.error("[GOOGLE LOGIN] Login success email failed:", e.message);
     }
 
     const jwtToken = jwt.sign(
