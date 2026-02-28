@@ -70,7 +70,7 @@ export const unifiedChat = async (req, res) => {
             console.log("Attempting Gemini AI...");
             const genAI = new GoogleGenerativeAI(geminiKey);
             const model = genAI.getGenerativeModel({
-                model: "gemini-1.5-flash-latest",
+                model: "gemini-1.5-flash",
                 systemInstruction: SYSTEM_PROMPT + "\n\n[DATABASE]\n" + eventsContext
             });
             const result = await model.generateContent(message);
@@ -83,7 +83,9 @@ export const unifiedChat = async (req, res) => {
             }
             console.warn("Gemini returned empty text, falling back...");
         } catch (error) {
-            console.error("Gemini Failure:", error.message);
+            console.error("Gemini Failure:", error.response?.status || error.message);
+            if (error.status === 404) console.warn("Gemini model not found. Check if gemini-1.5-flash is still valid in your region.");
+            if (error.status === 403) console.warn("Gemini access forbidden. Check if your API key is correct and has access to this model.");
         }
     }
 
@@ -92,7 +94,7 @@ export const unifiedChat = async (req, res) => {
         try {
             console.log("Attempting Groq AI Fallback...");
             const response = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
-                model: "llama-3-70b-8192", // Use a more stable Groq model
+                model: "llama-3.3-70b-versatile", // Use the most current stable Groq model
                 messages: [
                     { role: "system", content: SYSTEM_PROMPT + "\n\n[DATABASE]\n" + eventsContext },
                     { role: "user", content: message }
@@ -108,14 +110,16 @@ export const unifiedChat = async (req, res) => {
             }
             console.warn("Groq returned empty text.");
         } catch (error) {
-            console.error("Groq Failure:", error.response?.data || error.message);
+            const errorMsg = error.response?.data?.error?.message || error.message;
+            console.error("Groq Failure:", errorMsg);
+            if (error.response?.status === 404) console.warn("Groq model not found. Consider updating llama-3.3-70b-versatile.");
         }
     }
 
     // If we reach here, both failed or no keys
-    console.error("All AI strategies failed.");
+    console.error("All AI strategies failed. Please check your Render Dashboard -> Environment Variables for the SERVER service.");
     return res.status(200).json({
-        reply: "⚠️ I'm having trouble connecting to my brain right now. Please ensure your `GEMINI_KEY` or `GROQ_API_KEY` are correctly set in the Render Dashboard.",
+        reply: "⚠️ I'm having trouble connecting to my brain right now. Please ensure your `GEMINI_KEY` or `GROQ_API_KEY` are correctly set in the **Environment Variables** section of your **Render Server Dashboard**. After adding them, make sure to **redeploy** or wait for the service to restart.",
         provider: "error-fallback"
     });
 };
