@@ -3,6 +3,7 @@ import axios from "axios";
 import { CheckCircle, XCircle, Clock, MapPin, User, Mail, Calendar } from "lucide-react";
 import toast from "react-hot-toast";
 import { getImageUrl } from "../../utils/imageUtils";
+import { API_BASE_URL } from "../../config";
 import "../admin/Admin.css";
 
 const EventApprovals = () => {
