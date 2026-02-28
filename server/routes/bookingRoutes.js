@@ -274,9 +274,17 @@ router.post("/cancel", authMiddleware, async (req, res) => {
       socketTimeout: 10000,
     });
 
+    // Fetch user to get email since it might not be in req.user
+    const user = await User.findById(booking.userId);
+    const userEmail = user?.email || req.user?.email || booking.userEmail;
+
+    if (!userEmail) {
+      throw new Error("User email not found for cancellation notice");
+    }
+
     const mailOptions = {
       from: `"GoGather Support" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
-      to: req.user.email || booking.userEmail,
+      to: userEmail,
       subject: `Booking Cancelled: ${event.title} 🎟️`,
       html: `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
@@ -308,7 +316,7 @@ router.post("/cancel", authMiddleware, async (req, res) => {
 
     try {
       await transporter.sendMail(mailOptions);
-      console.log(`Cancellation email sent to ${req.user.email || booking.userEmail} for booking ${bookingId}`);
+      console.log(`Cancellation email sent to ${userEmail} for booking ${bookingId}`);
       res.json({
         success: true,
         message: "Booking cancelled successfully and email sent!",
