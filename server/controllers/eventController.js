@@ -66,7 +66,7 @@ export const createEvent = async (req, res) => {
 
     // Notify Admin via Email
     const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
-    sendEventPendingNotification(
+    await sendEventPendingNotification(
       adminEmail,
       { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
       { title: event.title, location: event.location, date: event.date, month: event.month }
@@ -214,7 +214,7 @@ export const updateEvent = async (req, res) => {
 
       // Notify Admin about the edit
       const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
-      sendEventPendingNotification(
+      await sendEventPendingNotification(
         adminEmail,
         { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
         { title: `${event.title} (Updated)`, location: event.location, date: event.date, month: event.month }

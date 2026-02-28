@@ -6,7 +6,7 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-        user: "gogatherticketbooking@gmail.com",
+        user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
         pass: process.env.EMAIL_PASS,
     },
 });
@@ -17,7 +17,7 @@ const transporter = nodemailer.createTransport({
 export const sendEventPendingNotification = async (adminEmail, organizerDetails, eventDetails) => {
     try {
         const mailOptions = {
-            from: `"GoGather System" <gogatherticketbooking@gmail.com>`,
+            from: `"GoGather System" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
             to: adminEmail,
             subject: `New Event Pending Approval: ${eventDetails.title} 📢`,
             html: `
@@ -58,7 +58,7 @@ export const sendEventStatusUpdateNotification = async (organizerEmail, eventTit
         const subject = isApproved ? `Your Event "${eventTitle}" has been APPROVED! 🎉` : `Update regarding your event "${eventTitle}"`;
 
         const mailOptions = {
-            from: `"GoGather Team" <gogatherticketbooking@gmail.com>`,
+            from: `"GoGather Team" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
             to: organizerEmail,
             subject: subject,
             html: `

@@ -304,7 +304,7 @@ router.patch(
       // Notify Organizer
       const organizerEmail = event.organizer?.email || event.organizerDetails?.contactEmail;
       if (organizerEmail) {
-        sendEventStatusUpdateNotification(organizerEmail, event.title, status);
+        await sendEventStatusUpdateNotification(organizerEmail, event.title, status);
       }
 
       res.json({ message: `Event ${status} successfully`, event });
