@@ -113,7 +113,7 @@ router.post("/verify-payment", async (req, res) => {
       port: 465,
       secure: true,
       auth: {
-        user: "gogatherticketbooking@gmail.com",
+        user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
         pass: process.env.EMAIL_PASS,
       },
       connectionTimeout: 5000,
@@ -266,7 +266,7 @@ router.post("/cancel", authMiddleware, async (req, res) => {
       port: 465,
       secure: true,
       auth: {
-        user: "gogatherticketbooking@gmail.com",
+        user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
         pass: process.env.EMAIL_PASS,
       },
       connectionTimeout: 5000,
