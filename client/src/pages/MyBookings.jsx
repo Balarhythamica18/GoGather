@@ -240,7 +240,14 @@ const MyBookings = () => {
               <div className="ticket-qr-section">
                 <div className="qr-placeholder" style={{ background: '#fff', padding: '16px', borderRadius: '12px', display: 'inline-block' }}>
                   <QRCodeSVG
-                    value={selectedTicket._id}
+                    value={JSON.stringify({
+                      bookingId: selectedTicket._id,
+                      eventName: selectedTicket.event?.title,
+                      eventDate: selectedTicket.event?.date,
+                      eventTime: selectedTicket.event?.time,
+                      location: selectedTicket.event?.location,
+                      seats: selectedTicket.seats?.length ? selectedTicket.seats.join(", ") : `${selectedTicket.ticketCount} Tickets`
+                    })}
                     size={160}
                     bgColor={"#ffffff"}
                     fgColor={"#1e293b"}
