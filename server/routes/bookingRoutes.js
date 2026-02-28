@@ -109,10 +109,16 @@ router.post("/verify-payment", async (req, res) => {
     // Professional HTML Email Template
     const transporter = nodemailer.createTransport({
       service: "gmail",
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: {
         user: "gogatherticketbooking@gmail.com",
         pass: process.env.EMAIL_PASS,
       },
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 10000,
     });
 
     const event = booking.eventId;
@@ -156,9 +162,17 @@ router.post("/verify-payment", async (req, res) => {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
-
-    res.json({ message: "Payment verified, professional ticket sent!", qrCode: qrCodeBase64, booking });
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log(`Ticket email sent to ${userEmail} for booking ${bookingId}`);
+      res.json({ message: "Payment verified, professional ticket sent!", qrCode: qrCodeBase64, booking });
+    } catch (emailErr) {
+      console.error("Ticket email error:", emailErr);
+      res.status(500).json({
+        error: "Payment verified but ticket email failed to send. Please check your Render Environment Variables for EMAIL_PASS.",
+        booking
+      });
+    }
   } catch (err) {
     console.error("Verify Payment Error:", err);
     res.status(500).json({ error: "Failed to verify payment" });
@@ -248,10 +262,16 @@ router.post("/cancel", authMiddleware, async (req, res) => {
     // Send Cancellation Email
     const transporter = nodemailer.createTransport({
       service: "gmail",
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: {
         user: "gogatherticketbooking@gmail.com",
         pass: process.env.EMAIL_PASS,
       },
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 10000,
     });
 
     const mailOptions = {
@@ -288,17 +308,24 @@ router.post("/cancel", authMiddleware, async (req, res) => {
 
     try {
       await transporter.sendMail(mailOptions);
+      console.log(`Cancellation email sent to ${req.user.email || booking.userEmail} for booking ${bookingId}`);
+      res.json({
+        success: true,
+        message: "Booking cancelled successfully and email sent!",
+        refundAmount,
+        refundPercentage,
+        refundPolicy
+      });
     } catch (emailErr) {
       console.error("Cancellation email error:", emailErr);
+      res.status(500).json({
+        success: true,
+        message: "Booking cancelled but email failed to send. Please check your Render Environment Variables for EMAIL_PASS.",
+        refundAmount,
+        refundPercentage,
+        refundPolicy
+      });
     }
-
-    res.json({
-      success: true,
-      message: "Booking cancelled successfully",
-      refundAmount,
-      refundPercentage,
-      refundPolicy
-    });
   } catch (err) {
     console.error("Cancel Booking Error:", err);
     res.status(500).json({ error: "Failed to cancel booking" });
