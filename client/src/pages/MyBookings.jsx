@@ -228,6 +228,55 @@ const MyBookings = () => {
       </div>
 
       {/* Ticket Modal */}
+      {selectedTicket && (
+        <div className="ticket-modal-overlay" onClick={() => setSelectedTicket(null)}>
+          <div className="ticket-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Your Ticket</h3>
+              <button className="close-modal" onClick={() => setSelectedTicket(null)}><X size={20} /></button>
+            </div>
+            <div className="modal-body">
+              <div className="ticket-qr-section">
+                <div className="qr-placeholder">
+                  <QrCode size={120} color="#1e293b" />
+                </div>
+                <p className="ticket-id">Booking ID: {selectedTicket._id}</p>
+              </div>
+              <div className="ticket-details-box">
+                <h4>{selectedTicket.event?.title}</h4>
+                <div className="ticket-info-grid">
+                  <div className="info-item">
+                    <span className="label">Date</span>
+                    <span className="value">{selectedTicket.event?.date}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Time</span>
+                    <span className="value">{selectedTicket.event?.time}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Location</span>
+                    <span className="value">{selectedTicket.event?.location}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Seats/Qty</span>
+                    <span className="value">
+                      {selectedTicket.seats?.length
+                        ? selectedTicket.seats.join(", ")
+                        : `${selectedTicket.ticketCount} Tickets`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <div className="security-badge">
+                <ShieldCheck size={16} />
+                <span>Verified Booking</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Confirmation Modal */}
       {confirmModal.show && (
         <div className="ticket-modal-overlay" onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))}>
