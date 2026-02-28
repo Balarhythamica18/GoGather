@@ -64,7 +64,14 @@ export const register = async (req, res) => {
     });
 
     console.log(`[REGISTER] Sending OTP email to ${email}`);
-    await sendOTPEmail(email, name, otp);
+    const emailSent = await sendOTPEmail(email, name, otp);
+
+    if (!emailSent) {
+      return res.status(500).json({
+        message: "Account created but failed to send verification email. Please check your Render Environment Variables for EMAIL_PASS or try 'Resend OTP' later.",
+        email
+      });
+    }
 
     res.status(201).json({
       message: "Registered Successfully. Please check your email for verification code.",
@@ -109,7 +116,14 @@ export const login = async (req, res) => {
       user.otpExpires = otpExpires;
       await user.save();
 
-      await sendOTPEmail(user.email, user.name, otp);
+      const emailSent = await sendOTPEmail(user.email, user.name, otp);
+
+      if (!emailSent) {
+        return res.status(500).json({
+          message: "Email not verified, but we failed to send a new code. Please check your Render Environment Variables for EMAIL_PASS.",
+          email: user.email
+        });
+      }
 
       return res.status(401).json({
         message: "Email not verified. A new verification code has been sent to your email.",
@@ -382,7 +396,11 @@ export const resendOTP = async (req, res) => {
     user.otpExpires = otpExpires;
     await user.save();
 
-    await sendOTPEmail(user.email, user.name, otp);
+    const emailSent = await sendOTPEmail(user.email, user.name, otp);
+
+    if (!emailSent) {
+      return res.status(500).json({ message: "Failed to send OTP. Please check your Render Environment Variables for EMAIL_PASS." });
+    }
 
     res.json({ message: "OTP sent successfully to your email ✅" });
   } catch (error) {
@@ -452,7 +470,14 @@ export const googleLogin = async (req, res) => {
         if (!user.image) user.image = picture;
         await user.save();
 
-        await sendOTPEmail(user.email, user.name, otp);
+        const emailSent = await sendOTPEmail(user.email, user.name, otp);
+
+        if (!emailSent) {
+          return res.status(500).json({
+            message: "Google account connected but failed to send verification code. Please check your Render Environment Variables for EMAIL_PASS.",
+            email: user.email
+          });
+        }
 
         return res.status(401).json({
           message: "Email not verified. A verification code has been sent to your email.",
@@ -519,7 +544,11 @@ export const forgotPassword = async (req, res) => {
     user.otpExpires = otpExpires;
     await user.save();
 
-    await sendOTPEmail(user.email, user.name, otp);
+    const emailSent = await sendOTPEmail(user.email, user.name, otp);
+
+    if (!emailSent) {
+      return res.status(500).json({ message: "Failed to send reset code. Please check your Render Environment Variables for EMAIL_PASS." });
+    }
 
     res.json({ message: "Password reset code sent successfully to your email ✅" });
   } catch (error) {
