@@ -123,7 +123,7 @@ router.post("/verify-payment", async (req, res) => {
 
     const event = booking.eventId;
     const mailOptions = {
-      from: `"GoGather" <gogatherticketbooking@gmail.com>`,
+      from: `"GoGather" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
       to: userEmail,
       subject: `Your Ticket for ${event?.title || "Event"} 🎫`,
       html: `
@@ -275,7 +275,7 @@ router.post("/cancel", authMiddleware, async (req, res) => {
     });
 
     const mailOptions = {
-      from: `"GoGather Support" <gogatherticketbooking@gmail.com>`,
+      from: `"GoGather Support" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
       to: req.user.email || booking.userEmail,
       subject: `Booking Cancelled: ${event.title} 🎟️`,
       html: `

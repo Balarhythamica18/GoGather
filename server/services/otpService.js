@@ -22,7 +22,7 @@ export const sendOTPEmail = async (email, name, otp) => {
             port: 465,
             secure: true,
             auth: {
-                user: "gogatherticketbooking@gmail.com",
+                user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
                 pass: process.env.EMAIL_PASS,
             },
             connectionTimeout: 5000, // 5 seconds
@@ -33,7 +33,7 @@ export const sendOTPEmail = async (email, name, otp) => {
         console.log("Transporter created. Sending mail...");
 
         const mailOptions = {
-            from: `"GoGather Verification" <gogatherticketbooking@gmail.com>`,
+            from: `"GoGather Verification" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
             to: email,
             subject: "Verify Your GoGather Account 🎫",
             html: `

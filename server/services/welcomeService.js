@@ -14,7 +14,7 @@ export const sendWelcomeEmail = async (email, name) => {
             port: 465,
             secure: true,
             auth: {
-                user: "gogatherticketbooking@gmail.com",
+                user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
                 pass: process.env.EMAIL_PASS,
             },
             connectionTimeout: 5000,
@@ -23,7 +23,7 @@ export const sendWelcomeEmail = async (email, name) => {
         });
 
         const mailOptions = {
-            from: `"GoGather Welcome" <gogatherticketbooking@gmail.com>`,
+            from: `"GoGather Welcome" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
             to: email,
             subject: "Welcome to GoGather! 🎟️",
             html: `
