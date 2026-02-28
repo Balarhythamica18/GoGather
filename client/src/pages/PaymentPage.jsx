@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { CreditCard, Smartphone, Landmark, ShieldCheck, ArrowRight, Shield, CheckCircle2 } from "lucide-react";
+import { API_BASE_URL } from "../../config";
 import "./PaymentPage.css";
 
 const PaymentPage = () => {
@@ -35,7 +36,7 @@ const PaymentPage = () => {
 
     try {
       // Simulate API verification
-      const verifyRes = await fetch("/api/bookings/verify-payment", {
+      const verifyRes = await fetch(`${API_BASE_URL}/api/bookings/verify-payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -55,7 +55,7 @@ const SeatLayout = ({ event, user }) => {
 
     const fetchSeats = async () => {
       try {
-        const res = await fetch(`/api/bookings/seats/${event._id}`);
+        const res = await fetch(`${API_BASE_URL}/api/bookings/seats/${event._id}`);
         if (!res.ok) return;
 
         const data = await res.json();
@@ -140,7 +140,7 @@ const SeatLayout = ({ event, user }) => {
 
     try {
       // 1. Create a pending booking in the database
-      const response = await fetch("/api/bookings/create-payment", {
+      const response = await fetch(`${API_BASE_URL}/api/bookings/create-payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bookingPayload),
