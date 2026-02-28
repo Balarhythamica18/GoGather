@@ -125,21 +125,46 @@ const AddEvent = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Prevent past dates
+        const selectedDate = new Date(form.date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (selectedDate < today) {
+            alert("You cannot create/update an event with a past date.");
+            return;
+        }
+
         setLoading(true);
         const formData = new FormData();
 
         const finalCategory = form.category === "Other" ? form.customCategory : form.category;
 
         Object.keys(form).forEach((key) => {
-            if (key === "keyHighlights" || key === "customCategory") return;
+            if (key === "keyHighlights" || key === "customCategory" || key === "image") return;
             formData.append(key, form[key]);
         });
 
         formData.set("category", finalCategory);
         (form.keyHighlights || []).forEach((highlight) => formData.append("keyHighlights", highlight));
 
-        if (image) formData.append("image", image);
-        if (!image && form.image) formData.set("image", form.image);
+        if (image) {
+            formData.append("image", image);
+        } else if (form.image) {
+            // Keep existing image if no new one selected
+            formData.set("image", form.image);
+        }
+
+        // Form validation
+        const requiredFields = ["title", "date", "time", "location", "address", "category", "description", "organizerName"];
+        const missingFields = requiredFields.filter(field => !form[field]);
+
+        if (missingFields.length > 0) {
+            alert(`Please fill in all required fields: ${missingFields.join(", ")}`);
+            setLoading(false);
+            return;
+        }
 
         try {
             const token = localStorage.getItem("token");
@@ -156,8 +181,15 @@ const AddEvent = () => {
             }
             setShowSuccess(true);
         } catch (err) {
-            console.error(err);
-            alert("Error saving event: " + (err.response?.data?.message || err.message));
+            console.error("Save Error:", err);
+            let errorMessage = err.response?.data?.message || err.message;
+
+            // If it's a 500 and we have a response but no message, it might be a server crash
+            if (err.response?.status === 500 && !err.response?.data?.message) {
+                errorMessage = "Internal Server Error. Please check if the image size is too large or try again later.";
+            }
+
+            alert("Error saving event: " + errorMessage);
         } finally {
             setLoading(false);
         }

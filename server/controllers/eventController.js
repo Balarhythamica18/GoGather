@@ -55,7 +55,16 @@ export const createEvent = async (req, res) => {
 
     console.log("Creating event with image:", eventData.image);
 
+    // Verify date is not in the past
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (selectedDate < today) {
+      return res.status(400).json({ message: "Cannot create events for past dates." });
+    }
+
     const event = await Event.create(eventData);
+    console.log(`Event created: ${event._id} (${event.title})`);
 
     // Notify Admin via Socket
     const io = req.app.get("socketio");
@@ -66,16 +75,20 @@ export const createEvent = async (req, res) => {
 
     // Notify Admin via Email
     const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
-    await sendEventPendingNotification(
-      adminEmail,
-      { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
-      { title: event.title, location: event.location, date: event.date, month: event.month }
-    );
+    try {
+      await sendEventPendingNotification(
+        adminEmail,
+        { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
+        { title: event.title, location: event.location, date: event.date, month: event.month }
+      );
+    } catch (emailErr) {
+      console.error("Non-blocking email notification failure:", emailErr.message);
+    }
 
     res.status(201).json(event);
   } catch (error) {
-    console.error("Error creating event:", error.message);
-    res.status(500).json({ message: error.message });
+    console.error("Error creating event:", error);
+    res.status(500).json({ message: "Failed to create event. " + error.message });
   }
 };
 
@@ -122,6 +135,8 @@ export const cleanupExpiredEvents = async () => {
       await Event.deleteMany({ _id: { $in: expiredIds } });
 
       console.log(`[CLEANUP] Automatically removed ${expiredEvents.length} expired events and their bookings. ✅`);
+    } else {
+      console.log(`[CLEANUP] No expired events found to remove. ✅`);
     }
   } catch (error) {
     console.error("[CLEANUP] Error during automatic event removal:", error.message);
@@ -189,7 +204,8 @@ export const deleteEvent = async (req, res) => {
     await Event.findByIdAndDelete(req.params.id);
     res.json({ message: "Event deleted" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Delete Error:", error);
+    res.status(500).json({ message: "Delete operation failed. " + error.message });
   }
 };
 
@@ -210,10 +226,12 @@ export const updateEvent = async (req, res) => {
     if (date) {
       try {
         const dateObj = new Date(date);
-        const year = dateObj.getFullYear();
-        const monthNum = String(dateObj.getMonth() + 1).padStart(2, "0");
-        event.month = `${year}-${monthNum}`;
-        event.date = String(dateObj.getDate()).padStart(2, "0");
+        if (!isNaN(dateObj.getTime())) {
+          const year = dateObj.getFullYear();
+          const monthNum = String(dateObj.getMonth() + 1).padStart(2, "0");
+          event.month = `${year}-${monthNum}`;
+          event.date = String(dateObj.getDate()).padStart(2, "0");
+        }
       } catch (e) {
         console.error("Invalid date provided to updateEvent:", e.message);
       }
@@ -260,11 +278,15 @@ export const updateEvent = async (req, res) => {
 
       // Notify Admin about the edit
       const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
-      await sendEventPendingNotification(
-        adminEmail,
-        { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
-        { title: `${event.title} (Updated)`, location: event.location, date: event.date, month: event.month }
-      );
+      try {
+        await sendEventPendingNotification(
+          adminEmail,
+          { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
+          { title: `${event.title} (Updated)`, location: event.location, date: event.date, month: event.month }
+        );
+      } catch (emailErr) {
+        console.error("Non-blocking email notification failure in updateEvent:", emailErr.message);
+      }
     } else if (otherData.status) {
       // Allow admins to update status directly if needed (though usually handled via admin routes)
       event.status = otherData.status;
@@ -273,8 +295,8 @@ export const updateEvent = async (req, res) => {
     await event.save();
     res.json(event);
   } catch (error) {
-    console.error("Error updating event:", error.message);
-    res.status(500).json({ message: error.message });
+    console.error("Error updating event:", error);
+    res.status(500).json({ message: "Update failed: " + error.message });
   }
 };
 

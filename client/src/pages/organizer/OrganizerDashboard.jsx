@@ -115,10 +115,17 @@ const OrganizerDashboard = () => {
       setShowConfirmation(false);
       setEventToDelete(null);
     } catch (error) {
-      console.error("Error deleting event:", error);
-      alert("Error deleting event: " + (error.response?.data?.message || error.message));
-      setShowConfirmation(false);
-      setEventToDelete(null);
+      if (error.response?.status === 404) {
+        // Event already gone (maybe due to auto-cleanup), just refresh
+        fetchData();
+        setShowConfirmation(false);
+        setEventToDelete(null);
+      } else {
+        console.error("Error deleting event:", error);
+        alert("Error deleting event: " + (error.response?.data?.message || error.message));
+        setShowConfirmation(false);
+        setEventToDelete(null);
+      }
     }
   };
 
