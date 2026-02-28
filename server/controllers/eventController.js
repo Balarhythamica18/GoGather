@@ -81,6 +81,9 @@ export const createEvent = async (req, res) => {
 
 export const getEventById = async (req, res) => {
   try {
+    // Run cleanup to ensure we don't return an expired event
+    await cleanupExpiredEvents();
+
     const event = await Event.findById(req.params.id);
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
@@ -91,8 +94,45 @@ export const getEventById = async (req, res) => {
   }
 };
 
+export const cleanupExpiredEvents = async () => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Start of today
+
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    const currentMonthString = `${year}-${month}`;
+
+    // 1. Find expired events
+    const expiredEvents = await Event.find({
+      $or: [
+        { month: { $lt: currentMonthString } },
+        { month: currentMonthString, date: { $lt: day } }
+      ]
+    });
+
+    if (expiredEvents.length > 0) {
+      const expiredIds = expiredEvents.map(e => e._id);
+
+      // 2. Delete Bookings associated with these events
+      await Booking.deleteMany({ eventId: { $in: expiredIds } });
+
+      // 3. Delete the Events themselves
+      await Event.deleteMany({ _id: { $in: expiredIds } });
+
+      console.log(`[CLEANUP] Automatically removed ${expiredEvents.length} expired events and their bookings. ✅`);
+    }
+  } catch (error) {
+    console.error("[CLEANUP] Error during automatic event removal:", error.message);
+  }
+};
+
 export const getAllEvents = async (req, res) => {
   try {
+    // Run cleanup before fetching
+    await cleanupExpiredEvents();
+
     // Only return approved events for public view
     const events = await Event.find({ status: "approved" }).sort({ createdAt: -1 });
     res.json(events);
@@ -103,6 +143,9 @@ export const getAllEvents = async (req, res) => {
 
 export const getMyEvents = async (req, res) => {
   try {
+    // Run cleanup
+    await cleanupExpiredEvents();
+
     if (!req.user || !req.user.id) return res.status(401).json({ message: "Unauthorized" });
 
     // Fetch user email to include legacy events that were created before organizer reference was added
@@ -122,6 +165,9 @@ export const getMyEvents = async (req, res) => {
 
 export const getUpcomingEvents = async (req, res) => {
   try {
+    // Run cleanup
+    await cleanupExpiredEvents();
+
     // Find approved events that have a non-empty declaration field
     const events = await Event.find({ status: "approved", declaration: { $exists: true, $ne: "" } }).sort({ createdAt: -1 });
     res.json(events);
