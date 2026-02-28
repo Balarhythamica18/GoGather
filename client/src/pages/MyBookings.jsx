@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Calendar, MapPin, Ticket, X, QrCode, ShieldCheck, CheckCircle2, AlertTriangle } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { getImageUrl } from "../utils/imageUtils";
 import { API_BASE_URL } from "../config";
 import "./MyBookings.css";
@@ -237,29 +238,39 @@ const MyBookings = () => {
             </div>
             <div className="modal-body">
               <div className="ticket-qr-section">
-                <div className="qr-placeholder">
-                  <QrCode size={120} color="#1e293b" />
+                <div className="qr-placeholder" style={{ background: '#fff', padding: '16px', borderRadius: '12px', display: 'inline-block' }}>
+                  <QRCodeSVG
+                    value={selectedTicket._id}
+                    size={160}
+                    bgColor={"#ffffff"}
+                    fgColor={"#1e293b"}
+                    level={"Q"}
+                  />
                 </div>
-                <p className="ticket-id">Booking ID: {selectedTicket._id}</p>
+                <p className="ticket-id" style={{ marginTop: '16px', fontFamily: 'monospace', fontSize: '0.9rem', color: '#64748b' }}>
+                  Booking ID: {selectedTicket._id}
+                </p>
               </div>
-              <div className="ticket-details-box">
-                <h4>{selectedTicket.event?.title}</h4>
-                <div className="ticket-info-grid">
+              <div className="ticket-details-box" style={{ background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px dashed #cbd5e1', textAlign: 'left' }}>
+                <h4 style={{ fontSize: '1.2rem', color: '#0f172a', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+                  {selectedTicket.event?.title}
+                </h4>
+                <div className="ticket-info-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div className="info-item">
-                    <span className="label">Date</span>
-                    <span className="value">{selectedTicket.event?.date}</span>
+                    <span className="label" style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Date</span>
+                    <span className="value" style={{ fontWeight: 600, color: '#1e293b' }}>{selectedTicket.event?.date || 'N/A'}</span>
                   </div>
                   <div className="info-item">
-                    <span className="label">Time</span>
-                    <span className="value">{selectedTicket.event?.time}</span>
+                    <span className="label" style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Time</span>
+                    <span className="value" style={{ fontWeight: 600, color: '#1e293b' }}>{selectedTicket.event?.time || 'N/A'}</span>
                   </div>
-                  <div className="info-item">
-                    <span className="label">Location</span>
-                    <span className="value">{selectedTicket.event?.location}</span>
+                  <div className="info-item" style={{ gridColumn: '1 / -1' }}>
+                    <span className="label" style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Location</span>
+                    <span className="value" style={{ fontWeight: 600, color: '#1e293b' }}>{selectedTicket.event?.location || 'N/A'}</span>
                   </div>
-                  <div className="info-item">
-                    <span className="label">Seats/Qty</span>
-                    <span className="value">
+                  <div className="info-item" style={{ gridColumn: '1 / -1' }}>
+                    <span className="label" style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Seats/Qty</span>
+                    <span className="value" style={{ fontWeight: 700, color: '#db2777', fontSize: '1.1rem' }}>
                       {selectedTicket.seats?.length
                         ? selectedTicket.seats.join(", ")
                         : `${selectedTicket.ticketCount} Tickets`}

@@ -94,7 +94,7 @@ export const unifiedChat = async (req, res) => {
         try {
             console.log("Attempting Groq AI Fallback...");
             const response = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
-                model: "llama-3.3-70b-versatile", // Use the most current stable Groq model
+                model: "llama-3.3-70b-versatile",
                 messages: [
                     { role: "system", content: SYSTEM_PROMPT + "\n\n[DATABASE]\n" + eventsContext },
                     { role: "user", content: message }
@@ -116,7 +116,7 @@ export const unifiedChat = async (req, res) => {
         }
     }
 
-    // If we reach here, both failed or no keys
+    //both fail
     console.error("All AI strategies failed. Please check your Render Dashboard -> Environment Variables for the SERVER service.");
     return res.status(200).json({
         reply: "⚠️ I'm having trouble connecting to my brain right now. Please ensure your `GEMINI_KEY` or `GROQ_API_KEY` are correctly set in the **Environment Variables** section of your **Render Server Dashboard**. After adding them, make sure to **redeploy** or wait for the service to restart.",
