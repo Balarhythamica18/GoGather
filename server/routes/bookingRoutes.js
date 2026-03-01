@@ -220,24 +220,31 @@ router.post("/cancel", authMiddleware, async (req, res) => {
     const event = booking.eventId;
 
     // Calculate time difference for refund
-    // Assumes event.date is "YYYY-MM-DD" and event.time is "HH:mm"
-    // Handle different dash/slash separators or Month names if possible
     let diffInHours = 0;
     const now = new Date(); // Need now earlier for scope
 
     // Safely calculate time difference for refund
-    if (event && event.date) {
-      let eventDateStr = String(event.date); // Ensure string
-      const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-      months.forEach((m, i) => {
-        if (eventDateStr.includes(m)) {
-          eventDateStr = eventDateStr.replace(m, String(i + 1).padStart(2, '0')).replace(" ", "-");
-        }
-      });
+    if (event && event.date && typeof event.date !== 'undefined') {
+      try {
+        let eventDateStr = String(event.date); // Ensure string
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        months.forEach((m, i) => {
+          if (eventDateStr.includes(m)) {
+            eventDateStr = eventDateStr.replace(m, String(i + 1).padStart(2, '0')).replace(" ", "-");
+          }
+        });
 
-      const eventDateTime = new Date(`${eventDateStr}T${event.time || "00:00"}:00`);
-      if (!isNaN(eventDateTime.getTime())) {
-        diffInHours = (eventDateTime - now) / (1000 * 60 * 60);
+        // Ensure valid time format or fallback
+        const timeStr = event.time ? String(event.time) : "00:00";
+        const eventDateTime = new Date(`${eventDateStr}T${timeStr}:00`);
+
+        if (!isNaN(eventDateTime.getTime())) {
+          diffInHours = (eventDateTime - now) / (1000 * 60 * 60);
+        }
+      } catch (dateErr) {
+        console.error("Error parsing event date for cancellation:", dateErr);
+        // Fallback: assume it's completely non-refundable if date parsing wildly fails
+        diffInHours = 0;
       }
     }
 
@@ -282,67 +289,63 @@ router.post("/cancel", authMiddleware, async (req, res) => {
 
     // Fetch user to get email since it might not be in req.user
     const user = await User.findById(booking.userId);
-    const userEmail = user?.email || req.user?.email || booking.userEmail;
+    const userEmail = user?.email || req.user?.email || booking?.userEmail;
 
     if (!userEmail) {
-      throw new Error("User email not found for cancellation notice");
-    }
-
-    const mailOptions = {
-      from: `"GoGather Support" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
-      to: userEmail,
-      subject: `Booking Cancelled: ${event.title} 🎟️`,
-      html: `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-          <div style="background-color: #f1f5f9; padding: 25px; text-align: center;">
-            <h2 style="color: #475569; margin: 0;">Booking Cancelled</h2>
-            <p style="color: #64748b; margin-top: 5px;">Your refund has been initiated</p>
-          </div>
-          <div style="padding: 25px;">
-            <p>Hello,</p>
-            <p>Your booking for <strong>${event.title}</strong> has been cancelled.</p>
-            
-            <div style="background-color: #f8fafc; border-radius: 8px; padding: 15px; margin: 20px 0;">
-              <h4 style="margin: 0 0 10px; color: #1e293b;">Refund Summary</h4>
-              <table style="width: 100%; font-size: 14px;">
-                <tr><td style="color: #64748b;">Paid Amount:</td><td style="text-align: right; font-weight: 600;">₹${booking.amount}</td></tr>
-                <tr><td style="color: #64748b;">Policy Applied:</td><td style="text-align: right; font-weight: 600;">${refundPercentage}%</td></tr>
-                <tr><td style="color: #64748b; padding-top: 8px; font-weight: 700;">Refundable:</td><td style="text-align: right; color: #10b981; font-weight: 700; padding-top: 8px;">₹${refundAmount}</td></tr>
-              </table>
-              <p style="font-size: 11px; color: #94a3b8; margin-top: 10px;">* Refunds usually reflect in 5-7 business days.</p>
+      console.error("Cancellation Warning: User email not found. Skipping email send but completing cancellation.");
+    } else {
+      const mailOptions = {
+        from: `"GoGather Support" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
+        to: userEmail,
+        subject: `Booking Cancelled: ${event?.title || "Event"} 🎟️`,
+        html: `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+            <div style="background-color: #f1f5f9; padding: 25px; text-align: center;">
+              <h2 style="color: #475569; margin: 0;">Booking Cancelled</h2>
+              <p style="color: #64748b; margin-top: 5px;">Your refund has been initiated</p>
             </div>
+            <div style="padding: 25px;">
+              <p>Hello,</p>
+              <p>Your booking for <strong>${event?.title || "the event"}</strong> has been cancelled.</p>
+              
+              <div style="background-color: #f8fafc; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px; color: #1e293b;">Refund Summary</h4>
+                <table style="width: 100%; font-size: 14px;">
+                  <tr><td style="color: #64748b;">Paid Amount:</td><td style="text-align: right; font-weight: 600;">₹${booking.amount}</td></tr>
+                  <tr><td style="color: #64748b;">Policy Applied:</td><td style="text-align: right; font-weight: 600;">${refundPercentage}%</td></tr>
+                  <tr><td style="color: #64748b; padding-top: 8px; font-weight: 700;">Refundable:</td><td style="text-align: right; color: #10b981; font-weight: 700; padding-top: 8px;">₹${refundAmount}</td></tr>
+                </table>
+                <p style="font-size: 11px; color: #94a3b8; margin-top: 10px;">* Refunds usually reflect in 5-7 business days.</p>
+              </div>
 
-            <p style="font-size: 14px; line-height: 1.6; color: #475569;">
-              Thank you for using GoGather. We hope to see you at another event soon!
-            </p>
+              <p style="font-size: 14px; line-height: 1.6; color: #475569;">
+                Thank you for using GoGather. We hope to see you at another event soon!
+              </p>
+            </div>
           </div>
-        </div>
-      `,
-    };
+        `,
+      };
 
-    try {
-      await transporter.sendMail(mailOptions);
-      console.log(`Cancellation email sent to ${userEmail} for booking ${bookingId}`);
-      res.json({
-        success: true,
-        message: "Booking cancelled successfully and email sent!",
-        refundAmount,
-        refundPercentage,
-        refundPolicy
-      });
-    } catch (emailErr) {
-      console.error("Cancellation email error:", emailErr);
-      res.status(500).json({
-        success: true,
-        message: "Booking cancelled but email failed to send. Please check your Render Environment Variables for EMAIL_PASS.",
-        refundAmount,
-        refundPercentage,
-        refundPolicy
-      });
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log(`Cancellation email sent to ${userEmail} for booking ${bookingId}`);
+      } catch (emailErr) {
+        console.error("Cancellation email error:", emailErr);
+        // We do not throw here, we just log the failure.
+      }
     }
+
+    // Success response regardless of email
+    res.json({
+      success: true,
+      message: userEmail ? "Booking cancelled successfully and email sent!" : "Booking cancelled. No email sent.",
+      refundAmount,
+      refundPercentage,
+      refundPolicy
+    });
   } catch (err) {
-    console.error("Cancel Booking Error:", err);
-    res.status(500).json({ error: "Failed to cancel booking" });
+    console.error("Cancel Booking Error Stack Trace \n\n=========\n\n:", err);
+    res.status(500).json({ error: "Failed to cancel booking: " + err.message });
   }
 });
 
