@@ -166,9 +166,12 @@ const SeatLayout = ({ event, user }) => {
           }),
         });
 
-        if (!verifyRes.ok) throw new Error("Failed to verify free booking");
-
         const verifyData = await verifyRes.json();
+
+        if (!verifyRes.ok && !verifyData.booking) {
+          throw new Error(verifyData.error || "Failed to verify free booking");
+        }
+
         setIsProcessing(false);
         navigate("/confirmation", { state: { booking: verifyData, isSimulated: true } });
         return;
