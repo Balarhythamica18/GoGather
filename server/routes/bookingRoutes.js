@@ -223,20 +223,22 @@ router.post("/cancel", authMiddleware, async (req, res) => {
     // Assumes event.date is "YYYY-MM-DD" and event.time is "HH:mm"
     // Handle different dash/slash separators or Month names if possible
     let diffInHours = 0;
+    const now = new Date(); // Need now earlier for scope
 
     // Safely calculate time difference for refund
     if (event && event.date) {
-      let eventDateStr = event.date;
+      let eventDateStr = String(event.date); // Ensure string
       const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       months.forEach((m, i) => {
-        if (eventDateStr.includes && eventDateStr.includes(m)) {
-          eventDateStr = eventDateStr.replace(m, i + 1).replace(" ", "-");
+        if (eventDateStr.includes(m)) {
+          eventDateStr = eventDateStr.replace(m, String(i + 1).padStart(2, '0')).replace(" ", "-");
         }
       });
 
       const eventDateTime = new Date(`${eventDateStr}T${event.time || "00:00"}:00`);
-      const now = new Date();
-      diffInHours = (eventDateTime - now) / (1000 * 60 * 60);
+      if (!isNaN(eventDateTime.getTime())) {
+        diffInHours = (eventDateTime - now) / (1000 * 60 * 60);
+      }
     }
 
     // Grace Period: Fully refundable within 2 hours of booking, if event is >24h away
