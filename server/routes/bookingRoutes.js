@@ -222,18 +222,22 @@ router.post("/cancel", authMiddleware, async (req, res) => {
     // Calculate time difference for refund
     // Assumes event.date is "YYYY-MM-DD" and event.time is "HH:mm"
     // Handle different dash/slash separators or Month names if possible
-    let eventDateStr = event.date;
-    // Replace Month names if they exist (simple check)
-    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    months.forEach((m, i) => {
-      if (eventDateStr.includes(m)) {
-        eventDateStr = eventDateStr.replace(m, i + 1).replace(" ", "-");
-      }
-    });
+    let diffInHours = 0;
 
-    const eventDateTime = new Date(`${eventDateStr}T${event.time || "00:00"}:00`);
-    const now = new Date();
-    const diffInHours = (eventDateTime - now) / (1000 * 60 * 60);
+    // Safely calculate time difference for refund
+    if (event && event.date) {
+      let eventDateStr = event.date;
+      const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      months.forEach((m, i) => {
+        if (eventDateStr.includes && eventDateStr.includes(m)) {
+          eventDateStr = eventDateStr.replace(m, i + 1).replace(" ", "-");
+        }
+      });
+
+      const eventDateTime = new Date(`${eventDateStr}T${event.time || "00:00"}:00`);
+      const now = new Date();
+      diffInHours = (eventDateTime - now) / (1000 * 60 * 60);
+    }
 
     // Grace Period: Fully refundable within 2 hours of booking, if event is >24h away
     const bookingTime = new Date(booking.createdAt);

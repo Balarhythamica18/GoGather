@@ -25,6 +25,7 @@ const SeatLayout = ({ event, user }) => {
   const [bookedSeats, setBookedSeats] = useState([]);
   const [lockedSeats, setLockedSeats] = useState({});
   const [ticketCount, setTicketCount] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   /* ⭐ SAFE USER RESTORE */
   const storedUser = safeParse(localStorage.getItem("user"));
@@ -130,6 +131,8 @@ const SeatLayout = ({ event, user }) => {
       return;
     }
 
+    setIsProcessing(true);
+
     const bookingPayload = {
       userId: currentUser._id,
       eventId: event._id,
@@ -150,6 +153,27 @@ const SeatLayout = ({ event, user }) => {
 
       const data = await response.json();
 
+      // If the event is Free (Total Amount is 0), bypass the payment page
+      if (totalAmount === 0) {
+        // Verify payment directly
+        const verifyRes = await fetch(`${API_BASE_URL}/api/bookings/verify-payment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bookingId: data.bookingId, // Real ID from DB
+            paymentId: "PAY_FREE_" + Math.random().toString(36).substr(2, 9),
+            userEmail: currentUser.email,
+          }),
+        });
+
+        if (!verifyRes.ok) throw new Error("Failed to verify free booking");
+
+        const verifyData = await verifyRes.json();
+        setIsProcessing(false);
+        navigate("/confirmation", { state: { booking: verifyData, isSimulated: true } });
+        return;
+      }
+
       // 2. Prepare data for PaymentPage
       const bookingData = {
         bookingId: data.bookingId, // Real ID from DB
@@ -163,9 +187,11 @@ const SeatLayout = ({ event, user }) => {
       };
 
       localStorage.setItem("bookingData", JSON.stringify(bookingData));
+      setIsProcessing(false);
       navigate("/payment", { state: { bookingData } });
     } catch (err) {
       console.error("Booking initiation error:", err);
+      setIsProcessing(false);
       alert("Failed to start booking process. Please try again.");
     }
   };
@@ -247,24 +273,28 @@ const SeatLayout = ({ event, user }) => {
           </div>
         )}
 
-        <p><strong>Price</strong><span>₹{seatPrice}</span></p>
+        {seatPrice > 0 && (
+          <p><strong>Price</strong><span>₹{seatPrice}</span></p>
+        )}
 
         <p className="total">
           <strong>Total Amount</strong>
-          <span>₹{totalAmount}</span>
+          <span>{totalAmount === 0 ? "Free" : `₹${totalAmount}`}</span>
         </p>
 
-        <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
-          * <strong>Refund Policy:</strong> 100% refund within 2h of booking.
-          Thereafter, 90% refund ({">"}48h) or 50% refund (24-48h). Non-refundable if {"<"}24h.
-        </div>
+        {seatPrice > 0 && (
+          <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
+            * <strong>Refund Policy:</strong> 100% refund within 2h of booking.
+            Thereafter, 90% refund ({">"}48h) or 50% refund (24-48h). Non-refundable if {"<"}24h.
+          </div>
+        )}
 
         <button
           className="pay-btn"
-          disabled={isSeatBased ? selectedSeats.length === 0 : ticketCount === 0}
+          disabled={isProcessing || (isSeatBased ? selectedSeats.length === 0 : ticketCount === 0)}
           onClick={handlePayment}
         >
-          Proceed to Payment
+          {isProcessing ? "Processing..." : (totalAmount === 0 ? "Book Tickets" : "Proceed to Payment")}
         </button>
 
       </div>
