@@ -140,11 +140,25 @@ const MyBookings = () => {
                   {booking.status === 'cancelled' ? (
                     <>
                       <div className="status-header">
-                        <X size={20} color="#ef4444" />
-                        <span style={{ color: '#ef4444', fontWeight: 700 }}>Cancelled</span>
+                        {(new Date() - new Date(booking.updatedAt)) > 24 * 60 * 60 * 1000 ? (
+                          <>
+                            <CheckCircle2 size={20} color="#10b981" />
+                            <span style={{ color: '#10b981', fontWeight: 700 }}>Refund Completed</span>
+                          </>
+                        ) : (
+                          <>
+                            <X size={20} color="#ef4444" />
+                            <span style={{ color: '#ef4444', fontWeight: 700 }}>Cancelled</span>
+                          </>
+                        )}
                       </div>
                       {booking.amount > 0 && (
-                        <p className="status-note">Note: Refund of ₹{booking.refundAmount || 0} has been initiated to your original payment method.</p>
+                        <p className="status-note">
+                          {(new Date() - new Date(booking.updatedAt)) > 24 * 60 * 60 * 1000
+                            ? `Success: Refund of ₹${booking.refundAmount || 0} has been successfully completed to your original payment method.`
+                            : `Note: Refund of ₹${booking.refundAmount || 0} has been initiated to your original payment method.`
+                          }
+                        </p>
                       )}
                     </>
                   ) : (
