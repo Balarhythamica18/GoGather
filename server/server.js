@@ -8,12 +8,13 @@ import fs from "fs";
 import http from "http";
 import { Server } from "socket.io";
 import dns from "dns";
-import { sendEmail } from "./utils/emailUtility.js";
 
 // Force IPv4 for all network connections (fixes ENETUNREACH on Render/Gmail)
-if (dns.setDefaultResultOrder) {
+if (dns && dns.setDefaultResultOrder) {
   dns.setDefaultResultOrder("ipv4first");
 }
+
+import { sendEmail } from "./utils/emailUtility.js";
 
 import connectDB from "./configs/db.js";
 import authRoutes from "./routes/authRoutes.js";

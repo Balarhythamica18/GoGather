@@ -13,7 +13,9 @@ const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
 const emailPass = process.env.EMAIL_PASS?.replace(/\s/g, ""); // Remove all spaces for reliability
 
 const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: {
         user: adminEmail,
         pass: emailPass,
@@ -22,7 +24,7 @@ const transporter = nodemailer.createTransport({
     greetingTimeout: 20000,
     socketTimeout: 30000,
     dnsTimeout: 10000,
-    family: 4 // Force IPv4
+    family: 4 // Force IPv4 to prevent ENETUNREACH on IPv6-only environments like Render
 });
 
 /**
