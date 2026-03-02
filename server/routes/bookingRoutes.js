@@ -230,26 +230,54 @@ router.post("/cancel", authMiddleware, async (req, res) => {
     const now = new Date(); // Need now earlier for scope
 
     // Safely calculate time difference for refund
-    if (event && event.date && typeof event.date !== 'undefined') {
+    if (event) {
       try {
-        let eventDateStr = String(event.date); // Ensure string
         const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        let foundMonth = -1;
+        let foundDay = -1;
+        let foundYear = 2026; // Default to 2026 as per project context
+
+        // 1. Try to find month from event.month or event.date
+        const monthSource = (event.month || event.date || "").toString();
         months.forEach((m, i) => {
-          if (eventDateStr.includes(m)) {
-            eventDateStr = eventDateStr.replace(m, String(i + 1).padStart(2, '0')).replace(" ", "-");
+          if (monthSource.toLowerCase().includes(m.toLowerCase())) {
+            foundMonth = i;
           }
         });
 
-        // Ensure valid time format or fallback
-        const timeStr = event.time ? String(event.time) : "00:00";
-        const eventDateTime = new Date(`${eventDateStr}T${timeStr}:00`);
+        // 2. Try to find day from event.date
+        if (event.date) {
+          const dayMatch = event.date.toString().match(/\d+/);
+          if (dayMatch) {
+            foundDay = parseInt(dayMatch[0]);
+          }
+        }
 
-        if (!isNaN(eventDateTime.getTime())) {
-          diffInHours = (eventDateTime - now) / (1000 * 60 * 60);
+        // 3. Try to find year from event.title or other fields if possible
+        const yearMatch = (event.title || "").toString().match(/20\d{2}/);
+        if (yearMatch) {
+          foundYear = parseInt(yearMatch[0]);
+        }
+
+        // 4. Construct the date
+        if (foundMonth !== -1 && foundDay !== -1) {
+          const timeStr = event.time ? String(event.time) : "00:00";
+          const eventDateTime = new Date(foundYear, foundMonth, foundDay);
+
+          // Apply time if format is HH:MM
+          const timeParts = timeStr.match(/(\d{1,2}):(\d{2})/);
+          if (timeParts) {
+            eventDateTime.setHours(parseInt(timeParts[1]), parseInt(timeParts[2]), 0);
+          }
+
+          if (!isNaN(eventDateTime.getTime())) {
+            diffInHours = (eventDateTime - now) / (1000 * 60 * 60);
+            console.log(`Refund Calc: Event=${event.title}, ParsedDate=${eventDateTime.toISOString()}, DiffHours=${diffInHours}`);
+          }
         }
       } catch (dateErr) {
         console.error("Error parsing event date for cancellation:", dateErr);
-        // Fallback: assume it's completely non-refundable if date parsing wildly fails
         diffInHours = 0;
       }
     }
