@@ -121,16 +121,14 @@ router.post("/verify-payment", async (req, res) => {
     // Professional HTML Email Template
     const transporter = nodemailer.createTransport({
       service: "gmail",
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
       auth: {
         user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
         pass: process.env.EMAIL_PASS,
       },
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
-      socketTimeout: 10000,
+      connectionTimeout: 20000,
+      greetingTimeout: 20000,
+      socketTimeout: 30000,
+      family: 4
     });
 
     const event = booking.eventId;
@@ -367,16 +365,14 @@ router.post("/cancel", authMiddleware, async (req, res) => {
     // Send Cancellation Email
     const transporter = nodemailer.createTransport({
       service: "gmail",
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
       auth: {
         user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
         pass: process.env.EMAIL_PASS,
       },
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
-      socketTimeout: 10000,
+      connectionTimeout: 20000,
+      greetingTimeout: 20000,
+      socketTimeout: 30000,
+      family: 4
     });
 
     // Fetch user to get email since it might not be in req.user
