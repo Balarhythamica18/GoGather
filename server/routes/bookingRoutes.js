@@ -257,19 +257,25 @@ router.post("/cancel", authMiddleware, async (req, res) => {
     // Safely calculate time difference for refund
     if (event) {
       try {
-        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
         let foundMonth = -1;
         let foundDay = -1;
-        let foundYear = 2026; // Default to 2026 as per project context
+        let foundYear = 2026; // Default to 2026
 
-        // 1. Try to find month from event.month or event.date
-        const monthSource = (event.month || event.date || "").toString();
-        months.forEach((m, i) => {
-          if (monthSource.toLowerCase().includes(m.toLowerCase())) {
-            foundMonth = i;
-          }
-        });
+        // 1. Try to parse YYYY-MM format from event.month (new format)
+        if (event.month && event.month.includes("-")) {
+          const [y, m] = event.month.split("-");
+          foundYear = parseInt(y);
+          foundMonth = parseInt(m) - 1; // 0-indexed month
+        } else {
+          // Fallback to month names for legacy data
+          const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+          const monthSource = (event.month || event.date || "").toString();
+          months.forEach((m, i) => {
+            if (monthSource.toLowerCase().includes(m.toLowerCase())) {
+              foundMonth = i;
+            }
+          });
+        }
 
         // 2. Try to find day from event.date
         if (event.date) {
@@ -279,10 +285,12 @@ router.post("/cancel", authMiddleware, async (req, res) => {
           }
         }
 
-        // 3. Try to find year from event.title or other fields if possible
-        const yearMatch = (event.title || "").toString().match(/20\d{2}/);
-        if (yearMatch) {
-          foundYear = parseInt(yearMatch[0]);
+        // 3. Fallback year parsing if not from YYYY-MM
+        if (event.month && !event.month.includes("-")) {
+          const yearMatch = (event.title || "").toString().match(/20\d{2}/);
+          if (yearMatch) {
+            foundYear = parseInt(yearMatch[0]);
+          }
         }
 
         // 4. Construct the date
@@ -368,10 +376,6 @@ router.post("/cancel", authMiddleware, async (req, res) => {
     }
 
     // Update booking status for paid bookings
-    booking.status = "cancelled";
-    booking.refundAmount = refundAmount;
-    await booking.save();
-
     booking.status = "cancelled";
     booking.refundAmount = refundAmount;
     await booking.save();

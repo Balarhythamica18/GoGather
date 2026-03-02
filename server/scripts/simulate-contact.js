@@ -3,8 +3,9 @@ import { sendEmail } from "../utils/emailUtility.js";
 
 async function simulateContact() {
     const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
-    const testUserEmail = "testuser@example.com"; // Simulation
-    const subject = "Test Inquiry " + new Date().getTime();
+    const testUserEmail = "simbadhanasekaran23@gmail.com";
+    const testUserName = "Simbadhanasekaran";
+    const subject = "Urgent Inquiry " + new Date().getTime();
 
     console.log("--- Simulating Contact Form Submission ---");
 
@@ -12,7 +13,7 @@ async function simulateContact() {
         // 1. Email to Admin
         console.log(`Sending email to ADMIN (${adminEmail})...`);
         await sendEmail({
-            from: `"Simulation User" <${adminEmail}>`,
+            from: `"${testUserName}" <${adminEmail}>`,
             replyTo: testUserEmail,
             to: adminEmail,
             subject: `[SIMULATION] New Contact Query: ${subject}`,
