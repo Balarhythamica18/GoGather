@@ -5,10 +5,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import fs from "fs";
-import nodemailer from "nodemailer";
-import http from "http";
-import { Server } from "socket.io";
 import dns from "dns";
+import { sendEmail } from "./utils/emailUtility.js";
 
 // Force IPv4 for all network connections (fixes ENETUNREACH on Render/Gmail)
 if (dns.setDefaultResultOrder) {
@@ -81,77 +79,45 @@ app.use("/api/ai", aiRoutes);
 app.post("/api/contact", async (req, res) => {
   const { name, email, phone, subject, message } = req.body;
   const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
-  const emailPass = process.env.EMAIL_PASS?.trim();
 
   console.log(`[CONTACT] Received message from ${name} (${email}) - Subject: ${subject}`);
 
-  if (!emailPass) {
-    console.error("[CONTACT ERROR] EMAIL_PASS environment variable is missing!");
-    return res.status(500).json({ error: "Server email configuration missing" });
+  if (!name || !email || !subject || !message) {
+    return res.status(400).json({ error: "Missing required fields" });
   }
 
-  try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: adminEmail,
-        pass: emailPass,
-      },
-      connectionTimeout: 20000, // Increased to 20s
-      greetingTimeout: 20000,
-      socketTimeout: 30000,
-      dnsTimeout: 10000,
-      family: 4 // Force IPv4 to avoid ENETUNREACH errors
-    });
+  // 1️⃣ Email to Team (Non-blocking)
+  sendEmail({
+    to: adminEmail,
+    subject: `New Contact Query: ${subject}`,
+    html: `
+      <h2>New Customer Inquiry 🎟️</h2>
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Phone:</strong> ${phone || "Not Provided"}</p>
+      <p><strong>Subject:</strong> ${subject}</p>
+      <p><strong>Message:</strong></p>
+      <p>${message}</p>
+    `
+  }, false); // blocking=false
 
-    // 1️⃣ Email to Team
-    console.log(`[CONTACT] Attempting to send email to team at ${adminEmail}...`);
-    await transporter.sendMail({
-      from: `"GoGather Contact" <${adminEmail}>`,
-      to: adminEmail,
-      subject: `New Contact Query: ${subject}`,
-      html: `
-        <h2>New Customer Inquiry 🎟️</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Phone:</strong> ${phone || "Not Provided"}</p>
-        <p><strong>Subject:</strong> ${subject}</p>
-        <p><strong>Message:</strong></p>
-        <p>${message}</p>
-      `,
-    });
-    console.log("[CONTACT] Team email sent successfully.");
+  // 2️⃣ Confirmation Email to User (Non-blocking)
+  sendEmail({
+    to: email,
+    subject: "We Received Your Query - GoGather 🎫",
+    html: `
+      <h2>Hello ${name},</h2>
+      <p>Thank you for contacting <strong>GoGather Ticket Booking</strong>.</p>
+      <p>We have received your query regarding "<strong>${subject}</strong>".</p>
+      <p>Our support team will reach you soon.</p>
+      <br/>
+      <p>🎫 <strong>Happy Ticketing!</strong></p>
+      <p>GoGather Support Team</p>
+    `
+  }, false); // blocking=false
 
-    // 2️⃣ Confirmation Email to User (Non-blocking)
-    console.log(`[CONTACT] Attempting to send confirmation to user: ${email} (background)`);
-    transporter.sendMail({
-      from: `"GoGather Ticket Booking" <${adminEmail}>`,
-      to: email,
-      subject: "We Received Your Query - GoGather 🎫",
-      html: `
-        <h2>Hello ${name},</h2>
-        <p>Thank you for contacting <strong>GoGather Ticket Booking</strong>.</p>
-        <p>We have received your query regarding "<strong>${subject}</strong>".</p>
-        <p>Our support team will reach you soon.</p>
-        <br/>
-        <p>🎫 <strong>Happy Ticketing!</strong></p>
-        <p>GoGather Support Team</p>
-      `,
-    }).then(() => {
-      console.log("[CONTACT] User confirmation email sent successfully.");
-    }).catch((confirmErr) => {
-      console.error("[CONTACT WARNING] Confirmation email to user failed:", confirmErr.message);
-    });
-
-    res.status(200).json({ message: "Message sent successfully ✅" });
-  } catch (error) {
-    console.error("[CONTACT ERROR] Failed to send main email:", error.message);
-    res.status(500).json({
-      error: "Failed to send email ❌",
-      details: error.message,
-      suggestion: error.message.includes("Invalid login") ? "Check Gmail App Password" : "Check server logs"
-    });
-  }
+  // Return success immediately to avoid timeout
+  res.status(200).json({ message: "Message sent successfully ✅" });
 });
 /* ==============================
    END CONTACT ROUTE

@@ -1,5 +1,4 @@
-import nodemailer from "nodemailer";
-import dotenv from "dotenv";
+import { sendEmail } from "../utils/emailUtility.js";
 
 dotenv.config();
 
@@ -16,19 +15,6 @@ export const generateOTP = () => {
 export const sendOTPEmail = async (email, name, otp) => {
     try {
         console.log(`Attempting to send OTP email to ${email}...`);
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
-            auth: {
-                user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
-                pass: process.env.EMAIL_PASS,
-            },
-            connectionTimeout: 5000, // 5 seconds
-            greetingTimeout: 5000,   // 5 seconds
-            socketTimeout: 10000,    // 10 seconds
-        });
 
         console.log("Transporter created. Sending mail...");
 
@@ -67,7 +53,7 @@ export const sendOTPEmail = async (email, name, otp) => {
             `,
         };
 
-        await transporter.sendMail(mailOptions);
+        await sendEmail(mailOptions);
         console.log(`Verification email sent to ${email}`);
         return true;
     } catch (error) {

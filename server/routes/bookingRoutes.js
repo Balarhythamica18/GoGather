@@ -2,14 +2,8 @@ import express from "express";
 import Booking from "../models/Booking.js";
 import User from "../models/User.js"; // if needed
 import QRCode from "qrcode"; // npm install qrcode
-import nodemailer from "nodemailer";
-import authMiddleware from "../middleware/authMiddleware.js";
 import dns from "dns";
-
-// Force IPv4 for all network connections
-if (dns.setDefaultResultOrder) {
-  dns.setDefaultResultOrder("ipv4first");
-}
+import { sendEmail } from "../utils/emailUtility.js";
 
 
 const router = express.Router();
@@ -116,20 +110,9 @@ router.post("/verify-payment", async (req, res) => {
     const qrCodeBase64 = await QRCode.toDataURL(qrData);
     booking.qrCode = qrCodeBase64;
 
-    await booking.save();
+    booking.qrCode = qrCodeBase64;
 
-    // Professional HTML Email Template
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
-        pass: process.env.EMAIL_PASS,
-      },
-      connectionTimeout: 20000,
-      greetingTimeout: 20000,
-      socketTimeout: 30000,
-      family: 4
-    });
+    await booking.save();
 
     const event = booking.eventId;
     const mailOptions = {
@@ -173,7 +156,44 @@ router.post("/verify-payment", async (req, res) => {
     };
 
     try {
-      await transporter.sendMail(mailOptions);
+      await sendEmail({
+        to: userEmail,
+        subject: `Your Ticket for ${event?.title || "Event"} 🎫`,
+        html: `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
+            <div style="background: linear-gradient(135deg, #db2777 0%, #be185d 100%); padding: 40px 20px; text-align: center; color: white;">
+              <h1 style="margin: 0; font-size: 28px; letter-spacing: 1px;">GoGather</h1>
+              <p style="margin: 10px 0 0; opacity: 0.9;">Your entry pass is confirmed!</p>
+            </div>
+            
+            <div style="padding: 30px;">
+              <div style="margin-bottom: 30px; text-align: center;">
+                <img src="${qrCodeBase64}" alt="QR Entry Pass" style="width: 200px; height: 200px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 12px;"/>
+                <p style="color: #64748b; font-size: 12px; margin-top: 10px;">Show this QR at the venue for entry</p>
+              </div>
+
+              <div style="background-color: #f8fafc; border-radius: 12px; padding: 20px; margin-bottom: 30px;">
+                <h3 style="margin: 0 0 15px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Booking Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr><td style="padding: 8px 0; color: #64748b;">Event:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${event?.title}</td></tr>
+                  <tr><td style="padding: 8px 0; color: #64748b;">Date & Time:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${event?.date} at ${event?.time}</td></tr>
+                  <tr><td style="padding: 8px 0; color: #64748b;">Location:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${event?.location}</td></tr>
+                  <tr><td style="padding: 8px 0; color: #64748b;">Seats:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${booking.seats?.join(", ") || booking.ticketCount + " Tickets"}</td></tr>
+                  <tr><td style="padding: 8px 0; color: #64748b;">Amount:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">₹${booking.amount}</td></tr>
+                  <tr><td style="padding: 8px 0; color: #64748b;">Booking ID:</td><td style="padding: 8px 0; text-align: right; font-family: monospace; color: #64748b;">#${booking._id.toString().slice(-8).toUpperCase()}</td></tr>
+                </table>
+              </div>
+
+              <div style="text-align: center; color: #94a3b8; font-size: 14px;">
+                <p>Thank you for choosing GoGather. Enjoy the show!</p>
+                <div style="margin-top: 20px; font-size: 12px;">
+                  &copy; 2026 GoGather Inc. All rights reserved.
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      });
       console.log(`Ticket email sent to ${userEmail} for booking ${bookingId}`);
       res.json({ message: "Payment verified, professional ticket sent!", qrCode: qrCodeBase64, booking });
     } catch (emailErr) {
@@ -316,18 +336,8 @@ router.post("/cancel", authMiddleware, async (req, res) => {
       const userEmail = user?.email || req.user?.email || booking?.userEmail;
 
       if (userEmail) {
-        const transporter = nodemailer.createTransport({
-          service: "gmail",
-          auth: {
-            user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
-            pass: process.env.EMAIL_PASS,
-          },
-          family: 4,
-          connectionTimeout: 20000
-        });
 
-        const mailOptions = {
-          from: `"GoGather Support" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
+        sendEmail({
           to: userEmail,
           subject: `Booking Cancelled: ${event?.title || "Event"} 🎟️`,
           html: `
@@ -345,8 +355,7 @@ router.post("/cancel", authMiddleware, async (req, res) => {
               </div>
             </div>
           `,
-        };
-        await transporter.sendMail(mailOptions).catch(err => console.error("Free event cancel email fail:", err));
+        }, false); // non-blocking
       }
 
       return res.json({
@@ -362,18 +371,9 @@ router.post("/cancel", authMiddleware, async (req, res) => {
     booking.refundAmount = refundAmount;
     await booking.save();
 
-    // Send Cancellation Email
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
-        pass: process.env.EMAIL_PASS,
-      },
-      connectionTimeout: 20000,
-      greetingTimeout: 20000,
-      socketTimeout: 30000,
-      family: 4
-    });
+    booking.status = "cancelled";
+    booking.refundAmount = refundAmount;
+    await booking.save();
 
     // Fetch user to get email since it might not be in req.user
     const user = await User.findById(booking.userId);
@@ -382,40 +382,37 @@ router.post("/cancel", authMiddleware, async (req, res) => {
     if (!userEmail) {
       console.error("Cancellation Warning: User email not found. Skipping email send but completing cancellation.");
     } else {
-      const mailOptions = {
-        from: `"GoGather Support" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
-        to: userEmail,
-        subject: `Booking Cancelled: ${event?.title || "Event"} 🎟️`,
-        html: `
-          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-            <div style="background-color: #f1f5f9; padding: 25px; text-align: center;">
-              <h2 style="color: #475569; margin: 0;">Booking Cancelled</h2>
-              <p style="color: #64748b; margin-top: 5px;">Your refund has been initiated</p>
-            </div>
-            <div style="padding: 25px;">
-              <p>Hello,</p>
-              <p>Your booking for <strong>${event?.title || "the event"}</strong> has been cancelled.</p>
-              
-              <div style="background-color: #f8fafc; border-radius: 8px; padding: 15px; margin: 20px 0;">
-                <h4 style="margin: 0 0 10px; color: #1e293b;">Refund Summary</h4>
-                <table style="width: 100%; font-size: 14px;">
-                  <tr><td style="color: #64748b;">Paid Amount:</td><td style="text-align: right; font-weight: 600;">₹${booking.amount}</td></tr>
-                  <tr><td style="color: #64748b;">Policy Applied:</td><td style="text-align: right; font-weight: 600;">${refundPercentage}%</td></tr>
-                  <tr><td style="color: #64748b; padding-top: 8px; font-weight: 700;">Refundable:</td><td style="text-align: right; color: #10b981; font-weight: 700; padding-top: 8px;">₹${refundAmount}</td></tr>
-                </table>
-                <p style="font-size: 11px; color: #94a3b8; margin-top: 10px;">* Refunds usually reflect in 5-7 business days.</p>
-              </div>
-
-              <p style="font-size: 14px; line-height: 1.6; color: #475569;">
-                Thank you for using GoGather. We hope to see you at another event soon!
-              </p>
-            </div>
-          </div>
-        `,
-      };
-
       try {
-        await transporter.sendMail(mailOptions);
+        await sendEmail({
+          to: userEmail,
+          subject: `Booking Cancelled: ${event?.title || "Event"} 🎟️`,
+          html: `
+            <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+              <div style="background-color: #f1f5f9; padding: 25px; text-align: center;">
+                <h2 style="color: #475569; margin: 0;">Booking Cancelled</h2>
+                <p style="color: #64748b; margin-top: 5px;">Your refund has been initiated</p>
+              </div>
+              <div style="padding: 25px;">
+                <p>Hello,</p>
+                <p>Your booking for <strong>${event?.title || "the event"}</strong> has been cancelled.</p>
+                
+                <div style="background-color: #f8fafc; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                  <h4 style="margin: 0 0 10px; color: #1e293b;">Refund Summary</h4>
+                  <table style="width: 100%; font-size: 14px;">
+                    <tr><td style="color: #64748b;">Paid Amount:</td><td style="text-align: right; font-weight: 600;">₹${booking.amount}</td></tr>
+                    <tr><td style="color: #64748b;">Policy Applied:</td><td style="text-align: right; font-weight: 600;">${refundPercentage}%</td></tr>
+                    <tr><td style="color: #64748b; padding-top: 8px; font-weight: 700;">Refundable:</td><td style="text-align: right; color: #10b981; font-weight: 700; padding-top: 8px;">₹${refundAmount}</td></tr>
+                  </table>
+                  <p style="font-size: 11px; color: #94a3b8; margin-top: 10px;">* Refunds usually reflect in 5-7 business days.</p>
+                </div>
+
+                <p style="font-size: 14px; line-height: 1.6; color: #475569;">
+                  Thank you for using GoGather. We hope to see you at another event soon!
+                </p>
+              </div>
+            </div>
+          `,
+        });
         console.log(`Cancellation email sent to ${userEmail} for booking ${bookingId}`);
       } catch (emailErr) {
         console.error("Cancellation email error:", emailErr);

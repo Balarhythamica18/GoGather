@@ -1,23 +1,4 @@
-import nodemailer from "nodemailer";
-import dotenv from "dotenv";
-import dns from "dns";
-
-// Force IPv4 for all network connections (fixes ENETUNREACH on Render/Gmail)
-if (dns.setDefaultResultOrder) {
-    dns.setDefaultResultOrder("ipv4first");
-}
-
-dotenv.config();
-
-const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
-        pass: process.env.EMAIL_PASS,
-    },
-    family: 4, // Force IPv4
-    connectionTimeout: 15000,
-});
+import { sendEmail } from "../utils/emailUtility.js";
 
 /**
  * Notify Admin when a new event is created and pending approval
@@ -50,7 +31,7 @@ export const sendEventPendingNotification = async (adminEmail, organizerDetails,
             `,
         };
 
-        await transporter.sendMail(mailOptions);
+        await sendEmail(mailOptions);
         console.log(`Notification sent to admin: ${adminEmail}`);
     } catch (error) {
         console.error("Error sending admin notification:", error);
@@ -91,7 +72,7 @@ export const sendEventStatusUpdateNotification = async (organizerEmail, eventTit
             `,
         };
 
-        await transporter.sendMail(mailOptions);
+        await sendEmail(mailOptions);
         console.log(`Notification sent to organizer: ${organizerEmail}`);
     } catch (error) {
         console.error("Error sending organizer notification:", error);

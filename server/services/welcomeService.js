@@ -1,29 +1,11 @@
-import nodemailer from "nodemailer";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { sendEmail } from "../utils/emailUtility.js";
 
 /**
  * Send Welcome Email to new users
  */
 export const sendWelcomeEmail = async (email, name) => {
     try {
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
-            auth: {
-                user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
-                pass: process.env.EMAIL_PASS,
-            },
-            connectionTimeout: 5000,
-            greetingTimeout: 5000,
-            socketTimeout: 10000,
-        });
-
         const mailOptions = {
-            from: `"GoGather Welcome" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
             to: email,
             subject: "Welcome to GoGather! 🎟️",
             html: `
@@ -59,11 +41,11 @@ export const sendWelcomeEmail = async (email, name) => {
             `,
         };
 
-        await transporter.sendMail(mailOptions);
-        console.log(`Welcome email sent to ${email}`);
+        sendEmail(mailOptions, false); // non-blocking
+        console.log(`Welcome email triggered for ${email}`);
         return true;
     } catch (error) {
-        console.error("Error sending welcome email:", error);
+        console.error("Error triggering welcome email:", error);
         return false;
     }
 };
@@ -73,22 +55,7 @@ export const sendWelcomeEmail = async (email, name) => {
  */
 export const sendLoginSuccessEmail = async (email, name) => {
     try {
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
-            auth: {
-                user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
-                pass: process.env.EMAIL_PASS,
-            },
-            connectionTimeout: 5000,
-            greetingTimeout: 5000,
-            socketTimeout: 10000,
-        });
-
         const mailOptions = {
-            from: `"GoGather Login" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
             to: email,
             subject: "Successful Login to GoGather! 🔒",
             html: `
@@ -115,11 +82,11 @@ export const sendLoginSuccessEmail = async (email, name) => {
             `,
         };
 
-        await transporter.sendMail(mailOptions);
-        console.log(`Login success email sent to ${email}`);
+        sendEmail(mailOptions, false); // non-blocking
+        console.log(`Login success email triggered for ${email}`);
         return true;
     } catch (error) {
-        console.error("Error sending login success email:", error);
+        console.error("Error triggering login success email:", error);
         return false;
     }
 };
