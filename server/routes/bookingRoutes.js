@@ -328,6 +328,7 @@ router.post("/cancel", authMiddleware, async (req, res) => {
 
     // Update booking status for paid bookings
     booking.status = "cancelled";
+    booking.refundAmount = refundAmount;
     await booking.save();
 
     // Send Cancellation Email

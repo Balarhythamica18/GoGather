@@ -45,6 +45,10 @@ const bookingSchema = new mongoose.Schema(
       type: String, // store QR code as base64 string
       default: "",
     },
+    refundAmount: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

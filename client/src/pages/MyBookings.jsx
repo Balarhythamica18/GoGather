@@ -144,7 +144,7 @@ const MyBookings = () => {
                         <span style={{ color: '#ef4444', fontWeight: 700 }}>Cancelled</span>
                       </div>
                       {booking.amount > 0 && (
-                        <p className="status-note">Note: Refund of ₹{booking.amount} has been initiated to your original payment method.</p>
+                        <p className="status-note">Note: Refund of ₹{booking.refundAmount || 0} has been initiated to your original payment method.</p>
                       )}
                     </>
                   ) : (
@@ -341,7 +341,7 @@ const MyBookings = () => {
             <div className="modal-body">
               <p style={{ color: '#64748b', lineHeight: '1.6', marginBottom: resultModal.data ? '20px' : '0' }}>{resultModal.message}</p>
 
-              {resultModal.data && (
+              {resultModal.data && resultModal.data.policy && (
                 <div style={{ background: '#f0fdf4', padding: '16px', borderRadius: '16px', border: '1px solid #dcfce7', textAlign: 'left', marginBottom: '24px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem' }}>
                     <span style={{ color: '#166534', fontWeight: 600 }}>Policy</span>
