@@ -74,7 +74,15 @@ app.use("/api/ai", aiRoutes);
 ============================== */
 app.post("/api/contact", async (req, res) => {
   const { name, email, phone, subject, message } = req.body;
+  const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
+  const emailPass = process.env.EMAIL_PASS?.trim();
+
   console.log(`[CONTACT] Received message from ${name} (${email}) - Subject: ${subject}`);
+
+  if (!emailPass) {
+    console.error("[CONTACT ERROR] EMAIL_PASS environment variable is missing!");
+    return res.status(500).json({ error: "Server email configuration missing" });
+  }
 
   try {
     const transporter = nodemailer.createTransport({
@@ -83,19 +91,19 @@ app.post("/api/contact", async (req, res) => {
       port: 465,
       secure: true,
       auth: {
-        user: "gogatherticketbooking@gmail.com",
-        pass: process.env.EMAIL_PASS,
+        user: adminEmail,
+        pass: emailPass,
       },
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
-      socketTimeout: 10000,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
     });
 
     // 1️⃣ Email to Team
-    console.log("[CONTACT] Attempting to send email to team...");
+    console.log(`[CONTACT] Attempting to send email to team at ${adminEmail}...`);
     await transporter.sendMail({
-      from: `"GoGather Contact" <gogatherticketbooking@gmail.com>`,
-      to: "gogatherticketbooking@gmail.com",
+      from: `"GoGather Contact" <${adminEmail}>`,
+      to: adminEmail,
       subject: `New Contact Query: ${subject}`,
       html: `
         <h2>New Customer Inquiry 🎟️</h2>
@@ -111,31 +119,35 @@ app.post("/api/contact", async (req, res) => {
 
     // 2️⃣ Confirmation Email to User
     console.log(`[CONTACT] Attempting to send confirmation to user: ${email}`);
-    await transporter.sendMail({
-      from: `"GoGather Ticket Booking" <gogatherticketbooking@gmail.com>`,
-      to: email,
-      subject: "We Received Your Query - GoGather 🎫",
-      html: `
-        <h2>Hello ${name},</h2>
-        <p>Thank you for contacting <strong>GoGather Ticket Booking</strong>.</p>
-        <p>We have received your query regarding "<strong>${subject}</strong>".</p>
-        <p>Our support team will reach you soon.</p>
-        <br/>
-        <p>🎫 <strong>Happy Ticketing!</strong></p>
-        <p>GoGather Support Team</p>
-      `,
-    });
-    console.log("[CONTACT] User confirmation email sent successfully.");
+    try {
+      await transporter.sendMail({
+        from: `"GoGather Ticket Booking" <${adminEmail}>`,
+        to: email,
+        subject: "We Received Your Query - GoGather 🎫",
+        html: `
+          <h2>Hello ${name},</h2>
+          <p>Thank you for contacting <strong>GoGather Ticket Booking</strong>.</p>
+          <p>We have received your query regarding "<strong>${subject}</strong>".</p>
+          <p>Our support team will reach you soon.</p>
+          <br/>
+          <p>🎫 <strong>Happy Ticketing!</strong></p>
+          <p>GoGather Support Team</p>
+        `,
+      });
+      console.log("[CONTACT] User confirmation email sent successfully.");
+    } catch (confirmErr) {
+      console.error("[CONTACT WARNING] Confirmation email to user failed:", confirmErr.message);
+      // Don't fail the whole request if only the confirmation email fails
+    }
 
-    res.status(200).json({ message: "Emails sent successfully ✅" });
+    res.status(200).json({ message: "Message sent successfully ✅" });
   } catch (error) {
-    console.error("[CONTACT ERROR] Detailed error info:", {
-      message: error.message,
-      stack: error.stack,
-      code: error.code,
-      command: error.command
+    console.error("[CONTACT ERROR] Failed to send main email:", error.message);
+    res.status(500).json({
+      error: "Failed to send email ❌",
+      details: error.message,
+      suggestion: error.message.includes("Invalid login") ? "Check Gmail App Password" : "Check server logs"
     });
-    res.status(500).json({ error: "Failed to send email ❌", details: error.message });
   }
 });
 /* ==============================
