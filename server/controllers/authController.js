@@ -76,7 +76,7 @@ export const register = async (req, res) => {
 };
 
 /* ===============================
-   LOGIN ⭐ IMPORTANT FIX
+   LOGIN  IMPORTANT FIX
 =============================== */
 export const login = async (req, res) => {
   try {

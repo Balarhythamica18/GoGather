@@ -40,19 +40,25 @@ router.get("/my-bookings", authMiddleware, async (req, res) => {
   }
 });
 
-// 2️⃣ Create a booking with 20% discount for first-timers
+// 2️⃣ Create a booking with 20% discount for first-timers (only for paid events)
 router.post("/create-payment", async (req, res) => {
   const { userId, eventId, seats, ticketCount, amount } = req.body;
 
   try {
-    // Check if this is the user's first confirmed booking
-    const previousBookings = await Booking.countDocuments({ userId, status: "confirmed" });
-    const isFirstBooking = previousBookings === 0;
+    // Check if this is the user's first confirmed booking that had a payment (amount > 0)
+    const previousPaidBookings = await Booking.countDocuments({
+      userId,
+      status: "confirmed",
+      amount: { $gt: 0 }
+    });
+
+    const isFirstPaidBooking = previousPaidBookings === 0;
 
     let finalAmount = amount;
     let discountApplied = false;
 
-    if (isFirstBooking) {
+    // Only apply discount if it's the first paid booking AND the current event is not free
+    if (isFirstPaidBooking && amount > 0) {
       finalAmount = Math.round(amount * 0.8 * 100) / 100; // 20% Off, Rounded
       discountApplied = true;
     }
@@ -266,9 +272,61 @@ router.post("/cancel", authMiddleware, async (req, res) => {
       refundPolicy = "50% Refund (24-48 hours notice)";
     }
 
-    const refundAmount = Math.round((booking.amount * refundPercentage) / 100 * 100) / 100;
+    const refundAmount = booking.amount > 0
+      ? Math.round((booking.amount * refundPercentage) / 100 * 100) / 100
+      : 0;
 
-    // Update booking status
+    // 🆕 Free Event Handling: Delete record directly and send simple email
+    if (booking.amount === 0) {
+      await Booking.findByIdAndDelete(bookingId);
+
+      const user = await User.findById(booking.userId);
+      const userEmail = user?.email || req.user?.email || booking?.userEmail;
+
+      if (userEmail) {
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          host: 'smtp.gmail.com',
+          port: 465,
+          secure: true,
+          auth: {
+            user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
+            pass: process.env.EMAIL_PASS,
+          },
+        });
+
+        const mailOptions = {
+          from: `"GoGather Support" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
+          to: userEmail,
+          subject: `Booking Cancelled: ${event?.title || "Event"} 🎟️`,
+          html: `
+            <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+              <div style="background-color: #f1f5f9; padding: 25px; text-align: center;">
+                <h2 style="color: #475569; margin: 0;">Booking Cancelled</h2>
+                <p style="color: #64748b; margin-top: 5px;">Event entry has been removed from your history</p>
+              </div>
+              <div style="padding: 25px;">
+                <p>Hello,</p>
+                <p>Your booking for the free event <strong>${event?.title || "the event"}</strong> has been cancelled and removed from your records.</p>
+                <p style="font-size: 14px; line-height: 1.6; color: #475569; margin-top: 20px;">
+                  Thank you for using GoGather. We hope to see you at another event soon!
+                </p>
+              </div>
+            </div>
+          `,
+        };
+        await transporter.sendMail(mailOptions).catch(err => console.error("Free event cancel email fail:", err));
+      }
+
+      return res.json({
+        success: true,
+        message: "Free booking cancelled and record deleted for your convenience.",
+        refundAmount: 0,
+        isDeleted: true
+      });
+    }
+
+    // Update booking status for paid bookings
     booking.status = "cancelled";
     await booking.save();
 

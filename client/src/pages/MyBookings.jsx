@@ -143,7 +143,9 @@ const MyBookings = () => {
                         <X size={20} color="#ef4444" />
                         <span style={{ color: '#ef4444', fontWeight: 700 }}>Cancelled</span>
                       </div>
-                      <p className="status-note">Note: Refund of ₹{booking.amount} has been initiated to your original payment method.</p>
+                      {booking.amount > 0 && (
+                        <p className="status-note">Note: Refund of ₹{booking.amount} has been initiated to your original payment method.</p>
+                      )}
                     </>
                   ) : (
                     <>
