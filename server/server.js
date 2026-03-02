@@ -44,8 +44,8 @@ app.use(express.json());
 // Request logging for debugging
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  // Allow Google OAuth popups
-  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  // Allow Google OAuth popups and relax COOP for cross-origin compatibility
+  res.setHeader("Cross-Origin-Opener-Policy", "unsafe-none");
   next();
 });
 
@@ -88,38 +88,48 @@ app.post("/api/contact", async (req, res) => {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
-  // 1️⃣ Email to Team (Non-blocking)
-  sendEmail({
-    to: adminEmail,
-    subject: `New Contact Query: ${subject}`,
-    html: `
-      <h2>New Customer Inquiry 🎟️</h2>
-      <p><strong>Name:</strong> ${name}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Phone:</strong> ${phone || "Not Provided"}</p>
-      <p><strong>Subject:</strong> ${subject}</p>
-      <p><strong>Message:</strong></p>
-      <p>${message}</p>
-    `
-  }, false); // blocking=false
+  try {
+    // 1️⃣ Email to Team (Blocking)
+    await sendEmail({
+      from: `"${name}" <${adminEmail}>`, // Show user name, but must keep adminEmail for Gmail SMTP auth
+      replyTo: email,
+      to: adminEmail,
+      subject: `New Contact Query: ${subject}`,
+      html: `
+        <h2>New Customer Inquiry 🎟️</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone || "Not Provided"}</p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message}</p>
+      `
+    }, true);
 
-  // 2️⃣ Confirmation Email to User (Non-blocking)
-  sendEmail({
-    to: email,
-    subject: "We Received Your Query - GoGather 🎫",
-    html: `
-      <h2>Hello ${name},</h2>
-      <p>Thank you for contacting <strong>GoGather Ticket Booking</strong>.</p>
-      <p>We have received your query regarding "<strong>${subject}</strong>".</p>
-      <p>Our support team will reach you soon.</p>
-      <br/>
-      <p>🎫 <strong>Happy Ticketing!</strong></p>
-      <p>GoGather Support Team</p>
-    `
-  }, false); // blocking=false
+    // 2️⃣ Confirmation Email to User (Blocking)
+    await sendEmail({
+      to: email,
+      subject: "We Received Your Query - GoGather 🎫",
+      html: `
+        <h2>Hello ${name},</h2>
+        <p>Thank you for contacting <strong>GoGather Ticket Booking</strong>.</p>
+        <p>We have received your query regarding "<strong>${subject}</strong>".</p>
+        <p>Our support team will reach you soon.</p>
+        <br/>
+        <p>🎫 <strong>Happy Ticketing!</strong></p>
+        <p>GoGather Support Team</p>
+      `
+    }, true);
 
-  // Return success immediately to avoid timeout
-  res.status(200).json({ message: "Message sent successfully ✅" });
+    // Return success only after both emails are sent
+    res.status(200).json({ message: "Message sent successfully ✅" });
+  } catch (error) {
+    console.error(`[CONTACT ERROR] Failed to process contact request:`, error.message);
+    res.status(500).json({
+      error: "Failed to send email. Please check your connection or try again later.",
+      details: error.message
+    });
+  }
 });
 /* ==============================
    END CONTACT ROUTE
