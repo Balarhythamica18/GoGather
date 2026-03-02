@@ -35,7 +35,10 @@ export default function Contact() {
       });
     } catch (error) {
       console.error("Submission error:", error);
-      const errorMsg = error.response?.data?.details || error.response?.data?.error || "Something went wrong. Please try again.";
+      const serverDetails = error.response?.data?.details;
+      const serverError = error.response?.data?.error;
+      const errorMsg = serverDetails || serverError || "Connection error. Please check your internet or try again later.";
+
       alert(`Error: ${errorMsg}`);
     }
 

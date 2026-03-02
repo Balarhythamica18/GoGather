@@ -87,16 +87,15 @@ app.post("/api/contact", async (req, res) => {
   try {
     const transporter = nodemailer.createTransport({
       service: "gmail",
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
       auth: {
         user: adminEmail,
         pass: emailPass,
       },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
+      connectionTimeout: 20000, // Increased to 20s
+      greetingTimeout: 20000,
+      socketTimeout: 30000,
+      dnsTimeout: 10000,
+      family: 4 // Force IPv4 to avoid ENETUNREACH errors
     });
 
     // 1️⃣ Email to Team
@@ -117,28 +116,26 @@ app.post("/api/contact", async (req, res) => {
     });
     console.log("[CONTACT] Team email sent successfully.");
 
-    // 2️⃣ Confirmation Email to User
-    console.log(`[CONTACT] Attempting to send confirmation to user: ${email}`);
-    try {
-      await transporter.sendMail({
-        from: `"GoGather Ticket Booking" <${adminEmail}>`,
-        to: email,
-        subject: "We Received Your Query - GoGather 🎫",
-        html: `
-          <h2>Hello ${name},</h2>
-          <p>Thank you for contacting <strong>GoGather Ticket Booking</strong>.</p>
-          <p>We have received your query regarding "<strong>${subject}</strong>".</p>
-          <p>Our support team will reach you soon.</p>
-          <br/>
-          <p>🎫 <strong>Happy Ticketing!</strong></p>
-          <p>GoGather Support Team</p>
-        `,
-      });
+    // 2️⃣ Confirmation Email to User (Non-blocking)
+    console.log(`[CONTACT] Attempting to send confirmation to user: ${email} (background)`);
+    transporter.sendMail({
+      from: `"GoGather Ticket Booking" <${adminEmail}>`,
+      to: email,
+      subject: "We Received Your Query - GoGather 🎫",
+      html: `
+        <h2>Hello ${name},</h2>
+        <p>Thank you for contacting <strong>GoGather Ticket Booking</strong>.</p>
+        <p>We have received your query regarding "<strong>${subject}</strong>".</p>
+        <p>Our support team will reach you soon.</p>
+        <br/>
+        <p>🎫 <strong>Happy Ticketing!</strong></p>
+        <p>GoGather Support Team</p>
+      `,
+    }).then(() => {
       console.log("[CONTACT] User confirmation email sent successfully.");
-    } catch (confirmErr) {
+    }).catch((confirmErr) => {
       console.error("[CONTACT WARNING] Confirmation email to user failed:", confirmErr.message);
-      // Don't fail the whole request if only the confirmation email fails
-    }
+    });
 
     res.status(200).json({ message: "Message sent successfully ✅" });
   } catch (error) {

@@ -9,6 +9,8 @@ const transporter = nodemailer.createTransport({
         user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
         pass: process.env.EMAIL_PASS,
     },
+    family: 4, // Force IPv4
+    connectionTimeout: 15000,
 });
 
 /**
