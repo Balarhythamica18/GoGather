@@ -8,6 +8,12 @@ import fs from "fs";
 import nodemailer from "nodemailer";
 import http from "http";
 import { Server } from "socket.io";
+import dns from "dns";
+
+// Force IPv4 for all network connections (fixes ENETUNREACH on Render/Gmail)
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder("ipv4first");
+}
 
 import connectDB from "./configs/db.js";
 import authRoutes from "./routes/authRoutes.js";
