@@ -56,13 +56,7 @@ export const register = async (req, res) => {
       isVerified: true, // Verification bypassed
     });
 
-    console.log(`[REGISTER] Attempting to send welcome email to ${email}`);
-    try {
-      await sendWelcomeEmail(email, name);
-    } catch (emailErr) {
-      console.error("[REGISTER] Welcome email failed:", emailErr.message);
-      // We don't block registration if welcome email fails
-    }
+    // Move welcome email to first login
 
     res.status(201).json({
       message: "Registered Successfully. Welcome to GoGather!",
@@ -113,11 +107,23 @@ export const login = async (req, res) => {
     user.isOnline = true;
     await user.save();
 
-    console.log(`[LOGIN] Attempting to send login success email to ${user.email}`);
-    try {
-      await sendLoginSuccessEmail(user.email, user.name);
-    } catch (e) {
-      console.error("[LOGIN] Login success email failed:", e.message);
+    // Handle First-time Welcome Email
+    if (user.firstLogin) {
+      console.log(`[LOGIN] First login for ${user.email}. Sending welcome email.`);
+      try {
+        await sendWelcomeEmail(user.email, user.name);
+        user.firstLogin = false;
+        await user.save();
+      } catch (e) {
+        console.error("[LOGIN] Welcome email failed:", e.message);
+      }
+    } else {
+      console.log(`[LOGIN] Attempting to send login success email to ${user.email}`);
+      try {
+        await sendLoginSuccessEmail(user.email, user.name);
+      } catch (e) {
+        console.error("[LOGIN] Login success email failed:", e.message);
+      }
     }
 
     // Check if user has any confirmed bookings
@@ -336,8 +342,7 @@ export const verifyOTP = async (req, res) => {
 
     await user.save();
 
-    // Send Welcome Email
-    await sendWelcomeEmail(user.email, user.name);
+    // Welcome email moved to first login
 
     res.json({ message: "Email verified successfully ✅. You can now login." });
   } catch (error) {
@@ -424,11 +429,7 @@ export const googleLogin = async (req, res) => {
       });
 
       console.log(`[GOOGLE SIGNUP] New user created: ${email}`);
-      try {
-        await sendWelcomeEmail(email, name);
-      } catch (e) {
-        console.error("[GOOGLE SIGNUP] Welcome email failed:", e.message);
-      }
+      // Welcome email moved to first login
     } else {
       if (!user.isVerified) {
         user.isVerified = true;
@@ -443,11 +444,23 @@ export const googleLogin = async (req, res) => {
       }
     }
 
-    // Send login success email
-    try {
-      await sendLoginSuccessEmail(user.email, user.name);
-    } catch (e) {
-      console.error("[GOOGLE LOGIN] Login success email failed:", e.message);
+    // Handle First-time Welcome Email (Google Login)
+    if (user.firstLogin) {
+      console.log(`[GOOGLE LOGIN] First login for ${user.email}. Sending welcome email.`);
+      try {
+        await sendWelcomeEmail(user.email, user.name);
+        user.firstLogin = false;
+        await user.save();
+      } catch (e) {
+        console.error("[GOOGLE LOGIN] Welcome email failed:", e.message);
+      }
+    } else {
+      // Send login success email
+      try {
+        await sendLoginSuccessEmail(user.email, user.name);
+      } catch (e) {
+        console.error("[GOOGLE LOGIN] Login success email failed:", e.message);
+      }
     }
 
     const jwtToken = jwt.sign(

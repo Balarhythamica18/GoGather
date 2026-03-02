@@ -62,6 +62,11 @@ const userSchema = new mongoose.Schema({
   isPasswordSet: {
     type: Boolean,
     default: true
+  },
+
+  firstLogin: {
+    type: Boolean,
+    default: true
   }
 
 }, { timestamps: true });
