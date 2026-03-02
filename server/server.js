@@ -90,11 +90,12 @@ app.post("/api/contact", async (req, res) => {
 
   try {
     // 1️⃣ Email to Team (Blocking)
+    console.log(`[CONTACT] Attempting to notify admin: ${adminEmail}`);
     await sendEmail({
-      from: `"${name}" <${adminEmail}>`, // Show user name, but must keep adminEmail for Gmail SMTP auth
+      from: `"GoGather Contact Form" <${adminEmail}>`,
       replyTo: email,
       to: adminEmail,
-      subject: `New Contact Query: ${subject}`,
+      subject: `Contact Query | ${name}: ${subject}`,
       html: `
         <h2>New Customer Inquiry 🎟️</h2>
         <p><strong>Name:</strong> ${name}</p>
