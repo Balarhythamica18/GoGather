@@ -2,6 +2,7 @@ import express from "express";
 import Booking from "../models/Booking.js";
 import User from "../models/User.js"; // if needed
 import QRCode from "qrcode"; // npm install qrcode
+import authMiddleware from "../middleware/authMiddleware.js";
 import dns from "dns";
 import { sendEmail } from "../utils/emailUtility.js";
 

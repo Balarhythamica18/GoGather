@@ -1,6 +1,5 @@
 import { sendEmail } from "../utils/emailUtility.js";
 
-dotenv.config();
 
 /**
  * Generate a random 6-digit OTP
