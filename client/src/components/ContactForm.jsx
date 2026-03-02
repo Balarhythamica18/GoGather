@@ -34,7 +34,9 @@ export default function Contact() {
         message: ""
       });
     } catch (error) {
-      alert("Something went wrong. Please try again.");
+      console.error("Submission error:", error);
+      const errorMsg = error.response?.data?.details || error.response?.data?.error || "Something went wrong. Please try again.";
+      alert(`Error: ${errorMsg}`);
     }
 
     setLoading(false);
