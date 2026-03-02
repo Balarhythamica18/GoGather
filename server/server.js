@@ -107,8 +107,8 @@ app.post("/api/contact", async (req, res) => {
       `
     }, true);
 
-    // 2️⃣ Confirmation Email to User (Blocking)
-    await sendEmail({
+    // 2️⃣ Confirmation Email to User (Non-Blocking)
+    sendEmail({
       to: email,
       subject: "We Received Your Query - GoGather 🎫",
       html: `
@@ -120,9 +120,9 @@ app.post("/api/contact", async (req, res) => {
         <p>🎫 <strong>Happy Ticketing!</strong></p>
         <p>GoGather Support Team</p>
       `
-    }, true);
+    }, false);
 
-    // Return success only after both emails are sent
+    // Return success early
     res.status(200).json({ message: "Message sent successfully ✅" });
   } catch (error) {
     console.error(`[CONTACT ERROR] Failed to process contact request:`, error.message);
