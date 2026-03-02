@@ -74,6 +74,7 @@ app.use("/api/ai", aiRoutes);
 ============================== */
 app.post("/api/contact", async (req, res) => {
   const { name, email, phone, subject, message } = req.body;
+  console.log(`[CONTACT] Received message from ${name} (${email}) - Subject: ${subject}`);
 
   try {
     const transporter = nodemailer.createTransport({
@@ -91,6 +92,7 @@ app.post("/api/contact", async (req, res) => {
     });
 
     // 1️⃣ Email to Team
+    console.log("[CONTACT] Attempting to send email to team...");
     await transporter.sendMail({
       from: `"GoGather Contact" <gogatherticketbooking@gmail.com>`,
       to: "gogatherticketbooking@gmail.com",
@@ -105,8 +107,10 @@ app.post("/api/contact", async (req, res) => {
         <p>${message}</p>
       `,
     });
+    console.log("[CONTACT] Team email sent successfully.");
 
     // 2️⃣ Confirmation Email to User
+    console.log(`[CONTACT] Attempting to send confirmation to user: ${email}`);
     await transporter.sendMail({
       from: `"GoGather Ticket Booking" <gogatherticketbooking@gmail.com>`,
       to: email,
@@ -121,11 +125,17 @@ app.post("/api/contact", async (req, res) => {
         <p>GoGather Support Team</p>
       `,
     });
+    console.log("[CONTACT] User confirmation email sent successfully.");
 
     res.status(200).json({ message: "Emails sent successfully ✅" });
   } catch (error) {
-    console.error("Contact Error:", error);
-    res.status(500).json({ error: "Failed to send email ❌" });
+    console.error("[CONTACT ERROR] Detailed error info:", {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      command: error.command
+    });
+    res.status(500).json({ error: "Failed to send email ❌", details: error.message });
   }
 });
 /* ==============================
