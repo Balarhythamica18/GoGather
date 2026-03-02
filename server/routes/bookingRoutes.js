@@ -4,6 +4,12 @@ import User from "../models/User.js"; // if needed
 import QRCode from "qrcode"; // npm install qrcode
 import nodemailer from "nodemailer";
 import authMiddleware from "../middleware/authMiddleware.js";
+import dns from "dns";
+
+// Force IPv4 for all network connections
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder("ipv4first");
+}
 
 
 const router = express.Router();
@@ -314,13 +320,12 @@ router.post("/cancel", authMiddleware, async (req, res) => {
       if (userEmail) {
         const transporter = nodemailer.createTransport({
           service: "gmail",
-          host: 'smtp.gmail.com',
-          port: 465,
-          secure: true,
           auth: {
             user: process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com",
             pass: process.env.EMAIL_PASS,
           },
+          family: 4,
+          connectionTimeout: 20000
         });
 
         const mailOptions = {
