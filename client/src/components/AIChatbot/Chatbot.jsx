@@ -4,6 +4,7 @@ import { MessageSquare, Send, X, Bot, Loader2, MinusCircle, Maximize2 } from "lu
 import ReactMarkdown from "react-markdown";
 import { API_BASE_URL } from "../../config";
 import "./Chatbot.css";
+import { toast } from "react-hot-toast";
 
 export default function Chatbot() {
     const [isOpen, setIsOpen] = useState(false);
@@ -41,6 +42,21 @@ export default function Chatbot() {
             scrollToBottom();
         }
     }, [messages, loading, isOpen, isMinimized]);
+
+    const handleOpenChat = () => {
+        if (!isLoggedIn) {
+            toast.error("Please log in to chat with GoGather AI", {
+                icon: '🔒',
+                style: {
+                    borderRadius: '10px',
+                    background: '#333',
+                    color: '#fff',
+                },
+            });
+            return;
+        }
+        setIsOpen(true);
+    };
 
     const send = async () => {
         if (!input.trim() || loading) return;
@@ -96,7 +112,7 @@ export default function Chatbot() {
     if (!isOpen) {
         return (
             <div className="chatbot-container">
-                <button onClick={() => setIsOpen(true)} className="chatbot-trigger">
+                <button onClick={handleOpenChat} className="chatbot-trigger">
                     <MessageSquare size={28} strokeWidth={2.5} />
                     <span className="notification-badge"></span>
                 </button>
