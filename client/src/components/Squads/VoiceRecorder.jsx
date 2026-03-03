@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Mic, Square, Trash2, Send, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
+import { API_BASE_URL } from '../../config';
 import './SquadChat.css';
 
 const VoiceRecorder = ({ onSend }) => {
@@ -92,7 +93,7 @@ const VoiceRecorder = ({ onSend }) => {
 
         try {
             const response = await axios.post(
-                'http://localhost:5000/api/squad/upload-voice',
+                `${API_BASE_URL}/api/squad/upload-voice`,
                 formData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
