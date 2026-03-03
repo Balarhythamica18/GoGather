@@ -77,7 +77,7 @@ const AddEvent = () => {
                         organizerPhone: ev.organizerDetails?.contactPhone || "",
                     });
                     setImage(null);
-                    if (ev.image) setPreview(ev.image);
+                    if (ev.image) setPreview(getImageUrl(ev.image));
                 } catch (err) {
                     console.error("Error loading event for edit:", err);
                 }

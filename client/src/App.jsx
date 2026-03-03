@@ -80,9 +80,7 @@ const App = () => {
     location.pathname.toLowerCase().startsWith(path)
   );
 
-  const hideSquadChat = hideChatIcons || noLayoutRoutes.some(path =>
-    location.pathname.toLowerCase().startsWith(path)
-  );
+  const hideSquadChat = hideChatIcons || hideLayoutRoutes || location.pathname.toLowerCase().startsWith("/my-events");
 
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>

@@ -23,11 +23,21 @@ export const getImageUrl = (path) => {
         relativePath = path.split("localhost:5000")[1];
     }
 
+    // Handle backslashes (common on Windows)
+    relativePath = relativePath.replace(/\\/g, "/");
+
     // Ensure it starts with /
     if (!relativePath.startsWith("/") && !relativePath.startsWith("http")) {
         relativePath = "/" + relativePath;
     }
 
-    // Prefix with API_BASE_URL
-    return `${API_BASE_URL}${relativePath}`;
+    // Prefix with API_BASE_URL if it's a relative path
+    const fullUrl = relativePath.startsWith("http") ? relativePath : `${API_BASE_URL}${relativePath}`;
+
+    // Debug log in development to trace image resolution issues
+    if (window.location.hostname === "localhost") {
+        console.log(`[ImageUtils] Path: "${path}" -> Resolved: "${fullUrl}"`);
+    }
+
+    return fullUrl;
 };
