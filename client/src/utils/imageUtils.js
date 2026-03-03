@@ -10,8 +10,8 @@ import { API_BASE_URL } from "../config";
 export const getImageUrl = (path) => {
     if (!path) return "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800"; // Fallback placeholder
 
-    // If it's already a full external URL (like Unsplash or Cloudinary), return as is
-    if (path.startsWith("http") && !path.includes("localhost")) {
+    // If it's already a full external URL (like Cloudinary or Unsplash), return as is
+    if (path.startsWith("http") && (!path.includes("localhost") || path.includes("res.cloudinary.com"))) {
         return path;
     }
 

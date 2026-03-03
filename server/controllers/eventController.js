@@ -2,6 +2,8 @@ import Event from "../models/Event.js";
 import User from "../models/User.js";
 import Booking from "../models/Booking.js";
 import { sendEventPendingNotification } from "../services/notificationService.js";
+import cloudinary from "../configs/cloudinary.js";
+import fs from "fs";
 
 export const createEvent = async (req, res) => {
   try {
@@ -18,7 +20,24 @@ export const createEvent = async (req, res) => {
       month = `${year}-${monthNum}`;
     }
 
-    const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
+    let imageUrl = req.body.image || null;
+
+    if (req.file) {
+      try {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "gogather/events",
+        });
+        imageUrl = result.secure_url;
+        // Delete local file after upload
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+      } catch (uploadError) {
+        console.error("Cloudinary Upload Error:", uploadError);
+        return res.status(500).json({ message: "Failed to upload image to cloud." });
+      }
+    }
 
     // Attach organizer from authenticated user when available
     const eventData = {
@@ -240,7 +259,19 @@ export const updateEvent = async (req, res) => {
 
     // Image: if a new file uploaded, use it; else if image field provided, use it; otherwise preserve existing
     if (req.file) {
-      event.image = `/uploads/${req.file.filename}`;
+      try {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "gogather/events",
+        });
+        event.image = result.secure_url;
+        // Delete local file
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+      } catch (uploadError) {
+        console.error("Cloudinary Update Upload Error:", uploadError);
+        return res.status(500).json({ message: "Failed to update image on cloud." });
+      }
     } else if (otherData.image) {
       event.image = otherData.image;
     }
