@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Play, Pause } from 'lucide-react';
+import { API_BASE_URL } from '../../config';
 
 const AudioMessage = ({ audioUrl, isSent }) => {
     const [isPlaying, setIsPlaying] = useState(false);
@@ -75,7 +76,7 @@ const AudioMessage = ({ audioUrl, isSent }) => {
 
             <audio
                 ref={audioRef}
-                src={audioUrl.startsWith('http') ? audioUrl : `http://localhost:5000${audioUrl}`}
+                src={audioUrl.startsWith('http') ? audioUrl : `${API_BASE_URL}${audioUrl}`}
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={handleLoadedMetadata}
                 onEnded={handleEnded}
