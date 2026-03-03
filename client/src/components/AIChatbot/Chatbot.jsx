@@ -12,6 +12,7 @@ export default function Chatbot() {
     const [input, setInput] = useState("");
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [moderationAlert, setModerationAlert] = useState(false);
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -71,6 +72,15 @@ export default function Chatbot() {
             setMessages(prev => [...prev, aiMsg]);
         } catch (error) {
             console.error("Chat Error:", error);
+
+            // Check for moderation block (403 Forbidden)
+            if (error.response?.status === 403) {
+                setModerationAlert(true);
+                // Also remove the harmful message from local state for security
+                setMessages(prev => prev.filter((_, idx) => idx !== prev.length - 1));
+                return;
+            }
+
             const errorMsg = {
                 role: "ai",
                 text: error.response?.data?.reply || "⚠️ Connection error. Please try again later.",
@@ -198,6 +208,32 @@ export default function Chatbot() {
                     </>
                 )}
             </div>
+
+            {/* Security Policy Violation Overlay */}
+            {moderationAlert && (
+                <div className="moderation-overlay">
+                    <div className="moderation-content">
+                        <div className="moderation-header">
+                            <div className="moderation-icon">
+                                <X size={32} strokeWidth={3} />
+                            </div>
+                            <h3>Security Policy Violation</h3>
+                        </div>
+                        <p>
+                            Don't use harmful, threatening, or immoral words in this chat. Please follow our safety policies.
+                        </p>
+                        <div className="moderation-hint">
+                            Violation Detected
+                        </div>
+                        <button
+                            className="moderation-close-btn"
+                            onClick={() => setModerationAlert(false)}
+                        >
+                            I Understand
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

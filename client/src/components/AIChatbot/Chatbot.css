@@ -464,3 +464,104 @@
         padding: 12px 14px;
     }
 }
+/* ============================================================
+   MODERATION & SECURITY ALERT OVERLAY (Sync with Squad Chat)
+   ============================================================ */
+.moderation-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+    border-radius: 24px; /* Match chatbot radius */
+}
+
+.moderation-content {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    width: 100%;
+    max-width: 280px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 75, 75, 0.1);
+    animation: scaleUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.moderation-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.moderation-icon {
+    color: #ff4b4b;
+    background: #fff5f5;
+    padding: 10px;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(255, 75, 75, 0.1);
+}
+
+.moderation-content h3 {
+    margin: 0;
+    color: #1a1c1e;
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.moderation-content p {
+    color: #636e72;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.moderation-hint {
+    font-size: 0.75rem;
+    color: #ff4b4b;
+    background: #fffafa;
+    padding: 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    border: 1px dashed rgba(255, 75, 75, 0.2);
+}
+
+.moderation-close-btn {
+    width: 100%;
+    padding: 12px;
+    background: #1a1c1e;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.moderation-close-btn:hover {
+    background: #2d3436;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+

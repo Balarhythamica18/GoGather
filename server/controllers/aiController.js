@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import axios from "axios";
 import Event from "../models/Event.js";
 import Booking from "../models/Booking.js";
+import { containsHarmfulWords } from "../utils/moderation.js";
 
 // Helper to get GoGather Context
 const getGoGatherContext = async () => {
@@ -63,6 +64,15 @@ export const unifiedChat = async (req, res) => {
     const eventsContext = await getGoGatherContext();
 
     console.log(`[AI] Request received: "${message}"`);
+
+    // Moderation Check for AI Chatbot
+    if (message && containsHarmfulWords(message)) {
+        console.warn(`[AI] !!! Moderation blocked harmful input: "${message}"`);
+        return res.status(403).json({
+            reply: "Don't use harmful, threatening, or immoral words in this chat. Please follow our safety policies.",
+            provider: "moderation-blocked"
+        });
+    }
 
     // Strategy 1: Attempt Gemini
     if (geminiKey) {
