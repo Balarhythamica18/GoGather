@@ -24,7 +24,7 @@ export const sendEventPendingNotification = async (adminEmail, organizerDetails,
                         </div>
                         <p>Please log in to the Admin Dashboard to review and approve/reject this event.</p>
                         <div style="text-align: center; margin-top: 30px;">
-                            <a href="https://gogather-client.onrender.com/admin/events" style="background-color: #ff007a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Review Event</a>
+                            <a href="https://gogather-client.onrender.com/login" style="background-color: #ff007a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Review Event</a>
                         </div>
                     </div>
                 </div>
@@ -65,7 +65,7 @@ export const sendEventStatusUpdateNotification = async (organizerEmail, eventTit
                 }
                         
                         <div style="text-align: center; margin-top: 30px;">
-                            <a href="https://gogather-client.onrender.com/dashboard" style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View My Dashboard</a>
+                            <a href="https://gogather-client.onrender.com/login" style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">View My Dashboard</a>
                         </div>
                     </div>
                 </div>

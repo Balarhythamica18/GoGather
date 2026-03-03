@@ -25,7 +25,7 @@ export default function Contact() {
 
     try {
       await axios.post(`${API_BASE_URL}/api/contact`, formData);
-      setSuccess("Your message has been sent successfully! Check your email for confirmation.");
+      setSuccess("Your message has been sent successfully! Your Team will Contact you soon, Thank you.");
       setFormData({
         name: "",
         email: "",
