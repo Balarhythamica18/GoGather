@@ -23,6 +23,7 @@ import eventRoutes from "./routes/eventRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
+import { containsHarmfulWords } from "./utils/moderation.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -60,9 +61,12 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-// Request logging for debugging
+// Request logging for debugging (Minimal logs for safety)
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  // Only log non-sensitive info
+  if (req.method !== 'GET') {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url.split('?')[0]}`);
+  }
   // Allow Google OAuth popups and relax COOP for cross-origin compatibility
   res.setHeader("Cross-Origin-Opener-Policy", "unsafe-none");
   next();
@@ -163,6 +167,18 @@ app.post("/api/squad/upload-voice", upload.single("audio"), (req, res) => {
     return res.status(400).json({ error: "No file uploaded" });
   }
   const audioUrl = `/uploads/voice/${req.file.filename}`;
+  const filePath = path.join(__dirname, "uploads", "voice", req.file.filename);
+
+  // Auto-delete voice file after 60 seconds (Ephemeral Storage / No recording policy)
+  setTimeout(() => {
+    if (fs.existsSync(filePath)) {
+      fs.unlink(filePath, (err) => {
+        if (err) console.error(`[SQUAD] Failed to auto-delete voice file: ${filePath}`, err.message);
+        else console.log(`[SQUAD] Ephemeral voice file deleted: ${req.file.filename}`);
+      });
+    }
+  }, 60000); // 1 minute TTL
+
   res.status(200).json({ audioUrl });
 });
 /* ==============================
@@ -174,14 +190,17 @@ const server = http.createServer(app);
 
 // Initialize Socket.IO
 const io = new Server(server, {
-  cors: { origin: "https://gogather-client.onrender.com" },
+  cors: {
+    origin: ["https://gogather-client.onrender.com", "http://localhost:5173", "http://127.0.0.1:5173"],
+    methods: ["GET", "POST"]
+  },
   transports: ['polling', 'websocket']
 });
 app.set("socketio", io);
 
 // Socket.IO seat locking/unlocking
 io.on("connection", (socket) => {
-  console.log("New client connected:", socket.id);
+  console.log(`[SOCKET] Client connected: ${socket.id} from ${socket.handshake.headers.origin}`);
 
   // Lock a seat
   socket.on("lockSeat", ({ eventId, seat }) => {
@@ -206,16 +225,30 @@ io.on("connection", (socket) => {
   });
 
   socket.on("send-squad-message", ({ code, message, audioUrl, user, id }) => {
-    console.log(`[SQUAD] Msg from ${user.name} to room ${code}: ${message || 'Audio Message'}`);
-    const messageData = {
-      id: id || (Date.now() + Math.random().toString(36).substr(2, 9)),
-      text: message,
-      audioUrl: audioUrl,
-      sender: user,
-      timestamp: new Date()
-    };
-    // Send to everyone in the room including sender
-    io.to(code).emit("receive-squad-message", messageData);
+    try {
+      console.log(`[SQUAD] Processing message from ${user?.name}: ${message?.substring(0, 10)}...`);
+      // Moderation Check for Text Messages
+      if (message && containsHarmfulWords(message)) {
+        console.log(`[SQUAD] !!! BLOCKED harmful message from ${user?.name} in ${code}: "${message}"`);
+        return socket.emit("squad-moderation-blocked", {
+          id: id,
+          message: "Don't use harmful, threatening, or immoral words in this chat. Please follow our safety policies.",
+          timestamp: new Date()
+        });
+      }
+
+      const messageData = {
+        id: id || (Date.now() + Math.random().toString(36).substr(2, 9)),
+        text: message,
+        audioUrl: audioUrl,
+        sender: user,
+        timestamp: new Date()
+      };
+      // Send to everyone in the room including sender
+      io.to(code).emit("receive-squad-message", messageData);
+    } catch (error) {
+      console.error("[SQUAD] Message handling error:", error.message);
+    }
   });
 
   socket.on("leave-squad", ({ code, user }) => {

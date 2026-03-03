@@ -13,6 +13,7 @@ const SquadChat = ({ onClose }) => {
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState([]);
     const [user, setUser] = useState(null);
+    const [moderationAlert, setModerationAlert] = useState(null);
 
     const messagesEndRef = useRef(null);
 
@@ -31,9 +32,21 @@ const SquadChat = ({ onClose }) => {
             setMessages((prev) => [...prev, { ...notification, isNotification: true, id: Date.now() + Math.random() }]);
         });
 
+        socket.on("squad-moderation-blocked", (data) => {
+            console.log("[SQUAD] Moderation block received:", data);
+            setModerationAlert(data);
+
+            // Remove the optimistically added message
+            setMessages((prev) => prev.filter(msg => msg.id !== data.id));
+
+            // Auto hide alert after 8 seconds
+            setTimeout(() => setModerationAlert(null), 8000);
+        });
+
         return () => {
             socket.off("receive-squad-message");
             socket.off("squad-notification");
+            socket.off("squad-moderation-blocked");
         };
     }, []);
 
@@ -142,6 +155,23 @@ const SquadChat = ({ onClose }) => {
                 <JoinSquad onJoin={handleJoinSquad} onCreate={handleJoinSquad} />
             ) : (
                 <>
+                    {moderationAlert && (
+                        <div className="moderation-overlay">
+                            <div className="moderation-content">
+                                <div className="moderation-header">
+                                    <X className="moderation-icon" size={32} />
+                                    <h3>Security Policy Violation</h3>
+                                </div>
+                                <p>{moderationAlert.message}</p>
+                                <div className="moderation-hint">
+                                    Please avoid using harmful, threatening, or immoral language in the squad chat.
+                                </div>
+                                <button className="moderation-close-btn" onClick={() => setModerationAlert(null)}>
+                                    I Understand
+                                </button>
+                            </div>
+                        </div>
+                    )}
                     <div className="squad-messages">
                         {messages.map((msg, idx) => (
                             msg.isNotification ? (
