@@ -8,6 +8,7 @@ import fs from "fs";
 import http from "http";
 import { Server } from "socket.io";
 import dns from "dns";
+import multer from "multer";
 
 // Force IPv4 for all network connections (fixes ENETUNREACH on Render/Gmail)
 if (dns && dns.setDefaultResultOrder) {
@@ -31,6 +32,23 @@ const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
+
+const voiceDir = path.join(uploadsDir, "voice");
+if (!fs.existsSync(voiceDir)) {
+  fs.mkdirSync(voiceDir, { recursive: true });
+}
+
+// Multer Config
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/voice/");
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, "voice-" + uniqueSuffix + ".webm");
+  },
+});
+const upload = multer({ storage });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -137,6 +155,20 @@ app.post("/api/contact", async (req, res) => {
    END CONTACT ROUTE
 ============================== */
 
+/* ==============================
+   SQUAD VOICE UPLOAD
+============================== */
+app.post("/api/squad/upload-voice", upload.single("audio"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
+  const audioUrl = `/uploads/voice/${req.file.filename}`;
+  res.status(200).json({ audioUrl });
+});
+/* ==============================
+   END SQUAD VOICE UPLOAD
+============================== */
+
 // Create HTTP server for Socket.IO
 const server = http.createServer(app);
 
@@ -173,11 +205,12 @@ io.on("connection", (socket) => {
     });
   });
 
-  socket.on("send-squad-message", ({ code, message, user, id }) => {
-    console.log(`[SQUAD] Msg from ${user.name} to room ${code}: ${message}`);
+  socket.on("send-squad-message", ({ code, message, audioUrl, user, id }) => {
+    console.log(`[SQUAD] Msg from ${user.name} to room ${code}: ${message || 'Audio Message'}`);
     const messageData = {
       id: id || (Date.now() + Math.random().toString(36).substr(2, 9)),
       text: message,
+      audioUrl: audioUrl,
       sender: user,
       timestamp: new Date()
     };
