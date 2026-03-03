@@ -24,6 +24,7 @@ import bookingRoutes from "./routes/bookingRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
 import { containsHarmfulWords } from "./utils/moderation.js";
+import cloudinary from "./configs/cloudinary.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -163,24 +164,35 @@ app.post("/api/contact", async (req, res) => {
 /* ==============================
    SQUAD VOICE UPLOAD
 ============================== */
-app.post("/api/squad/upload-voice", upload.single("audio"), (req, res) => {
+app.post("/api/squad/upload-voice", upload.single("audio"), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "No file uploaded" });
   }
-  const audioUrl = `/uploads/voice/${req.file.filename}`;
-  const filePath = path.join(__dirname, "uploads", "voice", req.file.filename);
 
-  // Auto-delete voice file after 60 seconds (Ephemeral Storage / No recording policy)
-  setTimeout(() => {
-    if (fs.existsSync(filePath)) {
-      fs.unlink(filePath, (err) => {
-        if (err) console.error(`[SQUAD] Failed to auto-delete voice file: ${filePath}`, err.message);
-        else console.log(`[SQUAD] Ephemeral voice file deleted: ${req.file.filename}`);
-      });
+  try {
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "gogather/voice",
+      resource_type: "auto", // Important for audio files
+    });
+
+    const audioUrl = result.secure_url;
+
+    // Delete local file after upload
+    if (fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
     }
-  }, 60000); // 1 minute TTL
 
-  res.status(200).json({ audioUrl });
+    res.status(200).json({ audioUrl });
+  } catch (error) {
+    console.error(`[SQUAD] Cloudinary upload failure:`, error.message);
+    res.status(500).json({ error: "Failed to upload voice message to cloud" });
+
+    // Cleanup local file if it exists even on error
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+  }
 });
 /* ==============================
    END SQUAD VOICE UPLOAD
