@@ -1,8 +1,21 @@
+/* ============================================================ 
+   PREMIUM UI OVERHAUL: SQUAD CHAT
+   Modern, Sleek, Glassmorphism, and Dynamic Animations
+   ============================================================ */
+
 :root {
     --squad-primary: #ff007a;
+    --squad-primary-gradient: linear-gradient(135deg, #ff007a 0%, #ff4d9e 100%);
+    --squad-bg-glass: rgba(255, 255, 255, 0.85);
+    --squad-bg-dark: #1a1c1e;
+    --squad-text-main: #2d3436;
+    --squad-text-muted: #636e72;
+    --squad-shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --squad-shadow-premium: 0 20px 40px rgba(255, 0, 122, 0.15);
+    --squad-radius-lg: 24px;
+    --squad-radius-md: 16px;
     --squad-primary-hover: #e6006e;
     --squad-bg: #ffffff;
-    --squad-bg-dark: #111827;
     --squad-text: #1f2937;
     --squad-text-light: #64748b;
     --squad-border: rgba(0, 0, 0, 0.08);
@@ -42,73 +55,118 @@
     box-shadow: 0 12px 30px rgba(255, 0, 122, 0.2);
 }
 
+/* Floating Window Enhancements */
 .squad-window {
-    width: 380px;
-    height: min(580px, calc(100vh - 180px));
-    /* Responsive height to avoid hitting navbar */
-    background: var(--squad-bg);
-    border-radius: var(--squad-radius);
-    box-shadow: var(--squad-shadow-lg);
+    width: 500px;
+    height: min(650px, calc(100vh - 160px));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(20px);
+    background: var(--squad-bg-glass);
+    border-radius: var(--squad-radius-lg);
+    box-shadow: var(--squad-shadow-soft), var(--squad-shadow-premium);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid var(--squad-border);
     position: absolute;
-    bottom: 65px;
+    bottom: 50px;
     right: 0;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     transform-origin: bottom right;
 }
 
 .squad-header {
     background: var(--squad-bg-dark);
-    padding: 14px 18px;
+    padding: 16px 20px;
+    border-radius: var(--squad-radius-lg) var(--squad-radius-lg) 0 0;
+    backdrop-filter: blur(10px);
     color: white;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    height: 75px;
+    box-sizing: border-box;
 }
 
-.squad-header-info {
+.squad-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.squad-header-right {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
 .squad-icon-wrap {
-    padding: 8px;
+    padding: 10px;
     background: rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
+    border-radius: 14px;
     color: var(--squad-primary);
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s ease;
 }
 
 .squad-title {
-    font-weight: 700;
-    font-size: 15px;
-    letter-spacing: -0.02em;
+    font-weight: 750;
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
 }
 
 .squad-code-badge {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     color: white;
-    padding: 4px 10px;
-    border-radius: 10px;
+    padding: 8px 14px;
+    border-radius: 12px;
     font-family: 'JetBrains Mono', monospace;
-    font-weight: 600;
-    font-size: 0.8rem;
+    font-weight: 700;
+    font-size: 0.85rem;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
-    transition: background 0.2s;
+    gap: 8px;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .squad-code-badge:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.squad-header-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.squad-header-btn.logout {
+    color: #ff4d4d;
+}
+
+.squad-header-btn.logout:hover {
+    background: rgba(255, 77, 77, 0.1);
+    transform: scale(1.1);
+}
+
+.squad-header-btn.close {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.squad-header-btn.close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: rotate(90deg);
 }
 
 .squad-content {
@@ -120,6 +178,36 @@
 }
 
 /* Auth / Join Experience */
+.login-required-view {
+    padding: 40px 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 16px;
+}
+
+.login-required-icon {
+    margin-bottom: 8px;
+    color: var(--squad-primary);
+}
+
+.login-required-view h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--squad-bg-dark);
+    margin: 0;
+}
+
+.login-required-view p {
+    color: var(--squad-text-light);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 10px 0;
+}
+
 .join-squad-view {
     padding: 30px 24px;
     text-align: center;
@@ -203,16 +291,17 @@
     transform: translateY(0);
 }
 
-/* Chat Experience */
+/* Chat Messages Refresh */
 .squad-messages {
     flex: 1;
-    padding: 16px;
+    padding: 20px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 12px;
     scrollbar-width: thin;
     scrollbar-color: #e2e8f0 transparent;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(248, 250, 252, 0.5) 100%);
 }
 
 .message-bubble {
@@ -223,14 +312,18 @@
     line-height: 1.55;
     position: relative;
     word-wrap: break-word;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.02);
+    margin-bottom: 4px;
 }
 
 .msg-sent {
     align-self: flex-end;
-    background: var(--squad-primary);
+    background: var(--squad-primary-gradient);
     color: white;
     border-bottom-right-radius: 4px;
-    box-shadow: 0 2px 8px rgba(255, 0, 122, 0.1);
+    box-shadow: 0 8px 20px rgba(255, 0, 122, 0.2);
+    border: none;
 }
 
 .msg-received {
@@ -238,19 +331,22 @@
     background: white;
     color: var(--squad-text);
     border-bottom-left-radius: 4px;
-    border: 1px solid var(--squad-border);
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
+/* Better typography for time and sender */
 .msg-sender {
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-    color: var(--squad-text-light);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+    color: #ff007a;
+    text-shadow: 0 2px 4px rgba(255, 0, 122, 0.1);
 }
 
 .msg-time {
-    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
     margin-top: 4px;
     opacity: 0.5;
     text-align: right;
@@ -267,53 +363,482 @@
     margin: 4px 0;
 }
 
+/* Input Area: Futuristic & Integrated */
 .squad-footer {
-    padding: 14px 16px;
-    background: var(--squad-bg);
-    border-top: 1px solid var(--squad-border);
+    padding: 20px;
+    background: transparent;
+    border: none;
 }
 
 .squad-input-area {
+    background: white;
+    border-radius: 30px;
+    padding: 8px 8px 8px 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: visible;
+    /* Changed from hidden to show overlays correctly */
     display: flex;
-    gap: 8px;
-    background: #f8fafc;
-    padding: 4px;
-    border-radius: 14px;
-    border: 1px solid #e2e8f0;
-    transition: border-color 0.2s;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .squad-input-area:focus-within {
+    background: white;
     border-color: var(--squad-primary);
+    box-shadow: 0 4px 20px rgba(255, 0, 122, 0.08);
 }
 
 .squad-input-area input {
     flex: 1;
     background: transparent;
     border: none;
-    padding: 8px 12px;
-    font-size: 14px;
+    padding: 10px 0;
+    font-size: 14.5px;
+    font-weight: 500;
     outline: none;
-    color: var(--squad-text);
+    color: var(--squad-bg-dark);
 }
 
+.squad-input-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Send Button: Modern Gradient */
 .squad-send-btn {
-    background: var(--squad-primary);
+    background: var(--squad-primary-gradient);
     color: white;
     border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 10px rgba(255, 0, 122, 0.25);
 }
 
 .squad-send-btn:hover:not(:disabled) {
+    transform: scale(1.1) rotate(-5deg);
     background: var(--squad-primary-hover);
-    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(255, 0, 122, 0.35);
+}
+
+.squad-send-btn.btn-disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: scale(0.95);
+}
+
+/* ============================================================
+PREMIUM SQUAD VOICE SYSTEM Fully Integrated – Safe Append Version============================================================*/
+/* ============================================================
+   VOICE RECORDER CONTAINER
+============================================================ */
+
+.vr-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+/* ============================================================
+   ICON BUTTON BASE
+============================================================ */
+
+.vr-icon-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.vr-icon-btn svg {
+    pointer-events: none;
+}
+
+/* Mic Button */
+
+.vr-mic {
+    background: #f1f5f9;
+    color: var(--squad-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.vr-mic:hover {
+    transform: scale(1.1);
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgba(255, 0, 122, 0.25);
+}
+
+
+/* ============================================================
+   RECORDING BAR (LIVE)
+============================================================ */
+
+.vr-recording-bar {
+    flex: 1;
+    background: rgba(26, 28, 30, 0.95);
+    backdrop-filter: blur(12px);
+    border-radius: 30px;
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    color: white;
+    animation: vrFadeSlide 0.25s ease forwards;
+    box-shadow: 0 12px 30px rgba(255, 0, 122, 0.25);
+}
+
+.vr-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.vr-dot {
+    width: 9px;
+    height: 9px;
+    background: #ff2d55;
+    border-radius: 50%;
+    animation: vrPulse 1s infinite;
+}
+
+
+/* ============================================================
+   PREVIEW BAR (AFTER RECORDING)
+============================================================ */
+
+.vr-preview-bar {
+    flex: 1;
+    background: var(--squad-primary-gradient);
+    border-radius: 30px;
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    color: white;
+    font-weight: 600;
+    animation: vrFadeSlide 0.25s ease forwards;
+    box-shadow: 0 14px 35px rgba(255, 0, 122, 0.35);
+}
+
+
+/* ============================================================
+   ACTION BUTTONS
+============================================================ */
+
+.vr-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.vr-cancel {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.vr-cancel:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: scale(1.1);
+}
+
+.vr-stop {
+    background: #ff3b30;
+    color: white;
+}
+
+.vr-stop:hover {
+    background: #e02920;
+    transform: scale(1.1);
+}
+
+.vr-send {
+    background: white;
+    color: var(--squad-primary);
+}
+
+.vr-send:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 18px rgba(255, 255, 255, 0.4);
+}
+
+
+/* ============================================================
+   VOICE MESSAGE BUBBLE
+============================================================ */
+
+.premium-audio-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 20px;
+    min-width: 220px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    margin: 4px 0;
+}
+
+/* Sent Voice (Pink Glass) */
+.premium-audio-container.sent {
+    background: linear-gradient(135deg, rgba(255, 0, 122, 0.9) 0%, rgba(255, 77, 158, 0.9) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(255, 0, 122, 0.25);
+    color: white;
+}
+
+/* Received Voice (White Glass) */
+.premium-audio-container.received {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
+    color: var(--squad-text-main);
+}
+
+
+/* ============================================================
+   PLAY BUTTON INSIDE BUBBLE
+============================================================ */
+
+/* Play/Pause Button */
+.premium-audio-play {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.sent .premium-audio-play {
+    background: white;
+    color: var(--squad-primary);
+    box-shadow: 0 4px 15px rgba(255, 0, 122, 0.2);
+}
+
+.received .premium-audio-play {
+    background: var(--squad-primary);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 0, 122, 0.15);
+}
+
+.premium-audio-play:hover {
+    transform: scale(1.1);
+}
+
+.premium-audio-play:active {
+    transform: scale(0.95);
+}
+
+
+/* ============================================================
+   FAKE WAVEFORM ANIMATION
+============================================================ */
+
+/* Waveform Visualizer */
+.premium-audio-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.premium-waveform {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 30px;
+}
+
+.waveform-bar {
+    width: 3px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.received .waveform-bar {
+    background: rgba(255, 0, 122, 0.15);
+}
+
+.waveform-bar.active {
+    background: white;
+}
+
+.received .waveform-bar.active {
+    background: var(--squad-primary);
+}
+
+
+/* ============================================================
+   ANIMATIONS
+============================================================ */
+
+/* Duration & Info */
+.premium-duration {
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    opacity: 0.9;
+}
+
+/* Duration & Info */
+.premium-audio-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sent .premium-duration {
+    color: white;
+}
+
+.received .premium-duration {
+    color: var(--squad-text-muted);
+}
+
+/* Entry Animation */
+@keyframes bubbleFloat {
+    0% {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.premium-audio-container {
+    animation: bubbleFloat 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Ensure original bubble styles don't conflict or look odd */
+.message-bubble.msg-sent,
+.message-bubble.msg-received {
+    padding: 10px 14px;
+    /* Restore padding for text messages */
+}
+
+/* Special case for voice messages inside bubbles */
+.message-bubble:has(.premium-audio-container) {
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    max-width: fit-content;
+}
+
+
+/* ============================================================
+   MOBILE OPTIMIZATION
+============================================================ */
+
+@media (max-width: 480px) {
+
+    .vr-recording-bar,
+    .vr-preview-bar {
+        padding: 8px 14px;
+        gap: 10px;
+    }
+
+    .vr-left {
+        font-size: 13px;
+    }
+
+    .vr-icon-btn {
+        width: 38px;
+        height: 38px;
+    }
+
+    .premium-audio-container {
+        min-width: 180px;
+        padding: 8px 12px;
+    }
+
+}
+
+/* ======================================================
+   Responsive (Mobile Friendly)
+====================================================== */
+
+@media (max-width: 480px) {
+
+    .vr-recording-bar,
+    .vr-preview-bar {
+        padding: 6px 12px;
+        gap: 10px;
+    }
+
+    .vr-left {
+        font-size: 13px;
+    }
+
+    .vr-icon-btn {
+        padding: 6px;
+    }
+
+    .vr-cancel,
+    .vr-stop,
+    .vr-send {
+        width: 30px;
+        height: 30px;
+    }
+}
+
+/* Custom Animations for a "Cool" feel */
+@keyframes slideInInput {
+    from {
+        opacity: 0;
+        transform: scaleX(0.9) translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scaleX(1) translateX(0);
+    }
+}
+
+/* Scrollbar styling for a cleaner look */
+.squad-messages::-webkit-scrollbar {
+    width: 4px;
+}
+
+.squad-messages::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+.squad-messages:hover::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
 }
 
 /* Professional Responsive Breakpoints */

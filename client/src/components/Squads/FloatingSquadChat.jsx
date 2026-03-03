@@ -10,26 +10,7 @@ const FloatingSquadChat = () => {
         <div className="squad-floating-container">
             {isOpen && (
                 <div className="squad-window">
-                    {/* Header already in SquadChat but we can add a close button here or in SquadChat */}
-                    <div style={{ position: 'absolute', top: '18px', right: '55px', zIndex: 10 }}>
-                        {/* Position adjusted to not overlap with existing header buttons */}
-                    </div>
-                    <SquadChat />
-                    <button
-                        onClick={() => setIsOpen(false)}
-                        style={{
-                            position: 'absolute',
-                            top: '18px',
-                            right: '15px',
-                            background: 'transparent',
-                            border: 'none',
-                            color: 'white',
-                            cursor: 'pointer',
-                            zIndex: 100
-                        }}
-                    >
-                        <X size={20} />
-                    </button>
+                    <SquadChat onClose={() => setIsOpen(false)} />
                 </div>
             )}
 
