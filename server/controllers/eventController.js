@@ -304,20 +304,22 @@ export const updateEvent = async (req, res) => {
     if (otherData.organizerEmail) event.organizerDetails.contactEmail = otherData.organizerEmail;
     if (otherData.organizerPhone) event.organizerDetails.contactPhone = otherData.organizerPhone;
 
-    // Reset status to pending if an organizer edits the event
+    // Reset status to pending if an organizer edits the event (unless it was already approved)
     if (req.user?.role !== "admin") {
-      event.status = "pending";
+      if (event.status !== "approved") {
+        event.status = "pending";
 
-      // Notify Admin about the edit
-      const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
-      try {
-        await sendEventPendingNotification(
-          adminEmail,
-          { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
-          { title: `${event.title} (Updated)`, location: event.location, date: event.date, month: event.month }
-        );
-      } catch (emailErr) {
-        console.error("Non-blocking email notification failure in updateEvent:", emailErr.message);
+        // Notify Admin about the edit/re-submission
+        const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
+        try {
+          await sendEventPendingNotification(
+            adminEmail,
+            { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
+            { title: `${event.title} (Updated/Re-submitted)`, location: event.location, date: event.date, month: event.month }
+          );
+        } catch (emailErr) {
+          console.error("Non-blocking email notification failure in updateEvent:", emailErr.message);
+        }
       }
     } else if (otherData.status) {
       // Allow admins to update status directly if needed (though usually handled via admin routes)
