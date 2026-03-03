@@ -10,7 +10,6 @@ import PaymentPage from "./pages/PaymentPage.jsx";
 import ConfirmationPage from "./pages/ConfirmationPage.jsx";
 import Chatbot from "./components/AIChatbot/Chatbot";
 
-import "./App.css";
 
 /*  PUBLIC PAGES */
 import Home from "./pages/Home";
