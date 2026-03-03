@@ -90,7 +90,7 @@ const App = () => {
 
         {!hideLayoutRoutes && <Navbar />}
 
-        <main className="main-content">
+        <main className={`main-content ${hideLayoutRoutes ? "main-content--dashboard" : ""}`}>
           <Routes>
 
             {/* 🌍 PUBLIC ROUTES */}

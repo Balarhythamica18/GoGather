@@ -33,6 +33,27 @@
     box-shadow: var(--admin-shadow);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    margin-top: 16px;
+}
+
+/* Professional Scrollbar for Admin Tables */
+.admin-table-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.admin-table-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.admin-table-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+    border: 2px solid #f1f5f9;
+}
+
+.admin-table-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 .admin-table {

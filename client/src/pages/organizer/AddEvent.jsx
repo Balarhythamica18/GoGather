@@ -196,23 +196,82 @@ const AddEvent = () => {
     };
 
     return (
-        <div style={styles.page}>
+        <div style={styles.page} className="add-event-page">
+            <style>{`
+                .add-event-page {
+                    --container-padding: 40px 20px;
+                }
+                @media (max-width: 1024px) {
+                    .add-event-form-layout {
+                        grid-template-columns: 1fr !important;
+                        gap: 24px !important;
+                    }
+                    .add-event-right-column {
+                        position: static !important;
+                    }
+                }
+                @media (max-width: 768px) {
+                    .add-event-page {
+                        padding: 24px 12px !important;
+                    }
+                    .add-event-title {
+                        font-size: 26px !important;
+                        margin-bottom: 4px !important;
+                    }
+                    .add-event-grid-2 {
+                        grid-template-columns: 1fr !important;
+                        gap: 12px !important;
+                    }
+                    .add-event-card {
+                        padding: 20px 16px !important;
+                        border-radius: 12px !important;
+                    }
+                    .add-event-header {
+                        margin-bottom: 24px !important;
+                    }
+                }
+
+                @media (max-width: 480px) {
+                    .add-event-page {
+                        padding: 16px 10px !important;
+                    }
+                    .preview-wrapper, .upload-placeholder {
+                        height: 200px !important;
+                    }
+                }
+
+                /* Professional Scrollbar - subtle but there */
+                ::-webkit-scrollbar {
+                    width: 6px;
+                    height: 6px;
+                }
+                ::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                ::-webkit-scrollbar-thumb {
+                    background: #e2e8f0;
+                    border-radius: 10px;
+                }
+                ::-webkit-scrollbar-thumb:hover {
+                    background: #cbd5e1;
+                }
+            `}</style>
             <div style={styles.container}>
                 {/* Header Section */}
-                <header style={styles.header}>
+                <header style={styles.header} className="add-event-header">
                     <button type="button" style={styles.backLink} onClick={() => navigate("/dashboard")}>
                         <ArrowLeft size={18} />
                         Back to Dashboard
                     </button>
-                    <h1 style={styles.title}>{id ? "Edit Event" : "Create New Event"}</h1>
+                    <h1 style={styles.title} className="add-event-title">{id ? "Edit Event" : "Create New Event"}</h1>
                     <p style={styles.subtitle}>Fill in the details below to list your event on GoGather.</p>
                 </header>
 
                 <form onSubmit={handleSubmit} style={styles.form}>
-                    <div style={styles.formLayout}>
+                    <div style={styles.formLayout} className="add-event-form-layout">
                         {/* Left Column - Main Details */}
                         <div style={styles.leftColumn}>
-                            <div style={styles.card}>
+                            <div style={styles.card} className="add-event-card">
                                 <h3 style={styles.cardTitle}>Basic Information</h3>
                                 <div style={styles.inputGroup}>
                                     <label style={styles.label}>Event Title</label>
@@ -226,7 +285,7 @@ const AddEvent = () => {
                                     />
                                 </div>
 
-                                <div style={styles.grid2}>
+                                <div style={styles.grid2} className="add-event-grid-2">
                                     <div style={styles.inputGroup}>
                                         <label style={styles.label}>Category</label>
                                         <div style={styles.selectWrapper}>
@@ -271,9 +330,9 @@ const AddEvent = () => {
                                 </div>
                             </div>
 
-                            <div style={styles.card}>
+                            <div style={styles.card} className="add-event-card">
                                 <h3 style={styles.cardTitle}>Location & Time</h3>
-                                <div style={styles.grid2}>
+                                <div style={styles.grid2} className="add-event-grid-2">
                                     <div style={styles.inputGroup}>
                                         <label style={styles.label}>Date</label>
                                         <div style={styles.inputWithIcon}>
@@ -312,7 +371,7 @@ const AddEvent = () => {
                                 </div>
                             </div>
 
-                            <div style={styles.card}>
+                            <div style={styles.card} className="add-event-card">
                                 <h3 style={styles.cardTitle}>Detailed Information</h3>
                                 <div style={styles.inputGroup}>
                                     <label style={styles.label}>About the Event</label>
@@ -338,8 +397,8 @@ const AddEvent = () => {
                         </div>
 
                         {/* Right Column - Media & Organizer */}
-                        <div style={styles.rightColumn}>
-                            <div style={styles.card}>
+                        <div style={styles.rightColumn} className="add-event-right-column">
+                            <div style={styles.card} className="add-event-card">
                                 <h3 style={styles.cardTitle}>Event Media</h3>
                                 <div style={styles.imageUploadArea}>
                                     {(preview || form.image) ? (

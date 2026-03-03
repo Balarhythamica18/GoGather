@@ -56,6 +56,18 @@ const AdminDashboard = () => {
     return (
         <div style={styles.container}>
             <style>{`
+                @media (max-width: 1024px) {
+                    .admin-main-grid {
+                        grid-template-columns: 1fr !important;
+                    }
+                }
+                @media (max-width: 768px) {
+                    .admin-header {
+                        flex-direction: column;
+                        align-items: flex-start !important;
+                        gap: 16px;
+                    }
+                }
                 @media (max-width: 600px) {
                     .responsive-stats-grid, .responsive-content-grid {
                         display: flex !important;
@@ -65,16 +77,34 @@ const AdminDashboard = () => {
                         margin-bottom: 24px;
                         -webkit-overflow-scrolling: touch;
                         scrollbar-width: thin;
-                        padding-left: 4px;
-                        padding-right: 4px;
                     }
                     .responsive-stats-grid > div, .responsive-content-grid > div {
                         flex: 0 0 280px !important;
                         min-width: 280px !important;
                     }
                 }
+
+                /* Professional Scrollbar for Admin Dahboard Grids */
+                .responsive-stats-grid::-webkit-scrollbar, 
+                .responsive-content-grid::-webkit-scrollbar {
+                    height: 6px;
+                }
+                .responsive-stats-grid::-webkit-scrollbar-track, 
+                .responsive-content-grid::-webkit-scrollbar-track {
+                    background: #f1f5f9;
+                    border-radius: 10px;
+                }
+                .responsive-stats-grid::-webkit-scrollbar-thumb, 
+                .responsive-content-grid::-webkit-scrollbar-thumb {
+                    background: #cbd5e1;
+                    border-radius: 10px;
+                }
+                .responsive-stats-grid::-webkit-scrollbar-thumb:hover, 
+                .responsive-content-grid::-webkit-scrollbar-thumb:hover {
+                    background: #94a3b8;
+                }
             `}</style>
-            <header style={styles.header}>
+            <header style={styles.header} className="admin-header">
                 <div>
                     <h1 style={styles.title}>System Overview</h1>
                     <p style={styles.subtitle}>Real-time monitoring of GoGather platform activity.</p>

@@ -24,7 +24,7 @@ const Layout = () => {
         .admin-layout__content {
           flex: 1;
           margin-left: 260px;
-          padding: 40px;
+          padding: 20px 40px 40px;
           min-height: calc(100vh - 64px);
           overflow-y: auto;
           box-sizing: border-box;

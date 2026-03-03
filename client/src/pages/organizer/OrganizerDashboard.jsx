@@ -239,35 +239,163 @@ const OrganizerDashboard = () => {
 
       <main style={styles.mainContent} className="organizer-main-content">
         <style>{`
-          @media (max-width: 768px) {
+          @media (max-width: 1024px) {
             .organizer-main-content {
               margin-left: 0 !important;
-              padding: 24px 16px !important;
+              padding: 32px 24px !important;
             }
             .sidebar-toggle-btn {
               display: flex !important;
             }
-          }
-          @media (max-width: 600px) {
-            .responsive-stats-grid, .responsive-event-grid {
+            
+            /* Enable horizontal scroll for stats on tablets too if they don't fit */
+            .responsive-stats-grid {
               display: flex !important;
               overflow-x: auto !important;
               gap: 16px !important;
               padding-bottom: 12px;
               margin-bottom: 24px;
+              margin-right: -24px;
+              margin-left: -24px;
+              padding-right: 24px;
+              padding-left: 24px;
               -webkit-overflow-scrolling: touch;
-              scrollbar-width: thin;
-              padding-left: 4px;
-              padding-right: 4px;
+              scrollbar-width: none; /* Hide scrollbar but keep functionality */
+              scroll-snap-type: x mandatory;
             }
-            .responsive-stats-grid > div, .responsive-event-grid > div {
+            .responsive-stats-grid::-webkit-scrollbar {
+              display: none;
+            }
+            .responsive-stats-grid > div {
+              flex: 0 0 220px !important;
+              min-width: 220px !important;
+              scroll-snap-align: start;
+            }
+          }
+
+          @media (max-width: 768px) {
+            .organizer-main-content {
+              padding: 24px 16px !important;
+            }
+            .dashboard-header {
+              flex-direction: column;
+              align-items: flex-start !important;
+              gap: 20px;
+              margin-bottom: 32px !important;
+            }
+            .header-actions {
+              width: 100%;
+              flex-direction: row !important;
+              flex-wrap: wrap;
+              align-items: center !important;
+              gap: 16px;
+            }
+            .tab-switcher {
+              flex: 1;
+              min-width: 200px;
+            }
+            .tab-switcher button {
+              flex: 1;
+            }
+            .header-actions > button {
+              flex: 0 0 auto;
+              width: auto !important;
+              padding: 12px 20px !important;
+              height: 48px;
+            }
+
+            .responsive-event-grid {
+              display: flex !important;
+              overflow-x: auto !important;
+              gap: 16px !important;
+              padding-bottom: 24px;
+              margin-bottom: 24px;
+              margin-right: -16px;
+              margin-left: -16px;
+              padding-right: 16px;
+              padding-left: 16px;
+              -webkit-overflow-scrolling: touch;
+              scrollbar-width: none;
+              scroll-snap-type: x mandatory;
+            }
+            .responsive-event-grid::-webkit-scrollbar {
+              display: none;
+            }
+            .responsive-event-grid > div {
               flex: 0 0 280px !important;
               min-width: 280px !important;
+              scroll-snap-align: center;
+            }
+          }
+
+          @media (max-width: 600px) {
+            .header-actions {
+              flex-direction: column-reverse !important;
+              align-items: stretch !important;
+              gap: 12px;
+            }
+            .tab-switcher, .header-actions > button {
+              width: 100% !important;
+            }
+            
+            .header-actions > button {
+              background: linear-gradient(135deg, #ff007a 0%, #ff4d97 100%) !important;
+              box-shadow: 0 8px 16px -4px rgba(255, 0, 122, 0.4) !important;
+              font-size: 15px !important;
+              letter-spacing: 0.01em;
+            }
+
+            .responsive-stats-grid {
+              margin-right: -16px;
+              margin-left: -16px;
+              padding-right: 16px;
+              padding-left: 16px;
+            }
+            
+            .responsive-stats-grid > div {
+              flex: 0 0 200px !important;
+              min-width: 200px !important;
+            }
+
+            .responsive-event-grid > div {
+              flex: 0 0 calc(100% - 48px) !important;
+              min-width: 260px !important;
+              scroll-snap-align: center;
+              box-shadow: 0 12px 24px -8px rgba(0,0,0,0.15) !important;
+              margin-bottom: 8px;
+            }
+
+            .settings-grid {
+              grid-template-columns: 1fr !important;
+              gap: 20px !important;
+            }
+            .settings-card {
+              padding: 20px !important;
+            }
+          }
+
+          /* General scroll enhancement */
+          .responsive-stats-grid, .responsive-event-grid {
+             scrollbar-width: none;
+          }
+          .responsive-stats-grid::-webkit-scrollbar, 
+          .responsive-event-grid::-webkit-scrollbar {
+            display: none;
+          }
+
+          @media (max-width: 600px) {
+            .content-section {
+              background: transparent !important;
+              padding: 0 !important;
+              box-shadow: none !important;
+            }
+            .section-header {
+              padding: 0 4px;
             }
           }
         `}</style>
         {/* Header */}
-        <header style={styles.header}>
+        <header style={styles.header} className="dashboard-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button
               className="sidebar-toggle-btn"
@@ -281,7 +409,7 @@ const OrganizerDashboard = () => {
               <p style={styles.subtitle}>Here's what's happening with your events today.</p>
             </div>
           </div>
-          <div style={styles.headerActions}>
+          <div style={styles.headerActions} className="header-actions">
             <div style={styles.tabSwitcher}>
               <button
                 style={{ ...styles.tabBtn, ...(activeTab === 'events' ? styles.tabBtnActive : {}) }}
@@ -334,7 +462,7 @@ const OrganizerDashboard = () => {
             </div>
 
             {/* Content Section */}
-            <div style={styles.contentSection}>
+            <div style={styles.contentSection} className="content-section">
               <div style={styles.sectionHeader}>
                 <h2 style={styles.sectionTitle}>Manage Events</h2>
                 <div style={styles.controls}>
@@ -430,9 +558,9 @@ const OrganizerDashboard = () => {
             {settingsError && <div style={styles.errorBanner}>{settingsError}</div>}
             {settingsSuccess && <div style={styles.successBanner}>{settingsSuccess}</div>}
 
-            <div style={styles.settingsGrid}>
+            <div style={styles.settingsGrid} className="settings-grid">
               {/* Profile Settings */}
-              <div style={styles.settingsCard}>
+              <div style={styles.settingsCard} className="settings-card">
                 <div style={styles.cardHeader}>
                   <div style={styles.iconCircle}>
                     <User size={20} color="#ff007a" />
@@ -489,7 +617,7 @@ const OrganizerDashboard = () => {
               </div>
 
               {/* Security Settings */}
-              <div style={styles.settingsCard}>
+              <div style={styles.settingsCard} className="settings-card">
                 <div style={styles.cardHeader}>
                   <div style={styles.iconCircle}>
                     <Shield size={20} color="#ff007a" />
@@ -624,7 +752,7 @@ const styles = {
   mainContent: {
     flex: 1,
     marginLeft: '260px',
-    padding: '40px 60px',
+    padding: '20px 60px 40px',
     transition: 'all 0.3s ease',
   },
   toggleBtn: {
@@ -640,7 +768,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '32px',
+    marginBottom: '20px',
   },
   title: {
     fontSize: '28px',
