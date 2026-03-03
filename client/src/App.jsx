@@ -80,6 +80,10 @@ const App = () => {
     location.pathname.toLowerCase().startsWith(path)
   );
 
+  const hideSquadChat = hideChatIcons || noLayoutRoutes.some(path =>
+    location.pathname.toLowerCase().startsWith(path)
+  );
+
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <div className="app-layout">
@@ -130,7 +134,7 @@ const App = () => {
           </Routes>
         </main>
 
-        {!hideChatIcons && <FloatingSquadChat />}
+        {!hideSquadChat && <FloatingSquadChat />}
         {!hideChatIcons && <Chatbot />}
 
         {!hideLayoutRoutes && <Footer />}
