@@ -131,6 +131,7 @@ app.post("/api/contact", async (req, res) => {
     }, true);
 
     // 2️⃣ Confirmation Email to User (Non-Blocking)
+    console.log(`[CONTACT] Attempting to send confirmation to user: ${email}`);
     sendEmail({
       to: email,
       subject: "We Received Your Query - GoGather 🎫",

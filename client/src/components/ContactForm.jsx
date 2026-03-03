@@ -25,7 +25,7 @@ export default function Contact() {
 
     try {
       await axios.post(`${API_BASE_URL}/api/contact`, formData);
-      setSuccess("Your message has been sent successfully!");
+      setSuccess("Your message has been sent successfully! Check your email for confirmation.");
       setFormData({
         name: "",
         email: "",
@@ -33,13 +33,15 @@ export default function Contact() {
         subject: "",
         message: ""
       });
+      // Clear success message after 5 seconds
+      setTimeout(() => setSuccess(""), 5000);
     } catch (error) {
       console.error("Submission error:", error);
       const serverDetails = error.response?.data?.details;
       const serverError = error.response?.data?.error;
       const errorMsg = serverDetails || serverError || "Connection error. Please check your internet or try again later.";
 
-      alert(`Error: ${errorMsg}`);
+      alert(`Submission Failed: ${errorMsg}`);
     }
 
     setLoading(false);

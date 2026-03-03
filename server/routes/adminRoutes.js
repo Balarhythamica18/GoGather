@@ -304,7 +304,10 @@ router.patch(
       // Notify Organizer
       const organizerEmail = event.organizer?.email || event.organizerDetails?.contactEmail;
       if (organizerEmail) {
+        console.log(`[ADMIN] Notifying organizer (${organizerEmail}) that event "${event.title}" was ${status}`);
         await sendEventStatusUpdateNotification(organizerEmail, event.title, status);
+      } else {
+        console.warn(`[ADMIN] No email found for organizer of event "${event.title}"`);
       }
 
       res.json({ message: `Event ${status} successfully`, event });

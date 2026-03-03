@@ -56,7 +56,12 @@ export const register = async (req, res) => {
       isVerified: true, // Verification bypassed
     });
 
-    // Move welcome email to first login
+    // Send welcome email immediately
+    try {
+      await sendWelcomeEmail(email, name);
+    } catch (e) {
+      console.error("[REGISTER] Welcome email failed:", e.message);
+    }
 
     res.status(201).json({
       message: "Registered Successfully. Welcome to GoGather!",

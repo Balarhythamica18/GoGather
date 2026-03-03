@@ -73,8 +73,9 @@ export const createEvent = async (req, res) => {
       io.emit("pendingCountUpdate", { count: pendingCount });
     }
 
-    // Notify Admin via Email
+    // 3️⃣ Notify Admin via Email
     const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
+    console.log(`[EVENT] Notifying admin (${adminEmail}) about new event: ${event.title}`);
     try {
       await sendEventPendingNotification(
         adminEmail,
@@ -82,7 +83,7 @@ export const createEvent = async (req, res) => {
         { title: event.title, location: event.location, date: event.date, month: event.month }
       );
     } catch (emailErr) {
-      console.error("Non-blocking email notification failure:", emailErr.message);
+      console.error("[EVENT] Admin email notification failure:", emailErr.message);
     }
 
     res.status(201).json(event);

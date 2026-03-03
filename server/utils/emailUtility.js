@@ -27,6 +27,19 @@ const transporter = nodemailer.createTransport({
     family: 4 // Force IPv4 to prevent ENETUNREACH on IPv6-only environments like Render
 });
 
+// Verify connection configuration on startup
+if (emailPass) {
+    transporter.verify(function (error, success) {
+        if (error) {
+            console.error("[EMAIL ERROR] SMTP Connection Verification Failed:", error.message);
+        } else {
+            console.log("[EMAIL SUCCESS] SMTP Server is ready to take our messages");
+        }
+    });
+} else {
+    console.error("[EMAIL ERROR] EMAIL_PASS is missing or empty in .env!");
+}
+
 /**
  * Sends an email using the centralized transporter.
  * 
