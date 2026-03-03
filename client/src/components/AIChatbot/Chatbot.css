@@ -464,6 +464,7 @@
         padding: 12px 14px;
     }
 }
+
 /* ============================================================
    MODERATION & SECURITY ALERT OVERLAY (Sync with Squad Chat)
    ============================================================ */
@@ -481,7 +482,8 @@
     justify-content: center;
     padding: 20px;
     animation: fadeIn 0.3s ease;
-    border-radius: 24px; /* Match chatbot radius */
+    border-radius: 24px;
+    /* Match chatbot radius */
 }
 
 .moderation-content {
@@ -552,16 +554,110 @@
 .moderation-close-btn:hover {
     background: #2d3436;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes scaleUp {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
+
+/* New Login Required Styles */
+.login-notice-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px dashed #cbd5e1;
+    color: #64748b;
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.lock-mini {
+    color: #ef4444;
+}
+
+.login-required-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    margin: auto;
+    text-align: center;
+}
+
+.lock-icon-bg {
+    width: 60px;
+    height: 60px;
+    background: #fff5f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    border: 1px solid #fee2e2;
+}
+
+.lock-icon-bot {
+    color: #ef4444;
+}
+
+.login-required-card h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1a1c1e;
+    margin-bottom: 12px;
+}
+
+.login-required-card p {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.chat-login-btn {
+    padding: 12px 28px;
+    background: #ff007a;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(255, 0, 122, 0.2);
+}
+
+.chat-login-btn:hover {
+    background: #e6006e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(255, 0, 122, 0.3);
+}

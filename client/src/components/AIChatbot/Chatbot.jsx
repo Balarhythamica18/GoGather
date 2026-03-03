@@ -44,22 +44,6 @@ export default function Chatbot() {
     }, [messages, loading, isOpen, isMinimized]);
 
     const handleOpenChat = () => {
-        if (!isLoggedIn) {
-            toast.error("Please log in to chat with GoGather AI", {
-                duration: 4000,
-                position: "bottom-center",
-                icon: '🔒',
-                style: {
-                    borderRadius: '12px',
-                    background: '#1e293b',
-                    color: '#fff',
-                    padding: '16px',
-                    fontWeight: '600',
-                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                },
-            });
-            return;
-        }
         setIsOpen(true);
     };
 
@@ -102,9 +86,25 @@ export default function Chatbot() {
                 return;
             }
 
+            if (error.response?.status === 401) {
+                const expiredMsg = {
+                    role: "ai",
+                    text: "🔒 **Session Expired.** Please log in again to continue your conversation with GoGather AI.",
+                    isError: true,
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+                setMessages(prev => [...prev, expiredMsg]);
+                setIsLoggedIn(false);
+                return;
+            }
+
+            const errorText = error.response?.status === 401
+                ? "🔒 Please log in to continue."
+                : error.response?.data?.reply || "⚠️ Connection error. Please try again later.";
+
             const errorMsg = {
                 role: "ai",
-                text: error.response?.data?.reply || "⚠️ Connection error. Please try again later.",
+                text: errorText,
                 isError: true,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
@@ -161,8 +161,18 @@ export default function Chatbot() {
                                     </div>
                                     <div style={{ fontWeight: '800', color: '#111827', fontSize: '18px', marginBottom: '8px' }}>How can I help you?</div>
                                     {!isLoggedIn ? (
-                                        <div style={{ fontSize: '14px', color: '#ef4444', fontWeight: '600', lineHeight: '1.5', background: '#fef2f2', padding: '12px', borderRadius: '12px', border: '1px solid #fee2e2' }}>
-                                            Please log in to start chatting with our AI assistant.
+                                        <div className="login-required-card">
+                                            <div className="lock-icon-bg">
+                                                <Bot size={24} className="lock-icon-bot" />
+                                            </div>
+                                            <h3>AI Access Restricted</h3>
+                                            <p>Please log in to GoGather to start a conversation with our smart assistant.</p>
+                                            <button
+                                                className="chat-login-btn"
+                                                onClick={() => window.location.href = '/login'}
+                                            >
+                                                Log in to Continue
+                                            </button>
                                         </div>
                                     ) : (
                                         <div style={{ fontSize: '14px', color: '#64748b', lineHeight: '1.5' }}>
@@ -218,11 +228,9 @@ export default function Chatbot() {
                                     </button>
                                 </div>
                             ) : (
-                                <div className="login-notice">
-                                    <div className="lock-icon-wrap">
-                                        <X size={14} />
-                                    </div>
-                                    <span>Please log in to continue</span>
+                                <div className="login-notice-area">
+                                    <X size={14} className="lock-mini" />
+                                    <span>Sign in to send messages</span>
                                 </div>
                             )}
                         </div>
@@ -231,30 +239,32 @@ export default function Chatbot() {
             </div>
 
             {/* Security Policy Violation Overlay */}
-            {moderationAlert && (
-                <div className="moderation-overlay">
-                    <div className="moderation-content">
-                        <div className="moderation-header">
-                            <div className="moderation-icon">
-                                <X size={32} strokeWidth={3} />
+            {
+                moderationAlert && (
+                    <div className="moderation-overlay">
+                        <div className="moderation-content">
+                            <div className="moderation-header">
+                                <div className="moderation-icon">
+                                    <X size={32} strokeWidth={3} />
+                                </div>
+                                <h3>Security Policy Violation</h3>
                             </div>
-                            <h3>Security Policy Violation</h3>
+                            <p>
+                                Don't use harmful, threatening, or immoral words in this chat. Please follow our safety policies.
+                            </p>
+                            <div className="moderation-hint">
+                                Violation Detected
+                            </div>
+                            <button
+                                className="moderation-close-btn"
+                                onClick={() => setModerationAlert(false)}
+                            >
+                                I Understand
+                            </button>
                         </div>
-                        <p>
-                            Don't use harmful, threatening, or immoral words in this chat. Please follow our safety policies.
-                        </p>
-                        <div className="moderation-hint">
-                            Violation Detected
-                        </div>
-                        <button
-                            className="moderation-close-btn"
-                            onClick={() => setModerationAlert(false)}
-                        >
-                            I Understand
-                        </button>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
