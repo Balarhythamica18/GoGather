@@ -111,6 +111,41 @@
   opacity: 0.6;
 }
 
+/* Vibe Heatmap Glows */
+.seat[class*="vibe-"] {
+  border-width: 2px;
+  opacity: 0.9;
+}
+
+.seat.vibe-dance {
+  border-color: #db2777;
+  box-shadow: 0 0 8px rgba(219, 39, 119, 0.4);
+}
+
+.seat.vibe-quiet {
+  border-color: #0d9488;
+  box-shadow: 0 0 8px rgba(13, 148, 136, 0.4);
+}
+
+.seat.vibe-networking {
+  border-color: #ea580c;
+  box-shadow: 0 0 8px rgba(234, 88, 12, 0.4);
+}
+
+.vibe-indicator {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.seat {
+  position: relative;
+}
+
 /* ---------- LEGEND ---------- */
 .seat-legend {
   display: flex;
@@ -159,6 +194,95 @@
   gap: 14px;
   position: sticky;
   top: 80px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+/* Vibe Selection */
+.vibe-selection-section {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.vibe-select-title {
+  margin-bottom: 12px !important;
+}
+
+.vibe-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.vibe-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+}
+
+.vibe-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.vibe-option.active {
+  background: var(--vibe-color);
+  border-color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.vibe-icon {
+  font-size: 18px;
+}
+
+.vibe-name {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Vibe Legend */
+.vibe-heatmap-legend {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.vibe-heatmap-legend h4 {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+.vibe-legend-items {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.vibe-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vibe-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.vibe-label {
+  font-size: 13px;
+  color: #475569;
 }
 
 /* TITLE */

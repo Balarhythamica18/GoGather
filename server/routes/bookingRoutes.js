@@ -15,7 +15,18 @@ router.get("/seats/:eventId", async (req, res) => {
   try {
     const bookings = await Booking.find({ eventId, status: "confirmed" });
     const bookedSeats = bookings.flatMap(b => b.seats);
-    res.json({ bookedSeats });
+
+    // Map each seat to its vibe for the heatmap visualization
+    const seatVibes = {};
+    bookings.forEach(b => {
+      if (b.vibe) {
+        b.seats.forEach(seat => {
+          seatVibes[seat] = b.vibe;
+        });
+      }
+    });
+
+    res.json({ bookedSeats, seatVibes });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch booked seats" });
   }
@@ -43,7 +54,7 @@ router.get("/my-bookings", authMiddleware, async (req, res) => {
 
 // 2️⃣ Create a booking with 20% discount for first-timers (only for paid events)
 router.post("/create-payment", async (req, res) => {
-  const { userId, eventId, seats, ticketCount, amount } = req.body;
+  const { userId, eventId, seats, ticketCount, amount, vibe } = req.body;
 
   try {
     // Check if this is the user's first confirmed booking that had a payment (amount > 0)
@@ -71,6 +82,7 @@ router.post("/create-payment", async (req, res) => {
       ticketCount,
       amount: finalAmount,
       discountApplied,
+      vibe,
       status: "pending",
     });
 

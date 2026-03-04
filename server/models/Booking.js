@@ -49,6 +49,10 @@ const bookingSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    vibe: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

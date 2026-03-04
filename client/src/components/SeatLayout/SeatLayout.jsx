@@ -28,6 +28,59 @@ const SeatLayout = ({ event, user }) => {
   const [lockedSeats, setLockedSeats] = useState({});
   const [ticketCount, setTicketCount] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [vibe, setVibe] = useState("");
+  const [seatVibes, setSeatVibes] = useState({});
+
+  const getVibesByCategory = (category) => {
+    const cat = category?.toLowerCase();
+
+    const vibeSets = {
+      comedy: [
+        { id: "laughter", label: "Laughter Legend", color: "#fbbf24", icon: "😂" },
+        { id: "chuckle", label: "Chuckle Enthusiast", color: "#a855f7", icon: "😏" },
+        { id: "smirker", label: "Quiet Smirker", color: "#60a5fa", icon: "🙊" }
+      ],
+      music: [
+        { id: "rocker", label: "Front Row Rocker", color: "#ef4444", icon: "🎸" },
+        { id: "chiller", label: "Vibe Chiller", color: "#3b82f6", icon: "🌊" },
+        { id: "admirer", label: "Acoustic Admirer", color: "#10b981", icon: "🎧" }
+      ],
+      art: [
+        { id: "soul", label: "Creative Soul", color: "#db2777", icon: "🎨" },
+        { id: "eyeball", label: "Critical Eyeball", color: "#6366f1", icon: "🧐" },
+        { id: "browser", label: "Social Browser", color: "#f97316", icon: "🍷" }
+      ],
+      sports: [
+        { id: "fan", label: "Die-Hard Fan", color: "#f43f5e", icon: "📣" },
+        { id: "analyst", label: "Tactical Analyst", color: "#06b6d4", icon: "📋" },
+        { id: "lover", label: "Atmosphere Lover", color: "#8b5cf6", icon: "🏟️" }
+      ],
+      food: [
+        { id: "geek", label: "Gourmet Geek", color: "#fb923c", icon: "👨‍🍳" },
+        { id: "social", label: "Social Eater", color: "#ec4899", icon: "🥂" },
+        { id: "taster", label: "Curious Taster", color: "#84cc16", icon: "👅" }
+      ],
+      rawstories: [
+        { id: "listener", label: "Unfiltered Listener", color: "#78350f", icon: "👂" },
+        { id: "invested", label: "Emotionally Invested", color: "#be123c", icon: "❤️" },
+        { id: "seeker", label: "Story Seeker", color: "#1e40af", icon: "📖" }
+      ],
+      "theatre drama": [
+        { id: "critic", label: "Front Row Critic", color: "#7c3aed", icon: "🎭" },
+        { id: "enthusiast", label: "Dramatic Enthusiast", color: "#db2777", icon: "👏" },
+        { id: "whisperer", label: "Stage Whisperer", color: "#059669", icon: "🤫" }
+      ],
+      default: [
+        { id: "dance", label: "Ready to Dance", color: "#db2777", icon: "💃" },
+        { id: "quiet", label: "Quiet Observer", color: "#0d9488", icon: "👓" },
+        { id: "networking", label: "Networking", color: "#ea580c", icon: "🤝" }
+      ]
+    };
+
+    return vibeSets[cat] || vibeSets.default;
+  };
+
+  const currentVibes = getVibesByCategory(event?.category);
 
   /* ⭐ SAFE USER RESTORE */
   const storedUser = safeParse(localStorage.getItem("user"));
@@ -63,6 +116,7 @@ const SeatLayout = ({ event, user }) => {
 
         const data = await res.json();
         setBookedSeats(data.bookedSeats || []);
+        setSeatVibes(data.seatVibes || {});
       } catch (err) {
         console.error("Seat fetch error:", err);
       }
@@ -188,6 +242,7 @@ const SeatLayout = ({ event, user }) => {
       seats: selectedSeats,
       ticketCount: isSeatBased ? selectedSeats.length : ticketCount,
       amount: totalAmount,
+      vibe: vibe,
     };
 
     try {
@@ -282,16 +337,31 @@ const SeatLayout = ({ event, user }) => {
                           : isLocked
                             ? "locked"
                             : ""
-                        }`}
+                        } ${seatVibes[seatId] ? `vibe-${seatVibes[seatId]}` : ""}`}
                       disabled={isBooked || isLocked}
                       onClick={() => toggleSeat(seatId)}
                     >
                       {num}
+                      {seatVibes[seatId] && (
+                        <span className="vibe-indicator" style={{ backgroundColor: currentVibes.find(v => v.id === seatVibes[seatId])?.color || '#ccc' }}></span>
+                      )}
                     </button>
                   );
                 })}
               </div>
             ))}
+          </div>
+
+          <div className="vibe-heatmap-legend">
+            <h4>Heatmap Legend</h4>
+            <div className="vibe-legend-items">
+              {currentVibes.map(v => (
+                <div key={v.id} className="vibe-legend-item">
+                  <span className="vibe-color-dot" style={{ backgroundColor: v.color }}></span>
+                  <span className="vibe-label">{v.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       ) : (
@@ -305,6 +375,25 @@ const SeatLayout = ({ event, user }) => {
 
       <div className="seat-right">
         <h3>Booking Summary</h3>
+
+        {isSeatBased && (
+          <div className="vibe-selection-section">
+            <p className="vibe-select-title"><strong>Select Your Vibe</strong></p>
+            <div className="vibe-options">
+              {currentVibes.map((v) => (
+                <button
+                  key={v.id}
+                  className={`vibe-option ${vibe === v.id ? "active" : ""}`}
+                  onClick={() => setVibe(v.id)}
+                  style={{ "--vibe-color": v.color }}
+                >
+                  <span className="vibe-icon">{v.icon}</span>
+                  <span className="vibe-name">{v.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <p><strong>Event</strong><span>{event?.title}</span></p>
         <p><strong>Location</strong><span>{event?.location}</span></p>
@@ -343,10 +432,10 @@ const SeatLayout = ({ event, user }) => {
 
         <button
           className="pay-btn"
-          disabled={isProcessing || (isSeatBased ? selectedSeats.length === 0 : ticketCount === 0)}
+          disabled={isProcessing || (isSeatBased ? (selectedSeats.length === 0 || !vibe) : ticketCount === 0)}
           onClick={handlePayment}
         >
-          {isProcessing ? "Processing..." : (totalAmount === 0 ? "Book Tickets" : "Proceed to Payment")}
+          {isProcessing ? "Processing..." : (totalAmount === 0 ? (isSeatBased && !vibe ? "Select Vibe" : "Book Tickets") : (isSeatBased && !vibe ? "Select Vibe to Proceed" : "Proceed to Payment"))}
         </button>
 
       </div>

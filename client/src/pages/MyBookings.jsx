@@ -93,6 +93,55 @@ const MyBookings = () => {
     });
   };
 
+  const getVibeDetails = (vibeId, category) => {
+    const cat = category?.toLowerCase();
+    const allVibes = {
+      comedy: {
+        laughter: { label: 'Laughter Legend', color: '#fbbf24', icon: '😂' },
+        chuckle: { label: 'Chuckle Enthusiast', color: '#a855f7', icon: '😏' },
+        smirker: { label: 'Quiet Smirker', color: '#60a5fa', icon: '🙊' }
+      },
+      music: {
+        rocker: { label: 'Front Row Rocker', color: '#ef4444', icon: '🎸' },
+        chiller: { label: 'Vibe Chiller', color: '#3b82f6', icon: '🌊' },
+        admirer: { label: 'Acoustic Admirer', color: '#10b981', icon: '🎧' }
+      },
+      art: {
+        soul: { label: 'Creative Soul', color: '#db2777', icon: '🎨' },
+        eyeball: { label: 'Critical Eyeball', color: '#6366f1', icon: '🧐' },
+        browser: { label: 'Social Browser', color: '#f97316', icon: '🍷' }
+      },
+      sports: {
+        fan: { label: 'Die-Hard Fan', color: '#f43f5e', icon: '📣' },
+        analyst: { label: 'Tactical Analyst', color: '#06b6d4', icon: '📋' },
+        lover: { label: 'Atmosphere Lover', color: '#8b5cf6', icon: '🏟️' }
+      },
+      food: {
+        geek: { label: 'Gourmet Geek', color: '#fb923c', icon: '👨‍🍳' },
+        social: { label: 'Social Eater', color: '#ec4899', icon: '🥂' },
+        taster: { label: 'Curious Taster', color: '#84cc16', icon: '👅' }
+      },
+      rawstories: {
+        listener: { label: 'Unfiltered Listener', color: '#78350f', icon: '👂' },
+        invested: { label: 'Emotionally Invested', color: '#be123c', icon: '❤️' },
+        seeker: { label: 'Story Seeker', color: '#1e40af', icon: '📖' }
+      },
+      "theatre drama": {
+        critic: { label: 'Front Row Critic', color: '#7c3aed', icon: '🎭' },
+        enthusiast: { label: 'Dramatic Enthusiast', color: '#db2777', icon: '👏' },
+        whisperer: { label: 'Stage Whisperer', color: '#059669', icon: '🤫' }
+      },
+      default: {
+        dance: { label: 'Ready to Dance', color: '#db2777', icon: '💃' },
+        quiet: { label: 'Quiet Observer', color: '#0d9488', icon: '👓' },
+        networking: { label: 'Networking', color: '#ea580c', icon: '🤝' }
+      }
+    };
+
+    const set = allVibes[cat] || allVibes.default;
+    return set[vibeId] || { label: 'Unknown Vibe', color: '#94a3b8', icon: '✨' };
+  };
+
   if (loading) return <div className="my-bookings-container"><h2>Loading your experiences...</h2></div>;
 
   return (
@@ -129,6 +178,19 @@ const MyBookings = () => {
                   <MapPin size={16} />
                   <span>{booking.event?.location}</span>
                 </div>
+                {booking.vibe && (
+                  <div className="detail-row vibe-info" style={{
+                    marginTop: '8px',
+                    color: getVibeDetails(booking.vibe, booking.event?.category).color,
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '0.8rem'
+                  }}>
+                    <span>{getVibeDetails(booking.vibe, booking.event?.category).icon} {getVibeDetails(booking.vibe, booking.event?.category).label}</span>
+                  </div>
+                )}
                 <div className="detail-row" style={{ marginTop: '8px', color: '#1e293b', fontWeight: 600 }}>
                   <Ticket size={16} />
                   <span>{booking.seats?.length || booking.ticketCount} Seat(s)</span>
