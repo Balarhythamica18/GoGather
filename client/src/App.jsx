@@ -44,6 +44,7 @@ import socket from "./socket";
 import SquadChat from "./components/Squads/SquadChat";
 
 import FloatingSquadChat from "./components/Squads/FloatingSquadChat";
+import UserTour from "./components/Tour/UserTour";
 
 const App = () => {
   const location = useLocation();
@@ -84,6 +85,7 @@ const App = () => {
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <div className="app-layout">
+        <UserTour />
         <Toaster position="top-right" />
         <ScrollToTop />
 

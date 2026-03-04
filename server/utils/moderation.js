@@ -5,7 +5,7 @@
 
 const forbiddenWords = [
     // Threatening / Violent
-    "kill", "shoot", "bomb", "threat", "attack", "murder", "hurt", "harm", "dead",
+    "kill", "shoot", "bomb", "threat", "attack", "murder", "harm", "dead",
     "violence", "weapon", "gun", "knife", "terror", "explode",
 
     // Immoral / Offensive (Common slur patterns - keeping it professional)

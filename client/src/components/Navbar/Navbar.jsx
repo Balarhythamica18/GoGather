@@ -63,19 +63,17 @@ const Navbar = () => {
 
         <div className="nav-center">
           <ul className="nav-links-list">
-            <li><Link to="/" className="nav-link-item">Home</Link></li>
-            <li><Link to="/events" className="nav-link-item">Events</Link></li>
-            <li><Link to="/my-bookings" className="nav-link-item">My Bookings</Link></li>
+            <li><Link to="/" className="nav-link-item tour-home">Home</Link></li>
+            <li><Link to="/events" className="nav-link-item tour-events">Events</Link></li>
+            <li><Link to="/my-bookings" className="nav-link-item tour-bookings">My Bookings</Link></li>
             {favorites.length > 0 && (
               <li>
-                <Link to="/favorites" className="nav-link-item favorites-link">
-
+                <Link to="/favorites" className="nav-link-item favorites-link tour-favorites">
                   Favorites
                 </Link>
               </li>
             )}
-            <li><Link to="/contact" className="nav-link-item">Contact</Link></li>
-
+            <li><Link to="/contact" className="nav-link-item tour-contact">Contact</Link></li>
           </ul>
         </div>
 
@@ -117,11 +115,11 @@ const Navbar = () => {
 
       <div className={`mobile-menu ${isMenuOpen ? 'show' : ''}`}>
         <ul>
-          <li><Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link></li>
-          <li><Link to="/events" onClick={() => setIsMenuOpen(false)}>Events</Link></li>
-          <li><Link to="/my-bookings" onClick={() => setIsMenuOpen(false)}>My Bookings</Link></li>
-          {favorites.length > 0 && <li><Link to="/favorites" onClick={() => setIsMenuOpen(false)}>Favorites</Link></li>}
-          <li><Link to="/contact" onClick={() => setIsMenuOpen(false)}>Contact</Link></li>
+          <li><Link to="/" className="tour-home" onClick={() => setIsMenuOpen(false)}>Home</Link></li>
+          <li><Link to="/events" className="tour-events" onClick={() => setIsMenuOpen(false)}>Events</Link></li>
+          <li><Link to="/my-bookings" className="tour-bookings" onClick={() => setIsMenuOpen(false)}>My Bookings</Link></li>
+          {favorites.length > 0 && <li><Link to="/favorites" className="tour-favorites" onClick={() => setIsMenuOpen(false)}>Favorites</Link></li>}
+          <li><Link to="/contact" className="tour-contact" onClick={() => setIsMenuOpen(false)}>Contact</Link></li>
           {isLoggedIn && <li><button className="mobile-manage-btn" onClick={() => { setIsAccountModalOpen(true); setIsMenuOpen(false); }}>Manage Account</button></li>}
         </ul>
       </div>
