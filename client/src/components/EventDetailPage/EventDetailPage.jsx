@@ -6,6 +6,7 @@ import { getImageUrl } from "../../utils/imageUtils";
 import "./EventDetailPage.css";
 import { useFavorites } from "../../context/FavoritesContext";
 import { Heart } from "lucide-react";
+import RecommendedEvents from "./RecommendedEvents";
 
 const EventDetailPage = () => {
   const { id, category } = useParams();
@@ -47,127 +48,130 @@ const EventDetailPage = () => {
   })();
 
   return (
-    <div className="edp-wrapper">
-      <div className="edp-left">
-        <div className="edp-image-box">
-          <img src={getImageUrl(event.image)} alt={event.title} />
-        </div>
-
-        {event.aboutEvent && (
-          <div className="edp-section">
-            <h2>About the Event</h2>
-            <p>{event.aboutEvent}</p>
-          </div>
-        )}
-
-        {event.keyHighlights && event.keyHighlights.length > 0 && (
-          <div className="edp-section">
-            <h2>Key Highlights</h2>
-            <ul className="edp-highlights">
-              {event.keyHighlights.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {event.organizerDetails && (
-          <div className="edp-section">
-            <h2>Organizer</h2>
-            <p className="edp-org-name">{event.organizerDetails.name}</p>
-            <p>{event.organizerDetails.description}</p>
-            <p>
-              <strong>Email:</strong> {event.organizerDetails.contactEmail}
-            </p>
-            <p>
-              <strong>Phone:</strong> {event.organizerDetails.contactPhone}
-            </p>
-          </div>
-        )}
-      </div>
-
-      <div className="edp-right">
-        <div className="edp-sticky-box">
-          <h1 className="edp-title">{event.title}</h1>
-
-          <div className="edp-info">
-            <p>
-              <strong>Date:</strong> {event.date} {event.month}
-            </p>
-            {event.time && (
-              <p>
-                <strong>Time:</strong> {formatTime(event.time)}
-              </p>
-            )}
-            <p>
-              <strong>Location:</strong> {event.location}
-            </p>
-            {event.address && (
-              <p>
-                <strong>Address:</strong> {event.address}
-              </p>
-            )}
-            <p>
-              <strong>Category:</strong> {event.category}
-            </p>
-
-            {isUpcoming ? (
-              <span className="edp-upcoming-badge">Upcoming</span>
-            ) : (
-              <div className="edp-price">
-                <strong>Price:</strong>
-                <span className="edp-price-value">
-                  {typeof event.price === 'string' && event.price.toLowerCase() === 'free'
-                    ? " Free"
-                    : ` Rs.${event.price}`}
-                </span>
-
-              </div>
-            )}
+    <>
+      <div className="edp-wrapper">
+        <div className="edp-left">
+          <div className="edp-image-box">
+            <img src={getImageUrl(event.image)} alt={event.title} />
           </div>
 
-          <p className="edp-description">{event.description}</p>
-
-          {!isUpcoming && (
-            <div className="edp-actions">
-              <button
-                className="edp-book-btn"
-                onClick={() => navigate(`/seats/${category}/${id}`)}
-              >
-                Book Now
-              </button>
-
-              <button
-                className={`edp-fav-btn ${isFavorite(id) ? "active" : ""}`}
-                onClick={() =>
-                  isFavorite(id)
-                    ? removeFavorite(id)
-                    : addFavorite({
-                      id: event._id,
-                      title: event.title,
-                      image: event.image,
-                      price: event.price,
-                      location: event.location,
-                      category: category
-                    })
-                }
-                aria-label="Add to favourites"
-              >
-                <Heart
-                  size={24}
-                  fill={isFavorite(id) ? "#ff007a" : "none"}
-                  color={isFavorite(id) ? "#ff007a" : "#666"}
-                />
-              </button>
+          {event.aboutEvent && (
+            <div className="edp-section">
+              <h2>About the Event</h2>
+              <p>{event.aboutEvent}</p>
             </div>
           )}
 
-          {event.declaration && (
-            <p className="edp-declaration">{event.declaration}</p>
+          {event.keyHighlights && event.keyHighlights.length > 0 && (
+            <div className="edp-section">
+              <h2>Key Highlights</h2>
+              <ul className="edp-highlights">
+                {event.keyHighlights.map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {event.organizerDetails && (
+            <div className="edp-section">
+              <h2>Organizer</h2>
+              <p className="edp-org-name">{event.organizerDetails.name}</p>
+              <p>{event.organizerDetails.description}</p>
+              <p>
+                <strong>Email:</strong> {event.organizerDetails.contactEmail}
+              </p>
+              <p>
+                <strong>Phone:</strong> {event.organizerDetails.contactPhone}
+              </p>
+            </div>
           )}
         </div>
+
+        <div className="edp-right">
+          <div className="edp-sticky-box">
+            <h1 className="edp-title">{event.title}</h1>
+
+            <div className="edp-info">
+              <p>
+                <strong>Date:</strong> {event.date} {event.month}
+              </p>
+              {event.time && (
+                <p>
+                  <strong>Time:</strong> {formatTime(event.time)}
+                </p>
+              )}
+              <p>
+                <strong>Location:</strong> {event.location}
+              </p>
+              {event.address && (
+                <p>
+                  <strong>Address:</strong> {event.address}
+                </p>
+              )}
+              <p>
+                <strong>Category:</strong> {event.category}
+              </p>
+
+              {isUpcoming ? (
+                <span className="edp-upcoming-badge">Upcoming</span>
+              ) : (
+                <div className="edp-price">
+                  <strong>Price:</strong>
+                  <span className="edp-price-value">
+                    {typeof event.price === 'string' && event.price.toLowerCase() === 'free'
+                      ? " Free"
+                      : ` Rs.${event.price}`}
+                  </span>
+
+                </div>
+              )}
+            </div>
+
+            <p className="edp-description">{event.description}</p>
+
+            {!isUpcoming && (
+              <div className="edp-actions">
+                <button
+                  className="edp-book-btn"
+                  onClick={() => navigate(`/seats/${category}/${id}`)}
+                >
+                  Book Now
+                </button>
+
+                <button
+                  className={`edp-fav-btn ${isFavorite(id) ? "active" : ""}`}
+                  onClick={() =>
+                    isFavorite(id)
+                      ? removeFavorite(id)
+                      : addFavorite({
+                        id: event._id,
+                        title: event.title,
+                        image: event.image,
+                        price: event.price,
+                        location: event.location,
+                        category: category
+                      })
+                  }
+                  aria-label="Add to favourites"
+                >
+                  <Heart
+                    size={24}
+                    fill={isFavorite(id) ? "#ff007a" : "none"}
+                    color={isFavorite(id) ? "#ff007a" : "#666"}
+                  />
+                </button>
+              </div>
+            )}
+
+            {event.declaration && (
+              <p className="edp-declaration">{event.declaration}</p>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+      <RecommendedEvents currentEventId={id} currentCategory={event.category} />
+    </>
   );
 };
 
