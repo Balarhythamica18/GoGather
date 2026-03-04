@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { getImageUrl } from "../../utils/imageUtils";
+import { shuffleArray } from "../../utils/shuffleUtils";
 import "./Event.css";
 
 const Event = () => {
@@ -29,7 +30,10 @@ const Event = () => {
   useEffect(() => {
     axios
       .get(`${API_BASE_URL}/api/events`)
-      .then((res) => setEvents(res.data))
+      .then((res) => {
+        const shuffledEvents = shuffleArray(res.data);
+        setEvents(shuffledEvents);
+      })
       .catch((err) => console.error(err));
   }, []);
 
