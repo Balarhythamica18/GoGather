@@ -158,9 +158,25 @@ const MyBookings = () => {
           bookings.map((booking) => (
             <div key={booking._id} className="premium-booking-card">
               <div className="card-image-section">
-                <img src={getImageUrl(booking.event?.image)} alt={booking.event?.title} />
+                {booking.cancelledBy === "organizer" ? (
+                  <div style={{
+                    width: "100%",
+                    height: "200px",
+                    background: "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexDirection: "column",
+                    gap: "8px"
+                  }}>
+                    <AlertTriangle size={40} color="#ef4444" />
+                    <span style={{ color: "#991b1b", fontWeight: 700, textAlign: "center", padding: "0 20px" }}>Event Cancelled by Organizer</span>
+                  </div>
+                ) : (
+                  <img src={getImageUrl(booking.event?.image)} alt={booking.event?.title} />
+                )}
                 <span className={`status-badge ${booking.status} ${booking.isUsed ? 'used' : ''}`}>
-                  {booking.status === 'cancelled' ? 'Cancelled' : (booking.isUsed ? 'Already Used' : 'Upcoming')}
+                  {booking.cancelledBy === "organizer" ? 'Organizer Cancelled' : (booking.status === 'cancelled' ? 'Cancelled' : (booking.isUsed ? 'Already Used' : 'Upcoming'))}
                 </span>
               </div>
 
@@ -199,7 +215,32 @@ const MyBookings = () => {
 
               <div className="card-status-info">
                 <div className={`status-container ${booking.status}`}>
-                  {booking.status === 'cancelled' ? (
+                  {booking.cancelledBy === "organizer" ? (
+                    <>
+                      <div className="status-header">
+                        {(new Date() - new Date(booking.updatedAt)) > 24 * 60 * 60 * 1000 ? (
+                          <>
+                            <CheckCircle2 size={20} color="#10b981" />
+                            <span style={{ color: '#10b981', fontWeight: 700 }}>Refund Successful</span>
+                          </>
+                        ) : (
+                          <>
+                            <AlertTriangle size={20} color="#ef4444" />
+                            <span style={{ color: '#ef4444', fontWeight: 700 }}>Refund Processing</span>
+                          </>
+                        )}
+                      </div>
+                      <p className="status-note" style={{
+                        color: (new Date() - new Date(booking.updatedAt)) > 24 * 60 * 60 * 1000 ? '#10b981' : '#ef4444',
+                        fontWeight: 500
+                      }}>
+                        {(new Date() - new Date(booking.updatedAt)) > 24 * 60 * 60 * 1000
+                          ? `✅ The organizer cancelled this event. Your full refund of ₹${booking.refundAmount || 0} has been successfully processed to your original payment method.`
+                          : `⏳ The organizer cancelled this event. Your full refund of ₹${booking.refundAmount || 0} will be credited within 24 hours.`
+                        }
+                      </p>
+                    </>
+                  ) : booking.status === 'cancelled' ? (
                     <>
                       <div className="status-header">
                         {(new Date() - new Date(booking.updatedAt)) > 24 * 60 * 60 * 1000 ? (

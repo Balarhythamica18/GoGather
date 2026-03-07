@@ -39,6 +39,7 @@ const OrganizerDashboard = () => {
   });
   const [organizerName, setOrganizerName] = useState("");
   const [organizerEmail, setOrganizerEmail] = useState("");
+  const [isApprovedByAdmin, setIsApprovedByAdmin] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [eventToDelete, setEventToDelete] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -151,6 +152,7 @@ const OrganizerDashboard = () => {
           });
           setOrganizerName(profile.data.name || "");
           setOrganizerEmail(profile.data.email || "");
+          setIsApprovedByAdmin(profile.data.isApprovedByAdmin || false);
           setSettingsForm(prev => ({
             ...prev,
             name: profile.data.name || "",
@@ -433,6 +435,55 @@ const OrganizerDashboard = () => {
 
         {activeTab === 'events' ? (
           <>
+            {/* Verification Status Banner */}
+            {!isApprovedByAdmin && (
+              <div style={{
+                background: "linear-gradient(135deg, #fef2f2 0%, #fef5f5 100%)",
+                border: "2px solid #fecaca",
+                borderRadius: "12px",
+                padding: "20px",
+                marginBottom: "24px",
+                display: "flex",
+                alignItems: "center",
+                gap: "16px",
+                boxShadow: "0 4px 12px rgba(248, 113, 113, 0.1)"
+              }}>
+                <div style={{ color: "#dc2626", fontSize: "24px" }}>⏳</div>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ margin: "0 0 4px 0", color: "#7f1d1d", fontSize: "16px", fontWeight: "600" }}>
+                    Pending Admin Verification
+                  </h3>
+                  <p style={{ margin: 0, color: "#991b1b", fontSize: "14px" }}>
+                    Your account is awaiting admin approval. Once approved, your events will be published directly without approval delays.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {isApprovedByAdmin && (
+              <div style={{
+                background: "linear-gradient(135deg, #f0fdf4 0%, #f7fee7 100%)",
+                border: "2px solid #86efac",
+                borderRadius: "12px",
+                padding: "20px",
+                marginBottom: "24px",
+                display: "flex",
+                alignItems: "center",
+                gap: "16px",
+                boxShadow: "0 4px 12px rgba(34, 197, 94, 0.1)"
+              }}>
+                <div style={{ color: "#22c55e", fontSize: "24px" }}>✨</div>
+                <div style={{ flex: 1 }}>
+                  <h3 style={{ margin: "0 0 4px 0", color: "#166534", fontSize: "16px", fontWeight: "600" }}>
+                    Account Verified & Approved ✅
+                  </h3>
+                  <p style={{ margin: 0, color: "#1b4332", fontSize: "14px" }}>
+                    Great news! Your events will now be published directly without waiting for admin approval.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Stats Grid */}
             <div style={styles.statsGrid} className="responsive-stats-grid">
               <StatCard

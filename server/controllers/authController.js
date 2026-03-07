@@ -48,12 +48,14 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await User.create({
+    const userRole = role || "user";
+    const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
-      role: role || "user",
-      isVerified: true, // Verification bypassed
+      role: userRole,
+      isVerified: true,
+      isApprovedByAdmin: userRole === "organizer" ? false : true
     });
 
     // Send welcome email immediately
@@ -63,10 +65,16 @@ export const register = async (req, res) => {
       console.error("[REGISTER] Welcome email failed:", e.message);
     }
 
+    const message = userRole === "organizer" 
+      ? "Registered Successfully! Your account has been created and is awaiting admin approval to publish events."
+      : "Registered Successfully. Welcome to GoGather!";
+
     res.status(201).json({
-      message: "Registered Successfully. Welcome to GoGather!",
+      message,
       email,
-      isVerified: true
+      isVerified: true,
+      role: userRole,
+      isApprovedByAdmin: newUser.isApprovedByAdmin
     });
   } catch (error) {
     console.error("Register error:", error);
@@ -144,6 +152,7 @@ export const login = async (req, res) => {
         role: user.role,
         image: user.image || null,
         hasBooked: !!hasBooked,
+        isApprovedByAdmin: user.isApprovedByAdmin
       },
     });
   } catch (error) {
@@ -161,7 +170,7 @@ export const getCurrentUser = async (req, res) => {
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
     const user = await User.findById(userId).select(
-      "name email role image"
+      "name email role image isApprovedByAdmin"
     );
 
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -177,6 +186,7 @@ export const getCurrentUser = async (req, res) => {
       role: user.role,
       image: user.image,
       hasBooked: !!hasBooked,
+      isApprovedByAdmin: user.isApprovedByAdmin
     });
   } catch (error) {
     console.error("Get user error:", error);

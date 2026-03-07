@@ -1,7 +1,8 @@
 import Event from "../models/Event.js";
 import User from "../models/User.js";
 import Booking from "../models/Booking.js";
-import { sendEventPendingNotification } from "../services/notificationService.js";
+import { sendEventPendingNotification, sendEventStatusUpdateNotification } from "../services/notificationService.js";
+import { handleEventCancellation, notifyOrganizerOfCancellation } from "../services/eventCancellationService.js";
 import cloudinary from "../configs/cloudinary.js";
 import fs from "fs";
 
@@ -50,21 +51,30 @@ export const createEvent = async (req, res) => {
         contactEmail: req.body.organizerEmail,
         contactPhone: req.body.organizerPhone,
       },
-      status: "pending", // Explicitly set as pending
     };
 
     if (req.user && req.user.id) {
       eventData.organizer = req.user.id;
 
       try {
-        const user = await User.findById(req.user.id).select("name email");
+        const user = await User.findById(req.user.id).select("name email isApprovedByAdmin");
         if (user) {
           eventData.organizerDetails.name = user.name || eventData.organizerDetails.name;
           eventData.organizerDetails.contactEmail = user.email || eventData.organizerDetails.contactEmail;
+          
+          // Auto-approve events if organizer is verified by admin
+          if (user.isApprovedByAdmin) {
+            eventData.status = "approved";
+          } else {
+            eventData.status = "pending";
+          }
         }
       } catch (e) {
         console.error("Could not fetch user to populate organizerDetails:", e.message);
+        eventData.status = "pending";
       }
+    } else {
+      eventData.status = "pending";
     }
 
     // Remove old organizer fields
@@ -85,24 +95,38 @@ export const createEvent = async (req, res) => {
     const event = await Event.create(eventData);
     console.log(`Event created: ${event._id} (${event.title})`);
 
-    // Notify Admin via Socket
+    // Notify Admin via Socket only if event is pending
     const io = req.app.get("socketio");
-    if (io) {
+    if (io && event.status === "pending") {
       const pendingCount = await Event.countDocuments({ status: "pending" });
       io.emit("pendingCountUpdate", { count: pendingCount });
     }
 
-    // 3️⃣ Notify Admin via Email
-    const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
-    console.log(`[EVENT] Notifying admin (${adminEmail}) about new event: ${event.title}`);
-    try {
-      await sendEventPendingNotification(
-        adminEmail,
-        { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
-        { title: event.title, location: event.location, date: event.date, month: event.month }
-      );
-    } catch (emailErr) {
-      console.error("[EVENT] Admin email notification failure:", emailErr.message);
+    // Send appropriate notifications based on event status
+    if (event.status === "approved") {
+      // Event was auto-published because organizer is verified
+      const organizerEmail = event.organizerDetails?.contactEmail;
+      if (organizerEmail) {
+        console.log(`[EVENT] Notifying organizer (${organizerEmail}) that event "${event.title}" was auto-published`);
+        try {
+          await sendEventStatusUpdateNotification(organizerEmail, event.title, "approved");
+        } catch (emailErr) {
+          console.error("[EVENT] Organizer auto-publish notification failure:", emailErr.message);
+        }
+      }
+    } else {
+      // Event is pending, notify admin
+      const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
+      console.log(`[EVENT] Notifying admin (${adminEmail}) about new event: ${event.title}`);
+      try {
+        await sendEventPendingNotification(
+          adminEmail,
+          { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
+          { title: event.title, location: event.location, date: event.date, month: event.month }
+        );
+      } catch (emailErr) {
+        console.error("[EVENT] Admin email notification failure:", emailErr.message);
+      }
     }
 
     res.status(201).json(event);
@@ -213,16 +237,65 @@ export const getUpcomingEvents = async (req, res) => {
 
 export const deleteEvent = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id);
+    const event = await Event.findById(req.params.id).populate("organizer");
     if (!event) return res.status(404).json({ message: "Event not found" });
 
     // Only organizer who created the event or admin can delete
-    if (req.user?.role !== "admin" && String(event.organizer) !== String(req.user?.id)) {
+    if (req.user?.role !== "admin" && String(event.organizer._id) !== String(req.user?.id)) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    await Event.findByIdAndDelete(req.params.id);
-    res.json({ message: "Event deleted" });
+    // Check for active bookings
+    const activeBookings = await Booking.countDocuments({
+      eventId: req.params.id,
+      status: { $in: ["confirmed", "pending"] }
+    });
+
+    if (activeBookings > 0) {
+      console.log(`[EVENT DELETION] Event ${event.title} has ${activeBookings} active bookings. Processing cancellation...`);
+
+      // Get organizer email
+      const organizer = await User.findById(event.organizer);
+      const organizerEmail = organizer?.email;
+
+      // Process event cancellation and send emails to all affected users
+      const cancellationResult = await handleEventCancellation(
+        event._id,
+        "cancelled",
+        "",
+        req.user?.id
+      );
+
+      console.log(`[EVENT DELETION] Cancellation result:`, cancellationResult);
+
+      // Soft delete: Mark as deleted but keep record for audit trail
+      event.isDeleted = true;
+      event.cancellationReason = "cancelled";
+      event.cancellationDate = new Date();
+      event.refundApprovedBy = req.user?.id;
+      await event.save();
+
+      // Notify organizer of actions taken
+      if (organizerEmail) {
+        await notifyOrganizerOfCancellation(
+          organizerEmail,
+          organizer?.name || "Organizer",
+          event.title,
+          activeBookings,
+          cancellationResult
+        );
+      }
+
+      return res.json({
+        message: `Event deleted successfully. ${cancellationResult.emailsSent} cancellation notifications sent to affected users.`,
+        cancellationDetails: cancellationResult,
+        isDeleted: true
+      });
+    } else {
+      // No bookings, safe to delete
+      await Event.findByIdAndDelete(req.params.id);
+      res.json({ message: "Event deleted" });
+    }
   } catch (error) {
     console.error("Delete Error:", error);
     res.status(500).json({ message: "Delete operation failed. " + error.message });

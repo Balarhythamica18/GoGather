@@ -33,6 +33,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard"; // to be created
 import ListShows from "./pages/admin/ListShows/ListShows";
 import ListBookings from "./pages/admin/ListBookings/ListBookings";
 import UserManagement from "./pages/admin/UserManagement";
+import OrganizerManagement from "./pages/admin/OrganizerManagement";
 import EventApprovals from "./pages/admin/EventApprovals";
 
 /*  ORGANIZER */
@@ -41,9 +42,6 @@ import AddEvent from "./pages/organizer/AddEvent";
 
 import socket from "./socket";
 
-import SquadChat from "./components/Squads/SquadChat";
-
-import FloatingSquadChat from "./components/Squads/FloatingSquadChat";
 import UserTour from "./components/Tour/UserTour";
 
 const App = () => {
@@ -80,8 +78,6 @@ const App = () => {
     location.pathname.toLowerCase().startsWith(path)
   );
 
-  const hideSquadChat = hideChatIcons || hideLayoutRoutes || location.pathname.toLowerCase().startsWith("/my-events");
-
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <div className="app-layout">
@@ -117,6 +113,7 @@ const App = () => {
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="users" element={<UserManagement />} />
+                <Route path="organizers" element={<OrganizerManagement />} />
                 <Route path="list-shows" element={<ListShows />} />
                 <Route path="list-bookings" element={<ListBookings />} />
                 <Route path="event-approvals" element={<EventApprovals />} />
@@ -129,11 +126,9 @@ const App = () => {
             <Route path="/add-event" element={<AddEvent />} />
             <Route path="/add-event/:id" element={<AddEvent />} />
 
-            <Route path="/squad-chat" element={<div className="p-10 text-center text-white">Squad Chat is now floating! Look for the icon at the bottom right.</div>} />
           </Routes>
         </main>
 
-        {!hideSquadChat && <FloatingSquadChat />}
         {!hideChatIcons && <Chatbot />}
 
         {!hideLayoutRoutes && <Footer />}

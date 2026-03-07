@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema({
     default: "user"
   },
 
+  isApprovedByAdmin: {
+    type: Boolean,
+    default: false
+  },
+
   image: {
     type: String,
     default: ""

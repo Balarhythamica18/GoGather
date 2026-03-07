@@ -161,43 +161,6 @@ app.post("/api/contact", async (req, res) => {
    END CONTACT ROUTE
 ============================== */
 
-/* ==============================
-   SQUAD VOICE UPLOAD
-============================== */
-app.post("/api/squad/upload-voice", upload.single("audio"), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: "No file uploaded" });
-  }
-
-  try {
-    // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "gogather/voice",
-      resource_type: "auto", // Important for audio files
-    });
-
-    const audioUrl = result.secure_url;
-
-    // Delete local file after upload
-    if (fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
-
-    res.status(200).json({ audioUrl });
-  } catch (error) {
-    console.error(`[SQUAD] Cloudinary upload failure:`, error.message);
-    res.status(500).json({ error: "Failed to upload voice message to cloud" });
-
-    // Cleanup local file if it exists even on error
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
-  }
-});
-/* ==============================
-   END SQUAD VOICE UPLOAD
-============================== */
-
 // Create HTTP server for Socket.IO
 const server = http.createServer(app);
 
@@ -223,54 +186,6 @@ io.on("connection", (socket) => {
   // Unlock a seat
   socket.on("unlockSeat", ({ eventId, seat }) => {
     socket.broadcast.emit("seatUnlocked", { eventId, seat });
-  });
-
-  // Squad Chat Events
-  socket.on("join-squad", ({ code, user }) => {
-    socket.join(code);
-    console.log(`[SQUAD] User ${user.name} joined squad: ${code}`);
-    // Notify others in the squad
-    socket.to(code).emit("squad-notification", {
-      type: "user-joined",
-      message: `${user.name} joined the squad!`,
-      timestamp: new Date()
-    });
-  });
-
-  socket.on("send-squad-message", ({ code, message, audioUrl, user, id }) => {
-    try {
-      console.log(`[SQUAD] Processing message from ${user?.name}: ${message?.substring(0, 10)}...`);
-      // Moderation Check for Text Messages
-      if (message && containsHarmfulWords(message)) {
-        console.log(`[SQUAD] !!! BLOCKED harmful message from ${user?.name} in ${code}: "${message}"`);
-        return socket.emit("squad-moderation-blocked", {
-          id: id,
-          message: "Don't use harmful, threatening, or immoral words in this chat. Please follow our safety policies.",
-          timestamp: new Date()
-        });
-      }
-
-      const messageData = {
-        id: id || (Date.now() + Math.random().toString(36).substr(2, 9)),
-        text: message,
-        audioUrl: audioUrl,
-        sender: user,
-        timestamp: new Date()
-      };
-      // Send to everyone in the room including sender
-      io.to(code).emit("receive-squad-message", messageData);
-    } catch (error) {
-      console.error("[SQUAD] Message handling error:", error.message);
-    }
-  });
-
-  socket.on("leave-squad", ({ code, user }) => {
-    socket.leave(code);
-    socket.to(code).emit("squad-notification", {
-      type: "user-left",
-      message: `${user.name} left the squad.`,
-      timestamp: new Date()
-    });
   });
 
   // Identify user to track online status

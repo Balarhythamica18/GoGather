@@ -53,6 +53,15 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    cancelledBy: {
+      type: String,
+      enum: ["user", "organizer"],
+      default: null,
+    },
+    cancellationReason: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

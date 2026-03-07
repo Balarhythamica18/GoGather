@@ -57,6 +57,7 @@ const AdminSidebar = () => {
   const menuItems = [
     { id: "dashboard", icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
     { id: "users", icon: Users, label: "Users", path: "/admin/users" },
+    { id: "organizers", icon: ShieldCheck, label: "Organizer Approvals", path: "/admin/organizers" },
     { id: "shows", icon: Calendar, label: "List Shows", path: "/admin/list-shows" },
     { id: "bookings", icon: ClipboardList, label: "List Bookings", path: "/admin/list-bookings" },
     { id: "approvals", icon: CheckCircle, label: "Event Approvals", path: "/admin/event-approvals" },

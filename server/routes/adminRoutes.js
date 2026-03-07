@@ -337,4 +337,128 @@ router.get(
   }
 );
 
+// ============ ORGANIZER APPROVAL ENDPOINTS ============
+
+// Get all pending organizers (not approved by admin)
+router.get(
+  "/organizers/pending",
+  authMiddleware,
+  authorizeRoles("admin"),
+  async (req, res) => {
+    try {
+      const organizers = await User.find({ 
+        role: "organizer", 
+        isApprovedByAdmin: false 
+      }).select("name email createdAt location");
+      
+      res.json(organizers);
+    } catch (error) {
+      console.error("Error fetching pending organizers:", error);
+      res.status(500).json({ message: "Error fetching pending organizers" });
+    }
+  }
+);
+
+// Get all approved organizers
+router.get(
+  "/organizers/approved",
+  authMiddleware,
+  authorizeRoles("admin"),
+  async (req, res) => {
+    try {
+      const organizers = await User.find({ 
+        role: "organizer", 
+        isApprovedByAdmin: true 
+      }).select("name email createdAt location");
+      
+      res.json(organizers);
+    } catch (error) {
+      console.error("Error fetching approved organizers:", error);
+      res.status(500).json({ message: "Error fetching approved organizers" });
+    }
+  }
+);
+
+// Approve an organizer
+router.patch(
+  "/organizers/:id/approve",
+  authMiddleware,
+  authorizeRoles("admin"),
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id);
+      if (!user) return res.status(404).json({ message: "Organizer not found" });
+
+      if (user.role !== "organizer") {
+        return res.status(400).json({ message: "User is not an organizer" });
+      }
+
+      user.isApprovedByAdmin = true;
+      await user.save();
+
+      // Send approval email notification
+      const { sendOrganizerApprovalEmail } = await import("../services/notificationService.js");
+      try {
+        await sendOrganizerApprovalEmail(user.email, user.name);
+      } catch (e) {
+        console.error("[ORGANIZER_APPROVAL] Email notification failed:", e.message);
+      }
+
+      res.json({ 
+        message: "Organizer approved successfully ✅", 
+        organizer: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          isApprovedByAdmin: user.isApprovedByAdmin
+        }
+      });
+    } catch (error) {
+      console.error("Error approving organizer:", error);
+      res.status(500).json({ message: "Error approving organizer" });
+    }
+  }
+);
+
+// Reject/Revoke an organizer approval
+router.patch(
+  "/organizers/:id/reject",
+  authMiddleware,
+  authorizeRoles("admin"),
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id);
+      if (!user) return res.status(404).json({ message: "Organizer not found" });
+
+      if (user.role !== "organizer") {
+        return res.status(400).json({ message: "User is not an organizer" });
+      }
+
+      user.isApprovedByAdmin = false;
+      await user.save();
+
+      // Send rejection email notification
+      const { sendOrganizerRejectionEmail } = await import("../services/notificationService.js");
+      try {
+        await sendOrganizerRejectionEmail(user.email, user.name);
+      } catch (e) {
+        console.error("[ORGANIZER_REJECTION] Email notification failed:", e.message);
+      }
+
+      res.json({ 
+        message: "Organizer approval revoked", 
+        organizer: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          isApprovedByAdmin: user.isApprovedByAdmin
+        }
+      });
+    } catch (error) {
+      console.error("Error rejecting organizer:", error);
+      res.status(500).json({ message: "Error rejecting organizer" });
+    }
+  }
+);
+
 export default router;

@@ -40,11 +40,6 @@ const UserTour = () => {
             placement: "bottom",
         },
         {
-            target: ".squad-trigger",
-            content: "Connect with others in the Squad Chat!",
-            placement: "left",
-        },
-        {
             target: ".chatbot-trigger",
             content: "Our AI Assistant is here to help you find tickets.",
             placement: "left",
@@ -71,11 +66,6 @@ const UserTour = () => {
             target: ".login-btn",
             content: "Login: Sign in to your account and manage your details.",
             placement: "bottom",
-        },
-        {
-            target: ".squad-trigger",
-            content: "Connect with others in the Squad Chat!",
-            placement: "left",
         },
         {
             target: ".chatbot-trigger",

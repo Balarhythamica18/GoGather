@@ -35,7 +35,6 @@ const Footer = () => {
             <li><Link to="/events">Browse Events</Link></li>
             <li><Link to="/my-bookings">My Tickets</Link></li>
             <li><Link to="/favorites">Favorites</Link></li>
-            <li><Link to="/squad-chat">Squad Chat</Link></li>
           </ul>
         </div>
 

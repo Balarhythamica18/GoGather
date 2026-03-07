@@ -126,7 +126,7 @@ const AddEvent = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Prevent past dates
+        // Prevent past dates (additional validation as fallback)
         const selectedDate = new Date(form.date);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -337,7 +337,15 @@ const AddEvent = () => {
                                         <label style={styles.label}>Date</label>
                                         <div style={styles.inputWithIcon}>
                                             <Calendar size={18} color="#94a3b8" style={styles.iconPos} />
-                                            <input type="date" name="date" onChange={handleChange} required style={styles.inputIcon} value={form.date} />
+                                            <input
+                                                type="date"
+                                                name="date"
+                                                onChange={handleChange}
+                                                required
+                                                style={styles.inputIcon}
+                                                value={form.date}
+                                                min={new Date().toISOString().split('T')[0]}
+                                            />
                                         </div>
                                     </div>
                                     <div style={styles.inputGroup}>

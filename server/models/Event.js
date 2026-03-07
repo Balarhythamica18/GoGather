@@ -32,6 +32,29 @@ const eventSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
+    // 🆕 CANCELLATION TRACKING FIELDS
+    cancellationReason: {
+      type: String,
+      enum: ["cancelled", "postponed", "rescheduled", "admin-action"],
+      default: null,
+    },
+    cancellationMessage: {
+      type: String,
+      default: "",
+    },
+    cancellationDate: {
+      type: Date,
+      default: null,
+    },
+    refundApprovedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

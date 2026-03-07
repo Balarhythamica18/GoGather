@@ -1,5 +1,5 @@
 /**
- * Professional moderation utility for Squad Chat.
+ * Professional moderation utility for filtering harmful content.
  * Filters harmful, immoral, threatening, and offensive language.
  */
 
