@@ -68,7 +68,7 @@ export const sendEmail = async (options, blocking = true) => {
         mailOptions.from = process.env.RESEND_FROM_EMAIL;
     }
 
-    // --- API Sending (Resend) ---
+    // --- API Sending (Resend) with SMTP Fallback ---
     if (resendApiKey) {
         const sendViaApi = async () => {
             try {
@@ -89,7 +89,25 @@ export const sendEmail = async (options, blocking = true) => {
             } catch (error) {
                 const errorMsg = error.response?.data?.message || error.message;
                 console.error(`[EMAIL ERROR (API)] Failed to send to ${options.to}:`, errorMsg);
-                if (blocking) throw new Error(`Email API failure: ${errorMsg}`);
+
+                // If API fails and we have SMTP credentials, fall back to SMTP
+                if (emailPass) {
+                    console.log(`[EMAIL INFO] Falling back to SMTP for ${options.to}`);
+                    try {
+                        const smtpResponse = await transporter.sendMail({
+                            ...mailOptions,
+                            from: `"GoGather" <${adminEmail}>` // Use admin email for SMTP
+                        });
+                        console.log(`[EMAIL SUCCESS (SMTP-FALLBACK)] Sent to ${options.to}. MessageID: ${smtpResponse.messageId}`);
+                        return smtpResponse;
+                    } catch (smtpError) {
+                        console.error(`[EMAIL ERROR (SMTP-FALLBACK)] Failed to send to ${options.to}:`, smtpError.message);
+                        if (blocking) throw new Error(`Email delivery failed via both API and SMTP: ${smtpError.message}`);
+                    }
+                } else {
+                    console.error(`[EMAIL ERROR] No SMTP fallback available for ${options.to}`);
+                    if (blocking) throw new Error(`Email API failure: ${errorMsg}`);
+                }
             }
         };
 
