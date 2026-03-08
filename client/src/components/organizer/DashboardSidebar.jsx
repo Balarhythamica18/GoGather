@@ -4,7 +4,12 @@ import {
     LayoutDashboard,
     PlusCircle,
     LogOut,
+    Settings,
+    Calendar,
+    ChevronRight,
+    UserCircle
 } from 'lucide-react';
+import Logo from '../common/Logo';
 
 const DashboardSidebar = ({ organizerName, onLogout }) => {
     const navigate = useNavigate();
@@ -18,8 +23,8 @@ const DashboardSidebar = ({ organizerName, onLogout }) => {
     }, []);
 
     const menuItems = [
-        { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-        { id: 'add-event', icon: PlusCircle, label: 'Add Event', path: '/add-event' },
+        { id: 'dashboard', icon: LayoutDashboard, label: 'Overview', path: '/dashboard' },
+        { id: 'add-event', icon: PlusCircle, label: 'Create Event', path: '/add-event' },
     ];
 
     return (
@@ -27,243 +32,210 @@ const DashboardSidebar = ({ organizerName, onLogout }) => {
             <div
                 className={`sidebar-overlay ${isOpen ? 'show' : ''}`}
                 onClick={() => setIsOpen(false)}
-                style={styles.overlay}
             />
-            <aside className={`organizer-sidebar ${isOpen ? 'open' : ''}`} style={styles.sidebar}>
+            <aside className={`organizer-sidebar ${isOpen ? 'open' : ''}`}>
                 <style>{`
-                    @media (max-width: 768px) {
+                    .organizer-sidebar {
+                        width: 260px;
+                        height: 100vh;
+                        position: fixed;
+                        left: 0;
+                        top: 0;
+                        background: #ffffff;
+                        border-right: 1px solid #e2e8f0;
+                        display: flex;
+                        flex-direction: column;
+                        padding: 32px 16px;
+                        z-index: 1000;
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    }
+
+                    .sidebar-logo {
+                        padding: 0 12px 32px 12px;
+                        border-bottom: 1px solid #f1f5f9;
+                        margin-bottom: 32px;
+                    }
+
+                    .sidebar-nav {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                        flex: 1;
+                    }
+
+                    .nav-button {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        padding: 12px 16px;
+                        border-radius: 12px;
+                        border: none;
+                        background: transparent;
+                        color: #64748b;
+                        font-family: inherit;
+                        font-size: 15px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        text-align: left;
+                        position: relative;
+                    }
+
+                    .nav-button:hover {
+                        background: #f8fafc;
+                        color: #0b0f5b;
+                    }
+
+                    .nav-button.active {
+                        background: #eff6ff;
+                        color: #0b0f5b;
+                    }
+
+                    .nav-button.active::after {
+                        content: '';
+                        position: absolute;
+                        right: 8px;
+                        width: 6px;
+                        height: 6px;
+                        background: #0b0f5b;
+                        border-radius: 50%;
+                    }
+
+                    .sidebar-footer {
+                        margin-top: auto;
+                        padding-top: 24px;
+                        border-top: 1px solid #f1f5f9;
+                    }
+
+                    .user-profile {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        padding: 12px;
+                        background: #f8fafc;
+                        border-radius: 16px;
+                        margin-bottom: 16px;
+                    }
+
+                    .user-avatar {
+                        width: 40px;
+                        height: 40px;
+                        background: #0b0f5b;
+                        color: white;
+                        border-radius: 12px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: 700;
+                        font-size: 16px;
+                    }
+
+                    .user-info {
+                        flex: 1;
+                        min-width: 0;
+                    }
+
+                    .user-name {
+                        font-size: 14px;
+                        font-weight: 700;
+                        color: #1e293b;
+                        margin: 0;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .user-role {
+                        font-size: 12px;
+                        color: #64748b;
+                        margin: 0;
+                    }
+
+                    .logout-button {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        width: 100%;
+                        padding: 12px 16px;
+                        border-radius: 12px;
+                        border: 1px solid #fee2e2;
+                        background: transparent;
+                        color: #ef4444;
+                        font-weight: 600;
+                        font-size: 14px;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    }
+
+                    .logout-button:hover {
+                        background: #fef2f2;
+                    }
+
+                    @media (max-width: 1024px) {
                         .organizer-sidebar {
                             transform: translateX(-100%);
-                            transition: transform 0.3s ease-in-out;
                         }
                         .organizer-sidebar.open {
                             transform: translateX(0);
                         }
                         .sidebar-overlay {
-                            display: none;
                             position: fixed;
                             inset: 0;
-                            background: rgba(0, 0, 0, 0.4);
-                            backdrop-filter: blur(2px);
+                            background: rgba(15, 23, 42, 0.4);
+                            backdrop-filter: blur(4px);
                             z-index: 999;
+                            opacity: 0;
+                            visibility: hidden;
+                            transition: all 0.3s;
                         }
                         .sidebar-overlay.show {
-                            display: block;
-                        }
-                        .mobile-close-btn {
-                            display: flex !important;
+                            opacity: 1;
+                            visibility: visible;
                         }
                     }
                 `}</style>
 
-                <button
-                    className="mobile-close-btn"
-                    onClick={() => setIsOpen(false)}
-                    style={styles.closeBtn}
-                >
-                    ✕
-                </button>
-
-                <div style={styles.logo}>
-                    <div style={styles.logoIcon}>G</div>
-                    <span style={styles.logoText}>GoGather</span>
+                <div className="sidebar-logo">
+                    <Logo />
                 </div>
 
-                <nav style={styles.nav}>
-                    {menuItems.map((item, index) => {
+                <nav className="sidebar-nav">
+                    {menuItems.map((item) => {
                         const isActive = location.pathname === item.path;
-
                         return (
                             <button
-                                key={index}
+                                key={item.id}
                                 onClick={() => {
-                                    if (item.path !== '#') {
-                                        navigate(item.path);
-                                        setIsOpen(false);
-                                    }
+                                    navigate(item.path);
+                                    setIsOpen(false);
                                 }}
-                                style={{
-                                    ...styles.navItem,
-                                    backgroundColor: isActive ? '#fff0f6' : 'transparent',
-                                    color: isActive ? '#ff007a' : '#64748b',
-                                }}
+                                className={`nav-button ${isActive ? 'active' : ''}`}
                             >
-                                <item.icon size={20} color={isActive ? '#ff007a' : '#64748b'} />
-                                <span style={styles.navLabel}>{item.label}</span>
-                                {isActive && <div style={styles.activeIndicator} />}
+                                <item.icon size={20} />
+                                <span>{item.label}</span>
                             </button>
-                        )
+                        );
                     })}
                 </nav>
 
-                <div style={styles.footer}>
-                    <div style={styles.userInfo}>
-                        <div style={styles.avatar}>
+                <div className="sidebar-footer">
+                    <div className="user-profile">
+                        <div className="user-avatar">
                             {organizerName?.charAt(0) || 'O'}
                         </div>
-                        <div style={styles.userDetails}>
-                            <p style={styles.userName}>{organizerName || 'Organizer'}</p>
-                            <p style={styles.userRole}>Event Host</p>
+                        <div className="user-info">
+                            <p className="user-name">{organizerName || 'Organizer'}</p>
+                            <p className="user-role">Business Member</p>
                         </div>
                     </div>
-                    <button onClick={onLogout} style={styles.logoutBtn}>
+                    <button onClick={onLogout} className="logout-button">
                         <LogOut size={18} />
-                        <span>Logout</span>
+                        <span>Sign Out</span>
                     </button>
                 </div>
             </aside>
         </>
     );
-};
-
-const styles = {
-    sidebar: {
-        width: '260px',
-        height: '100vh',
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        backgroundColor: '#fff',
-        borderRight: '1px solid #e2e8f0',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '32px 16px',
-        zIndex: 1000,
-    },
-    logo: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        padding: '0 12px 32px 12px',
-        borderBottom: '1px solid #f1f5f9',
-        marginBottom: '32px',
-    },
-    logoIcon: {
-        width: '32px',
-        height: '32px',
-        backgroundColor: '#ff007a',
-        borderRadius: '8px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#fff',
-        fontWeight: '800',
-        fontSize: '20px',
-    },
-    logoText: {
-        fontSize: '20px',
-        fontWeight: '800',
-        color: '#1e293b',
-        letterSpacing: '-0.02em',
-    },
-    nav: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '4px',
-        flex: 1,
-    },
-    navItem: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        padding: '12px',
-        borderRadius: '10px',
-        border: 'none',
-        fontSize: '15px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        position: 'relative',
-        textAlign: 'left',
-        width: '100%',
-    },
-    navLabel: {
-        flex: 1,
-    },
-    activeIndicator: {
-        position: 'absolute',
-        right: '0',
-        width: '4px',
-        height: '20px',
-        backgroundColor: '#ff007a',
-        borderRadius: '4px 0 0 4px',
-    },
-    footer: {
-        marginTop: 'auto',
-        paddingTop: '24px',
-        borderTop: '1px solid #f1f5f9',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px',
-    },
-    userInfo: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        padding: '0 12px',
-    },
-    avatar: {
-        width: '40px',
-        height: '40px',
-        borderRadius: '12px',
-        backgroundColor: '#e2e8f0',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontWeight: '700',
-        color: '#64748b',
-        fontSize: '18px',
-    },
-    userDetails: {
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    userName: {
-        fontSize: '14px',
-        fontWeight: '700',
-        color: '#1e293b',
-        margin: 0,
-    },
-    userRole: {
-        fontSize: '12px',
-        color: '#94a3b8',
-        margin: 0,
-    },
-    logoutBtn: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        padding: '12px',
-        borderRadius: '10px',
-        border: 'none',
-        backgroundColor: 'transparent',
-        color: '#f43f5e',
-        fontSize: '15px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        width: '100%',
-        textAlign: 'left',
-    },
-    closeBtn: {
-        position: 'absolute',
-        top: '16px',
-        right: '16px',
-        background: '#f1f5f9',
-        border: 'none',
-        width: '32px',
-        height: '32px',
-        borderRadius: '8px',
-        display: 'none',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '18px',
-        color: '#64748b',
-        cursor: 'pointer',
-        zIndex: 10,
-    },
-    overlay: {
-    }
 };
 
 export default DashboardSidebar;

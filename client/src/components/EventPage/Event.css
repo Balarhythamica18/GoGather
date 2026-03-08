@@ -145,7 +145,7 @@
 
 /* Book Now */
 .book-btn {
-  background-color: #ff007a;
+  background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
   color: #ffffff;
   border: none;
 }
@@ -329,7 +329,7 @@
 .eventpage-apply-btn {
   flex: 1;
   height: 36px;
-  background: #ff007a;
+  background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
   color: #ffffff;
   border: none;
   border-radius: 8px;

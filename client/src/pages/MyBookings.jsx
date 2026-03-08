@@ -278,11 +278,7 @@ const MyBookings = () => {
 
               <div className="card-actions">
                 <div className="price-tag">₹{booking.amount || booking.event?.price}</div>
-                {booking.discountApplied && (
-                  <div style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 700, marginBottom: '12px' }}>
-                    20% FIRST BOOKING SAVED
-                  </div>
-                )}
+
                 <button
                   className="view-ticket-btn"
                   onClick={() => setSelectedTicket(booking)}

@@ -2,6 +2,7 @@ import { sendEmail } from "../utils/emailUtility.js";
 import Booking from "../models/Booking.js";
 import User from "../models/User.js";
 import Event from "../models/Event.js";
+import { calculateRefund } from "../utils/refundCalculator.js";
 
 /**
  * Professional Event Cancellation Handler
@@ -51,8 +52,9 @@ export const handleEventCancellation = async (
           continue;
         }
 
-        // 3. Process refund (100% for event cancellation by organizer)
-        const refundAmount = booking.amount > 0 ? booking.amount : 0;
+        // 3. Process refund based on professional centralized logic
+        const { amount: refundAmount, policyName: refundPolicyApplied } = calculateRefund(booking, event);
+        console.log(`[EVENT CANCELLATION] Applied ${refundPolicyApplied} for booking ${booking._id}: ₹${refundAmount}`);
 
         // 4. Update booking status
         booking.status = "cancelled";

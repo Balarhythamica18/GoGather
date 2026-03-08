@@ -197,7 +197,7 @@ const OrganizerManagement = () => {
                 <button
                     onClick={() => setActiveTab("pending")}
                     style={{
-                        background: activeTab === "pending" ? "linear-gradient(135deg, #ff007a 0%, #ff6b9d 100%)" : "transparent",
+                        background: activeTab === "pending" ? "linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%)" : "transparent",
                         color: activeTab === "pending" ? "white" : "#64748b",
                         border: "none",
                         padding: "10px 20px",

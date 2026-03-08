@@ -36,7 +36,7 @@ const ListBookings = () => {
 
       {loading ? (
         <div style={styles.loadingState}>
-          <Activity className="animate-spin" style={{ margin: '0 auto 16px auto', color: '#ff007a' }} />
+          <Activity className="animate-spin" style={{ margin: '0 auto 16px auto', color: '#0b0f5b' }} />
           <p>Securing booking data...</p>
         </div>
       ) : bookings.length === 0 ? (

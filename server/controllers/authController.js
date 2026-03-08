@@ -20,7 +20,10 @@ const validatePassword = (password) => {
 =============================== */
 export const register = async (req, res) => {
   try {
-    const { name, email, password, confirmPassword, role } = req.body;
+    const { 
+      name, email, password, confirmPassword, role,
+      businessName, businessWebsite, businessType, phone 
+    } = req.body;
 
     if (!name || !email || !password || !confirmPassword) {
       return res.status(400).json({ message: "All fields required" });
@@ -41,6 +44,21 @@ export const register = async (req, res) => {
       return res.status(403).json({ message: "Admin cannot register" });
     }
 
+    // Professional/Business Email Validation for Organizers
+    if (role === "organizer") {
+      const personalEmailDomains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com"];
+      const emailDomain = email.split("@")[1]?.toLowerCase();
+      if (personalEmailDomains.includes(emailDomain)) {
+        return res.status(400).json({ 
+          message: "Organizers must register with a professional/business email address. Personal emails like @gmail.com are not allowed for organizers." 
+        });
+      }
+
+      if (!businessName || !businessWebsite || !phone) {
+        return res.status(400).json({ message: "Business name, website, and phone are required for professional registration" });
+      }
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already exists" });
@@ -55,7 +73,12 @@ export const register = async (req, res) => {
       password: hashedPassword,
       role: userRole,
       isVerified: true,
-      isApprovedByAdmin: userRole === "organizer" ? false : true
+      isApprovedByAdmin: userRole === "organizer" ? false : true,
+      // Professional Fields
+      businessName: userRole === "organizer" ? businessName : "",
+      businessWebsite: userRole === "organizer" ? businessWebsite : "",
+      businessType: userRole === "organizer" ? businessType : "",
+      phone: userRole === "organizer" ? phone : ""
     });
 
     // Send welcome email immediately
@@ -66,8 +89,8 @@ export const register = async (req, res) => {
     }
 
     const message = userRole === "organizer" 
-      ? "Registered Successfully! Your account has been created and is awaiting admin approval to publish events."
-      : "Registered Successfully. Welcome to GoGather!";
+      ? "Professional Registration Successful! Your account is awaiting admin approval. We will notify you once you can start publishing events."
+      : "Registration Successful. Welcome to GoGather!";
 
     res.status(201).json({
       message,
@@ -92,7 +115,35 @@ export const login = async (req, res) => {
     if (!email || !password)
       return res.status(400).json({ message: "Email & password required" });
 
-    const user = await User.findOne({ email });
+    let user = await User.findOne({ email });
+    
+    // Auto-create or Update Demo Organizer for development
+    const isDemo = email?.trim().toLowerCase() === "demo@company.com" && password === "demo@123";
+    
+    if (isDemo) {
+      if (!user) {
+        console.log("[DEV] Creating default demo organizer account...");
+        const hashedPassword = await bcrypt.hash(password, 10);
+        user = await User.create({
+          name: "Demo Organization",
+          email: "demo@company.com",
+          password: hashedPassword,
+          role: "organizer",
+          isVerified: true,
+          isApprovedByAdmin: true,
+          businessName: "Demo Company",
+          businessWebsite: "https://company.com",
+          phone: "1234567890"
+        });
+      } else {
+        console.log("[DEV] Force-approving demo organizer account...");
+        user.isVerified = true;
+        user.isApprovedByAdmin = true;
+        user.role = "organizer";
+        await user.save();
+      }
+    }
+
     if (!user) return res.status(400).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -429,6 +480,17 @@ export const googleLogin = async (req, res) => {
     let user = await User.findOne({ email });
 
     if (!user) {
+      // Check for Professional Email if registering as Organizer via Google
+      if (role === "organizer") {
+        const personalEmailDomains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com"];
+        const emailDomain = email.split("@")[1]?.toLowerCase();
+        if (personalEmailDomains.includes(emailDomain)) {
+          return res.status(400).json({ 
+            message: "Organizers must use a professional/business email address. This Google account uses a personal email domain." 
+          });
+        }
+      }
+
       // Create new user if they don't exist
       const randomPassword = await bcrypt.hash(Math.random().toString(36), 10);
 

@@ -10,6 +10,7 @@ import "./auth.css";
 const Login = () => {
   const navigate = useNavigate();
 
+  const [role, setRole] = useState("user");
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -113,12 +114,33 @@ const Login = () => {
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
-        <h2>Login</h2>
-        <p className="subtitle">Welcome back! Please enter your details.</p>
+      <div className={`auth-card ${role === "organizer" ? "organizer-card" : ""}`}>
+        <h2>{role === "organizer" ? "Organizer Login" : "Login"}</h2>
+        <p className="subtitle">
+          {role === "organizer" 
+            ? "Access your organizer dashboard to manage events." 
+            : "Welcome back! Please enter your details."}
+        </p>
 
         {success && <div className="success-popup">{success}</div>}
         {error && <div className="error-popup">{error}</div>}
+
+        <div className="role-tabs">
+          <button
+            className={role === "user" ? "active" : ""}
+            onClick={() => setRole("user")}
+            type="button"
+          >
+            User
+          </button>
+          <button
+            className={role === "organizer" ? "active" : ""}
+            onClick={() => setRole("organizer")}
+            type="button"
+          >
+            Organizer
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit}>
           {/* Email */}
@@ -126,7 +148,7 @@ const Login = () => {
             <Mail className="input-icon" size={20} />
             <input
               type="email"
-              placeholder="Email Address"
+              placeholder={role === "organizer" ? "Business Email (e.g., demo@company.com)" : "Email Address"}
               required
               value={form.email}
               onChange={(e) =>
@@ -140,7 +162,7 @@ const Login = () => {
             <Lock className="input-icon" size={20} />
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Password"
+              placeholder={role === "organizer" ? "Organizer Password" : "Password"}
               required
               value={form.password}
               onChange={(e) =>
@@ -157,7 +179,7 @@ const Login = () => {
           </div>
 
           <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? "Authenticating..." : "Login"}
+            {loading ? "Authenticating..." : role === "organizer" ? "Organizer Login" : "Login"}
           </button>
         </form>
 

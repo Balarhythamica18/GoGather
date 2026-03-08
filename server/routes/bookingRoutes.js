@@ -1,10 +1,12 @@
 import express from "express";
 import Booking from "../models/Booking.js";
+import Event from "../models/Event.js";
 import User from "../models/User.js"; // if needed
 import QRCode from "qrcode"; // npm install qrcode
 import authMiddleware from "../middleware/authMiddleware.js";
 import dns from "dns";
 import { sendEmail } from "../utils/emailUtility.js";
+import { calculateRefund } from "../utils/refundCalculator.js";
 
 
 const router = express.Router();
@@ -52,28 +54,36 @@ router.get("/my-bookings", authMiddleware, async (req, res) => {
   }
 });
 
-// 2️⃣ Create a booking with 20% discount for first-timers (only for paid events)
+// 2️⃣ Create a booking (only for paid events)
 router.post("/create-payment", async (req, res) => {
   const { userId, eventId, seats, ticketCount, amount, vibe } = req.body;
 
   try {
-    // Check if this is the user's first confirmed booking that had a payment (amount > 0)
-    const previousPaidBookings = await Booking.countDocuments({
-      userId,
-      status: "confirmed",
-      amount: { $gt: 0 }
-    });
+    const event = await (await import("../models/Event.js")).default.findById(eventId);
+    if (!event) return res.status(404).json({ error: "Event not found" });
 
-    const isFirstPaidBooking = previousPaidBookings === 0;
-
-    let finalAmount = amount;
-    let discountApplied = false;
-
-    // Only apply discount if it's the first paid booking AND the current event is not free
-    if (isFirstPaidBooking && amount > 0) {
-      finalAmount = Math.round(amount * 0.8 * 100) / 100; // 20% Off, Rounded
-      discountApplied = true;
+    const requestedTickets = seats?.length || ticketCount || 1;
+    let available = event.availableSeats;
+    
+    // 🆕 Fix for legacy/uninitialized events: 
+    // If availableSeats is 0 or undefined, but capacity is set, 
+    // and we haven't checked confirmed bookings yet, let's treat it as uninitialized.
+    if ((available === undefined || available === 0) && event.capacity > 0) {
+      const confirmedBookings = await Booking.find({ eventId, status: "confirmed" });
+      const totalBooked = confirmedBookings.reduce((sum, b) => sum + (b.seats?.length || b.ticketCount || 1), 0);
+      available = event.capacity - totalBooked;
+      
+      // Update the event record for future consistency
+      event.availableSeats = available;
+      await event.save();
     }
+
+    if (available !== undefined && available < requestedTickets) {
+      return res.status(400).json({ error: `Not enough seats available. Only ${available} left.` });
+    }
+
+    const finalAmount = amount;
+    const discountApplied = false;
 
     const booking = new Booking({
       userId,
@@ -91,7 +101,7 @@ router.post("/create-payment", async (req, res) => {
       bookingId: booking._id,
       amount: finalAmount,
       discountApplied,
-      message: discountApplied ? "20% first-booking discount applied! 🎉" : "Booking initiated"
+      message: "Booking initiated"
     });
   } catch (err) {
     console.error("Create Payment Error:", err);
@@ -123,51 +133,20 @@ router.post("/verify-payment", async (req, res) => {
     const qrCodeBase64 = await QRCode.toDataURL(qrData);
     booking.qrCode = qrCodeBase64;
 
-    booking.qrCode = qrCodeBase64;
-
     await booking.save();
 
+    // 🆕 Decrement availableSeats in Event
+    if (booking.eventId) {
+      const ticketsBooked = booking.seats?.length || booking.ticketCount || 1;
+      await (await import("../models/Event.js")).default.findByIdAndUpdate(
+        booking.eventId._id,
+        { $inc: { availableSeats: -ticketsBooked } }
+      );
+      console.log(`[CAPACITY] Decremented availableSeats for event ${booking.eventId._id} by ${ticketsBooked}`);
+    }
+
     const event = booking.eventId;
-    const mailOptions = {
-      from: `"GoGather" <${process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com"}>`,
-      to: userEmail,
-      subject: `Your Ticket for ${event?.title || "Event"} 🎫`,
-      html: `
-        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
-          <div style="background: linear-gradient(135deg, #db2777 0%, #be185d 100%); padding: 40px 20px; text-align: center; color: white;">
-            <h1 style="margin: 0; font-size: 28px; letter-spacing: 1px;">GoGather</h1>
-            <p style="margin: 10px 0 0; opacity: 0.9;">Your entry pass is confirmed!</p>
-          </div>
-          
-          <div style="padding: 30px;">
-            <div style="margin-bottom: 30px; text-align: center;">
-              <img src="${qrCodeBase64}" alt="QR Entry Pass" style="width: 200px; height: 200px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 12px;"/>
-              <p style="color: #64748b; font-size: 12px; margin-top: 10px;">Show this QR at the venue for entry</p>
-            </div>
-
-            <div style="background-color: #f8fafc; border-radius: 12px; padding: 20px; margin-bottom: 30px;">
-              <h3 style="margin: 0 0 15px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Booking Details</h3>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr><td style="padding: 8px 0; color: #64748b;">Event:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${event?.title}</td></tr>
-                <tr><td style="padding: 8px 0; color: #64748b;">Date & Time:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${event?.date} at ${event?.time}</td></tr>
-                <tr><td style="padding: 8px 0; color: #64748b;">Location:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${event?.location}</td></tr>
-                <tr><td style="padding: 8px 0; color: #64748b;">Seats:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${booking.seats?.join(", ") || booking.ticketCount + " Tickets"}</td></tr>
-                <tr><td style="padding: 8px 0; color: #64748b;">Amount:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">₹${booking.amount}</td></tr>
-                <tr><td style="padding: 8px 0; color: #64748b;">Booking ID:</td><td style="padding: 8px 0; text-align: right; font-family: monospace; color: #64748b;">#${booking._id.toString().slice(-8).toUpperCase()}</td></tr>
-              </table>
-            </div>
-
-            <div style="text-align: center; color: #94a3b8; font-size: 14px;">
-              <p>Thank you for choosing GoGather. Enjoy the show!</p>
-              <div style="margin-top: 20px; font-size: 12px;">
-                &copy; 2026 GoGather Inc. All rights reserved.
-              </div>
-            </div>
-          </div>
-        </div>
-      `,
-    };
-
+    
     try {
       await sendEmail({
         to: userEmail,
@@ -205,7 +184,7 @@ router.post("/verify-payment", async (req, res) => {
               </div>
             </div>
           </div>
-        `
+        `,
       });
       console.log(`Ticket email sent to ${userEmail} for booking ${bookingId}`);
       res.json({ message: "Payment verified, professional ticket sent!", qrCode: qrCodeBase64, booking });
@@ -222,6 +201,35 @@ router.post("/verify-payment", async (req, res) => {
   }
 });
 
+// 3.1️⃣ Get attendees for an event (Organizer only)
+router.get("/attendees/:eventId", authMiddleware, async (req, res) => {
+  const { eventId } = req.params;
+  try {
+    // Fetch the event to verify authorization
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    // Check if requester is the organizer or admin
+    if (event.organizer.toString() !== req.user.id && req.user.role !== "admin") {
+      return res.status(403).json({ error: "Unauthorized access to attendee list" });
+    }
+
+    const bookings = await Booking.find({ 
+      eventId, 
+      status: "confirmed" 
+    })
+    .populate("userId", "name email phone")
+    .sort({ createdAt: -1 });
+
+    res.json(bookings);
+  } catch (error) {
+    console.error("Fetch attendees error:", error);
+    res.status(500).json({ error: "Failed to fetch attendees" });
+  }
+});
+
 // 4️⃣ Verify Entry (QR Scan)
 router.patch("/verify-entry", async (req, res) => {
   const { bookingId } = req.body;
@@ -230,18 +238,61 @@ router.patch("/verify-entry", async (req, res) => {
     const booking = await Booking.findById(bookingId).populate("eventId userId");
     if (!booking) return res.status(404).json({ error: "Invalid Ticket" });
     if (booking.status !== "confirmed") return res.status(400).json({ error: "Ticket not confirmed" });
-    if (booking.isUsed) return res.status(400).json({ error: "Ticket already used" });
+    if (booking.isUsed) return res.status(400).json({ error: "Already Scanned! 🚫" });
+
+    // Timing check: Open 1 hour before program starts
+    const event = booking.eventId;
+    if (event) {
+      try {
+        let foundMonth = -1;
+        let foundDay = -1;
+        let foundYear = 2026;
+
+        if (event.month && event.month.includes("-")) {
+          const [y, m] = event.month.split("-");
+          foundYear = parseInt(y);
+          foundMonth = parseInt(m) - 1;
+        }
+        if (event.date) {
+          const dayMatch = event.date.toString().match(/\d+/);
+          if (dayMatch) foundDay = parseInt(dayMatch[0]);
+        }
+
+        if (foundMonth !== -1 && foundDay !== -1) {
+          const timeStr = event.time ? String(event.time) : "00:00";
+          const eventDateTime = new Date(foundYear, foundMonth, foundDay);
+          const timeParts = timeStr.match(/(\d{1,2}):(\d{2})/);
+          if (timeParts) {
+            eventDateTime.setHours(parseInt(timeParts[1]), parseInt(timeParts[2]), 0);
+          }
+
+          const now = new Date();
+          const diffInMs = eventDateTime - now;
+          const oneHourInMs = 60 * 60 * 1000;
+
+          if (diffInMs > oneHourInMs) {
+            return res.status(400).json({ 
+              error: "Entry Not Started! ⏳", 
+              message: "Scanning opens 1 hour before the event starts." 
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Error parsing date for verification timing:", err);
+      }
+    }
 
     booking.isUsed = true;
+    booking.checkInTime = new Date();
     await booking.save();
 
     res.json({
       success: true,
-      message: "Access Granted! ✅",
+      message: "Valid Entry! Allowed ✅",
       details: {
         userName: booking.userId?.name,
         eventName: booking.eventId?.title,
-        seats: booking.seats?.join(", ") || booking.ticketCount
+        seats: booking.seats?.length > 0 ? booking.seats.join(", ") : booking.ticketCount
       }
     });
   } catch (err) {
@@ -262,92 +313,8 @@ router.post("/cancel", authMiddleware, async (req, res) => {
 
     const event = booking.eventId;
 
-    // Calculate time difference for refund
-    let diffInHours = 0;
-    const now = new Date(); // Need now earlier for scope
-
-    // Safely calculate time difference for refund
-    if (event) {
-      try {
-        let foundMonth = -1;
-        let foundDay = -1;
-        let foundYear = 2026; // Default to 2026
-
-        // 1. Try to parse YYYY-MM format from event.month (new format)
-        if (event.month && event.month.includes("-")) {
-          const [y, m] = event.month.split("-");
-          foundYear = parseInt(y);
-          foundMonth = parseInt(m) - 1; // 0-indexed month
-        } else {
-          // Fallback to month names for legacy data
-          const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-          const monthSource = (event.month || event.date || "").toString();
-          months.forEach((m, i) => {
-            if (monthSource.toLowerCase().includes(m.toLowerCase())) {
-              foundMonth = i;
-            }
-          });
-        }
-
-        // 2. Try to find day from event.date
-        if (event.date) {
-          const dayMatch = event.date.toString().match(/\d+/);
-          if (dayMatch) {
-            foundDay = parseInt(dayMatch[0]);
-          }
-        }
-
-        // 3. Fallback year parsing if not from YYYY-MM
-        if (event.month && !event.month.includes("-")) {
-          const yearMatch = (event.title || "").toString().match(/20\d{2}/);
-          if (yearMatch) {
-            foundYear = parseInt(yearMatch[0]);
-          }
-        }
-
-        // 4. Construct the date
-        if (foundMonth !== -1 && foundDay !== -1) {
-          const timeStr = event.time ? String(event.time) : "00:00";
-          const eventDateTime = new Date(foundYear, foundMonth, foundDay);
-
-          // Apply time if format is HH:MM
-          const timeParts = timeStr.match(/(\d{1,2}):(\d{2})/);
-          if (timeParts) {
-            eventDateTime.setHours(parseInt(timeParts[1]), parseInt(timeParts[2]), 0);
-          }
-
-          if (!isNaN(eventDateTime.getTime())) {
-            diffInHours = (eventDateTime - now) / (1000 * 60 * 60);
-            console.log(`Refund Calc: Event=${event.title}, ParsedDate=${eventDateTime.toISOString()}, DiffHours=${diffInHours}`);
-          }
-        }
-      } catch (dateErr) {
-        console.error("Error parsing event date for cancellation:", dateErr);
-        diffInHours = 0;
-      }
-    }
-
-    // Grace Period: Fully refundable within 2 hours of booking, if event is >24h away
-    const bookingTime = new Date(booking.createdAt);
-    const hoursSinceBooking = (now - bookingTime) / (1000 * 60 * 60);
-
-    let refundPercentage = 0;
-    let refundPolicy = "Non-refundable (Less than 24 hours before event)";
-
-    if (hoursSinceBooking <= 2 && diffInHours >= 24) {
-      refundPercentage = 100;
-      refundPolicy = "100% Refund (Grace Period: within 2 hours of booking)";
-    } else if (diffInHours >= 48) {
-      refundPercentage = 90;
-      refundPolicy = "90% Refund (Greater than 48 hours notice)";
-    } else if (diffInHours >= 24) {
-      refundPercentage = 50;
-      refundPolicy = "50% Refund (24-48 hours notice)";
-    }
-
-    const refundAmount = booking.amount > 0
-      ? Math.round((booking.amount * refundPercentage) / 100 * 100) / 100
-      : 0;
+    // 🆕 Use Centralized Professional Refund Calculator
+    const { percentage: refundPercentage, amount: refundAmount, policyName: refundPolicy } = calculateRefund(booking, event);
 
     // 🆕 Free Event Handling: Delete record directly and send simple email
     if (booking.amount === 0) {

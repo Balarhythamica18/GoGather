@@ -72,6 +72,24 @@ const userSchema = new mongoose.Schema({
   firstLogin: {
     type: Boolean,
     default: true
+  },
+
+  // Professional/Business Fields for Organizers
+  businessName: {
+    type: String,
+    default: ""
+  },
+  businessWebsite: {
+    type: String,
+    default: ""
+  },
+  businessType: {
+    type: String,
+    default: ""
+  },
+  phone: {
+    type: String,
+    default: ""
   }
 
 }, { timestamps: true });

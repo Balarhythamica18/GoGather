@@ -27,7 +27,7 @@
 .recommended-underline {
     height: 4px;
     width: 60%;
-    background: linear-gradient(90deg, #ff007a, #ff4d94);
+    background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
     margin: 8px auto 0;
     border-radius: 2px;
 }
@@ -92,7 +92,7 @@
     border-radius: 30px;
     font-size: 0.8rem;
     font-weight: 600;
-    color: #ff007a;
+    color: #0b0f5b;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
 }
 
@@ -111,7 +111,7 @@
 }
 
 .rec-card-date {
-    color: #ff007a;
+    color: #0b0f5b;
     font-weight: 700;
     font-size: 0.9rem;
     text-transform: uppercase;
@@ -156,7 +156,7 @@
 }
 
 .rec-card-arrow {
-    color: #ff007a;
+    color: #0b0f5b;
     font-weight: 700;
     font-size: 1.2rem;
     transition: transform 0.3s ease;

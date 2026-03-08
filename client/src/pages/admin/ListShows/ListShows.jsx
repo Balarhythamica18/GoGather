@@ -173,7 +173,7 @@ const ListShows = () => {
             {loading ? (
               <tr>
                 <td colSpan="5" style={{ textAlign: 'center', padding: '100px' }}>
-                  <Activity className="animate-spin" style={{ margin: '0 auto 16px auto', color: '#ff007a' }} />
+                  <Activity className="animate-spin" style={{ margin: '0 auto 16px auto', color: '#0b0f5b' }} />
                   <p style={{ color: '#64748b' }}>Refreshing event list...</p>
                 </td>
               </tr>
@@ -209,7 +209,7 @@ const ListShows = () => {
                     </span>
                   </td>
                   <td>
-                    <span style={{ fontWeight: '700', color: '#ff007a' }}>
+                    <span style={{ fontWeight: '700', color: '#0b0f5b' }}>
                       {typeof event.price === 'string' && event.price.toLowerCase() === 'free'
                         ? 'Free'
                         : `Rs. ${event.price}`}
@@ -381,12 +381,12 @@ const styles = {
     fontWeight: '600',
     cursor: 'pointer',
   },
-  okBtn: {
+    okBtn: {
     flex: 2,
     padding: '12px',
     borderRadius: '10px',
     border: 'none',
-    backgroundColor: '#ff007a',
+    backgroundColor: '#0b0f5b',
     color: '#fff',
     fontWeight: '700',
     cursor: 'pointer',

@@ -27,6 +27,11 @@
   border-radius: 24px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
   border: 1px solid #f1f5f9;
+  transition: max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-card.organizer-card {
+  max-width: 500px;
 }
 
 @media (max-width: 480px) {
@@ -83,8 +88,8 @@
 /* Active Tab */
 .role-tabs button.active {
   background: #ffffff;
-  color: #ff007a;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  color: #0b0f5b;
+  box-shadow: 0 4px 6px -1px rgba(11, 15, 91, 0.05);
 }
 
 /* Inputs */
@@ -118,17 +123,17 @@
 }
 
 .auth-card input:focus {
-  border-color: #ff007a;
+  border-color: #0b0f5b;
   outline: none;
   background: #fff;
-  box-shadow: 0 0 0 4px rgba(255, 0, 122, 0.05);
+  box-shadow: 0 0 0 4px rgba(11, 15, 91, 0.05);
 }
 
 /* Button */
 .auth-btn {
   width: 100%;
   padding: 14px;
-  background: #ff007a;
+  background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -137,13 +142,13 @@
   cursor: pointer;
   transition: all 0.2s ease;
   margin-top: 8px;
-  box-shadow: 0 4px 12px rgba(255, 0, 122, 0.25);
+  box-shadow: 0 4px 12px rgba(11, 15, 91, 0.25);
 }
 
 .auth-btn:hover {
-  background: #e6006e;
+  opacity: 0.9;
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(255, 0, 122, 0.3);
+  box-shadow: 0 6px 16px rgba(11, 15, 91, 0.3);
 }
 
 .auth-btn:active {
@@ -159,7 +164,7 @@
 }
 
 .auth-switch a {
-  color: #ff007a;
+  color: #0b0f5b;
   text-decoration: none;
   font-weight: 700;
 }
@@ -242,5 +247,22 @@
 }
 
 .eye-icon:hover {
-  color: #ff007a;
+  color: #0b0f5b;
+}
+
+/* Professional Demo Hint */
+.demo-hint {
+  margin-top: 20px;
+  padding: 12px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.demo-hint span {
+  font-weight: 700;
+  color: #0b0f5b;
 }

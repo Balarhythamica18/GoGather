@@ -41,6 +41,10 @@ const bookingSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    checkInTime: {
+      type: Date,
+      default: null,
+    },
     qrCode: {
       type: String, // store QR code as base64 string
       default: "",

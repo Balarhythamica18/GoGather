@@ -86,6 +86,13 @@ const EventDetailPage = () => {
               </p>
             </div>
           )}
+
+          {event.refundPolicy && (
+            <div className="edp-section">
+              <h2>Refund Policy</h2>
+              <p>{event.refundPolicy}</p>
+            </div>
+          )}
         </div>
 
         <div className="edp-right">
@@ -157,8 +164,8 @@ const EventDetailPage = () => {
                 >
                   <Heart
                     size={24}
-                    fill={isFavorite(id) ? "#ff007a" : "none"}
-                    color={isFavorite(id) ? "#ff007a" : "#666"}
+                    fill={isFavorite(id) ? "#0b0f5b" : "none"}
+                    color={isFavorite(id) ? "#0b0f5b" : "#666"}
                   />
                 </button>
               </div>

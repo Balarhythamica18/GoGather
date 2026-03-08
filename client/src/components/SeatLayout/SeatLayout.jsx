@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import { LogIn } from "lucide-react";
 import "./SeatLayout.css";
 
-const rows = ["A", "B", "C", "D", "E"];
 const socket = io(API_BASE_URL, {
   transports: ['polling', 'websocket']
 });
@@ -31,9 +30,36 @@ const SeatLayout = ({ event, user }) => {
   const [vibe, setVibe] = useState("");
   const [seatVibes, setSeatVibes] = useState({});
 
+  // 🆕 DYNAMIC SEAT GENERATION LOGIC
+  const capacity = event?.capacity || 0;
+  const isSeatBased = [
+    "rawstories", 
+    "theatredrama", 
+    "theatre drama", 
+    "comedy", 
+    "concert", 
+    "sports"
+  ].includes(event?.category?.toLowerCase());
+
+  const seatsPerRow = 10;
+  const totalSeats = isSeatBased ? capacity : 0;
+  const rowCount = Math.ceil(totalSeats / seatsPerRow);
+  
+  // Generate row labels (A, B, C... Z, AA, AB...)
+  const getRowLabel = (index) => {
+    let label = "";
+    while (index >= 0) {
+      label = String.fromCharCode((index % 26) + 65) + label;
+      index = Math.floor(index / 26) - 1;
+    }
+    return label;
+  };
+
+  const dynamicRows = Array.from({ length: rowCount }, (_, i) => getRowLabel(i));
+  const dynamicSeats = Array.from({ length: seatsPerRow }, (_, i) => i + 1);
+
   const getVibesByCategory = (category) => {
     const cat = category?.toLowerCase();
-
     const vibeSets = {
       comedy: [
         { id: "laughter", label: "Laughter Legend", color: "#fbbf24", icon: "😂" },
@@ -86,24 +112,14 @@ const SeatLayout = ({ event, user }) => {
   const storedUser = safeParse(localStorage.getItem("user"));
   const currentUser = user || storedUser;
 
-  /* ⭐ REAL BOOKING HISTORY CHECK (For 20% Discount) */
-  // Only apply 20% discount if the user has NEVER booked before
-  const isFirstBooking = currentUser && currentUser.hasBooked === false;
-
   const seatPrice =
     Number(String(event?.price || 0).replace(/[^\d]/g, "")) || 0;
-
-  const isSeatBased =
-    event?.category?.toLowerCase() !== "art" &&
-    event?.category?.toLowerCase() !== "sports" &&
-    event?.category?.toLowerCase() !== "food";
 
   const subtotal = isSeatBased
     ? selectedSeats.length * seatPrice
     : ticketCount * seatPrice;
 
-  const discount = isFirstBooking ? subtotal * 0.2 : 0;
-  const totalAmount = subtotal - discount;
+  const totalAmount = subtotal;
 
   /* FETCH BOOKED SEATS */
   useEffect(() => {
@@ -253,7 +269,10 @@ const SeatLayout = ({ event, user }) => {
         body: JSON.stringify(bookingPayload),
       });
 
-      if (!response.ok) throw new Error("Failed to initiate booking");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to initiate booking");
+      }
 
       const data = await response.json();
 
@@ -291,6 +310,7 @@ const SeatLayout = ({ event, user }) => {
         ticketCount: isSeatBased ? selectedSeats.length : ticketCount,
         amount: data.amount, // Use amount from server (it might have first-timer discount)
         eventName: event.title,
+        refundPolicy: event.refundPolicy,
       };
 
       localStorage.setItem("bookingData", JSON.stringify(bookingData));
@@ -299,7 +319,9 @@ const SeatLayout = ({ event, user }) => {
     } catch (err) {
       console.error("Booking initiation error:", err);
       setIsProcessing(false);
-      alert("Failed to start booking process. Please try again.");
+      
+      // Use toast for error instead of alert if possible, or a cleaner alert
+      toast.error(err.message || "Failed to start booking process. Please try again.");
     }
   };
 
@@ -315,14 +337,17 @@ const SeatLayout = ({ event, user }) => {
           </div>
           <p className="seat-location">{event?.location}</p>
 
-          <div className="screen">SCREEN THIS WAY</div>
+          <div className="screen">THE STAGE IS HERE</div>
 
           <div className="seat-layout">
-            {rows.map((row) => (
+            {dynamicRows.map((row, rowIndex) => (
               <div className="seat-row" key={row}>
                 <span className="row-label">{row}</span>
 
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((num) => {
+                {dynamicSeats.map((num) => {
+                  const seatIndex = rowIndex * seatsPerRow + num;
+                  if (seatIndex > totalSeats) return <div key={num} className="seat-spacer" style={{width: '35px'}}></div>;
+
                   const seatId = `${row}${num}`;
                   const isLocked = lockedSeats[seatId];
                   const isBooked = bookedSeats.includes(seatId);
@@ -425,8 +450,8 @@ const SeatLayout = ({ event, user }) => {
 
         {seatPrice > 0 && (
           <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
-            * <strong>Refund Policy:</strong> 100% refund within 2h of booking.
-            Thereafter, 90% refund ({">"}48h) or 50% refund (24-48h). Non-refundable if {"<"}24h.
+            * <strong>Refund Policy:</strong> {event.refundPolicy || "100% refund within 2h of booking. Thereafter, 90% refund (>48h) or 50% refund (24-48h). Non-refundable if <24h."}
+            {event.refundPolicy ? event.refundPolicy : "Thereafter, 90% refund (>48h) or 50% refund (24-48h). Non-refundable if <24h."}
           </div>
         )}
 

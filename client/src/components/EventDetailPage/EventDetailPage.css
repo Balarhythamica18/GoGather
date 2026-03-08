@@ -101,7 +101,7 @@
 .edp-book-btn {
   flex: 1;
   padding: 14px;
-  background: #ff007a;
+  background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
   color: #ffffff;
   border: none;
   border-radius: 12px;
@@ -130,7 +130,7 @@
 
 .edp-fav-btn.active {
   background: #fff0f6;
-  border-color: #ff007a;
+  border-color: #0b0f5b;
 }
 
 /* DECLARATION */

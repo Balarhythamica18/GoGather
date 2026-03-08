@@ -93,6 +93,12 @@ const PaymentPage = () => {
               <label>Category</label>
               <p>Premium Experience</p>
             </div>
+            {bookingData.refundPolicy && (
+              <div className="detail-item">
+                <label>Refund Policy</label>
+                <p style={{ fontSize: '0.8rem', lineHeight: '1.3', color: '#64748b' }}>{bookingData.refundPolicy}</p>
+              </div>
+            )}
           </div>
 
           <div className="security-badge">

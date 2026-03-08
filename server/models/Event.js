@@ -55,6 +55,36 @@ const eventSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // 🆕 PROFESSIONAL EVENT FIELDS
+    mapLink: {
+      type: String,
+      default: "",
+    },
+    capacity: {
+      type: Number,
+      default: 0,
+    },
+    availableSeats: {
+      type: Number,
+      default: 0,
+    },
+    sessions: [
+      {
+        title: String,
+        startTime: String,
+        endTime: String,
+      },
+    ],
+    refundPolicy: {
+      type: String,
+      default: "",
+    },
+    refundTiers: [
+      {
+        hoursBefore: Number, // Hours before event
+        refundPercentage: Number, // Percentage to refund
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useFavorites } from '../../context/FavoritesContext';
 import { HeartIcon } from '@heroicons/react/24/outline';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
-import logo from '../../assets/logo.png';
+import Logo from '../common/Logo';
 import ManageAccountModal from '../ManageAccount/ManageAccountModal';
 import './Navbar.css';
 
@@ -57,8 +57,8 @@ const Navbar = () => {
   return (
     <>
       <nav className="navbar-container">
-        <Link to="/" className="nav-logo-link">
-          <img src={logo} alt="Logo" className="nav-logo" />
+        <Link to="/" className="nav-logo-link" style={{ textDecoration: 'none' }}>
+          <Logo />
         </Link>
 
         <div className="nav-center">

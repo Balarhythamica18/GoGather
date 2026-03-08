@@ -132,11 +132,11 @@ const AdminSidebar = () => {
                 }}
                 style={{
                   ...styles.navItem,
-                  backgroundColor: isActive ? "#fff0f6" : "transparent",
-                  color: isActive ? "#ff007a" : "#64748b",
+                  backgroundColor: isActive ? "#eff6ff" : "transparent",
+                  color: isActive ? "#0b0f5b" : "#64748b",
                 }}
               >
-                <item.icon size={20} color={isActive ? "#ff007a" : "#64748b"} />
+                <item.icon size={20} color={isActive ? "#0b0f5b" : "#64748b"} />
                 <span style={styles.navLabel}>{item.label}</span>
                 {item.id === "approvals" && pendingCount > 0 && (
                   <div style={styles.badge}>{pendingCount}</div>
@@ -192,7 +192,7 @@ const styles = {
   logoIcon: {
     width: "32px",
     height: "32px",
-    backgroundColor: "#ff007a",
+    backgroundColor: "#0b0f5b",
     borderRadius: "8px",
     display: "flex",
     alignItems: "center",
@@ -234,11 +234,11 @@ const styles = {
     right: "0",
     width: "4px",
     height: "20px",
-    backgroundColor: "#ff007a",
+    backgroundColor: "#0b0f5b",
     borderRadius: "4px 0 0 4px",
   },
   badge: {
-    backgroundColor: "#ff007a",
+    backgroundColor: "#0b0f5b",
     color: "#fff",
     fontSize: "10px",
     fontWeight: "800",

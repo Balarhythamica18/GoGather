@@ -11,7 +11,7 @@ export const sendEventPendingNotification = async (adminEmail, organizerDetails,
             subject: `New Event Pending Approval: ${eventDetails.title} 📢`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-                    <div style="background-color: #ff007a; color: white; padding: 24px; text-align: center;">
+                    <div style="background-color: #0b0f5b; color: white; padding: 24px; text-align: center;">
                         <h1 style="margin: 0;">New Event Submission</h1>
                     </div>
                     <div style="padding: 24px; background-color: #ffffff;">
@@ -24,7 +24,7 @@ export const sendEventPendingNotification = async (adminEmail, organizerDetails,
                         </div>
                         <p>Please log in to the Admin Dashboard to review and approve/reject this event.</p>
                         <div style="text-align: center; margin-top: 30px;">
-                            <a href="https://gogather-client.onrender.com/login" style="background-color: #ff007a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Review Event</a>
+                            <a href="https://gogather-client.onrender.com/login" style="background-color: #0b0f5b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Review Event</a>
                         </div>
                     </div>
                 </div>
@@ -90,14 +90,14 @@ export const sendOrganizerApprovalEmail = async (organizerEmail, organizerName) 
             subject: "Your Account is Verified! 🎉 Start Publishing Events",
             html: `
                 <div style="font-family: 'Outfit', Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-                    <div style="background: linear-gradient(135deg, #ff007a 0%, #ff6b9d 100%); color: white; padding: 32px 24px; text-align: center;">
+                    <div style="background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%); color: white; padding: 32px 24px; text-align: center;">
                         <h1 style="margin: 0; font-size: 28px; font-weight: bold;">🎊 Congratulations, ${organizerName}!</h1>
                     </div>
                     <div style="padding: 32px 24px; background-color: #ffffff;">
                         <p style="color: #475569; font-size: 16px; line-height: 1.6;">Your account has been <strong>verified and approved</strong> by the GoGather admin team!</p>
                         
-                        <div style="background: linear-gradient(135deg, #fff5f7 0%, #f8fafc 100%); padding: 24px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #ff007a;">
-                            <h3 style="margin: 0 0 12px 0; color: #ff007a;">✨ What's New?</h3>
+                        <div style="background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); padding: 24px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #0b0f5b;">
+                            <h3 style="margin: 0 0 12px 0; color: #0b0f5b;">✨ What's New?</h3>
                             <ul style="margin: 0; padding-left: 20px; color: #64748b;">
                                 <li style="margin: 8px 0;"><strong>Direct Publishing:</strong> Your events will be published directly without waiting for admin approval</li>
                                 <li style="margin: 8px 0;"><strong>Immediate Visibility:</strong> Events appear instantly on the GoGather platform</li>
@@ -108,7 +108,7 @@ export const sendOrganizerApprovalEmail = async (organizerEmail, organizerName) 
                         <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-top: 24px;">You're now ready to create and publish amazing events on GoGather. Start by logging into your organizer dashboard and creating your first event!</p>
                         
                         <div style="text-align: center; margin-top: 32px;">
-                            <a href="https://gogather-client.onrender.com/organizer/dashboard" style="background: linear-gradient(135deg, #ff007a 0%, #ff6b9d 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">Go to Dashboard</a>
+                            <a href="https://gogather-client.onrender.com/organizer/dashboard" style="background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">Go to Dashboard</a>
                         </div>
 
                         <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e2e8f0; text-align: center;">

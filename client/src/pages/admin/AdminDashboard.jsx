@@ -120,25 +120,25 @@ const AdminDashboard = () => {
                     title="Total Platform Users"
                     value={stats.users}
                     icon={Users}
-                    color="#ff007a"
+                    color="#0b0f5b"
                 />
                 <StatCard
                     title="Active Events"
                     value={stats.events}
                     icon={Calendar}
-                    color="#ff007a"
+                    color="#0b0f5b"
                 />
                 <StatCard
                     title="Platform Bookings"
                     value={stats.bookings}
                     icon={ClipboardList}
-                    color="#ff007a"
+                    color="#0b0f5b"
                 />
                 <StatCard
                     title="Total Revenue"
                     value={`₹${stats.revenue.toLocaleString()}`}
                     icon={DollarSign}
-                    color="#ff007a"
+                    color="#0b0f5b"
                 />
             </div>
 
@@ -176,7 +176,7 @@ const AdminDashboard = () => {
                     <div style={styles.userStats}>
                         <div style={styles.userStatItem}>
                             <span style={styles.label}>Confirmed</span>
-                            <span style={{ ...styles.valueText, color: '#ff007a' }}>{stats.confirmedBookings}</span>
+                            <span style={{ ...styles.valueText, color: '#0b0f5b' }}>{stats.confirmedBookings}</span>
                         </div>
                         <div style={styles.userStatItem}>
                             <span style={styles.label}>Success Rate</span>

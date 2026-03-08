@@ -51,7 +51,32 @@ export const createEvent = async (req, res) => {
         contactEmail: req.body.organizerEmail,
         contactPhone: req.body.organizerPhone,
       },
+      mapLink: req.body.mapLink || "",
+      capacity: parseInt(req.body.capacity) || 0,
+      availableSeats: parseInt(req.body.capacity) || 0,
     };
+
+    // Parse sessions if provided
+    if (req.body.sessions) {
+      try {
+        eventData.sessions = typeof req.body.sessions === "string" 
+          ? JSON.parse(req.body.sessions) 
+          : req.body.sessions;
+      } catch (err) {
+        console.error("Error parsing sessions:", err);
+      }
+    }
+
+    // Parse refundTiers if provided
+    if (req.body.refundTiers) {
+      try {
+        eventData.refundTiers = typeof req.body.refundTiers === "string" 
+          ? JSON.parse(req.body.refundTiers) 
+          : req.body.refundTiers;
+      } catch (err) {
+        console.error("Error parsing refundTiers:", err);
+      }
+    }
 
     if (req.user && req.user.id) {
       eventData.organizer = req.user.id;
@@ -237,12 +262,39 @@ export const getUpcomingEvents = async (req, res) => {
 
 export const deleteEvent = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id).populate("organizer");
+    const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    // Only organizer who created the event or admin can delete
-    if (req.user?.role !== "admin" && String(event.organizer._id) !== String(req.user?.id)) {
-      return res.status(403).json({ message: "Forbidden" });
+    // Authorization: only owner or admin can delete
+    let isAuthorized = req.user?.role === "admin";
+    
+    if (!isAuthorized) {
+      console.log(`[AUTH DEBUG] Deleting event. req.user:`, req.user);
+      console.log(`[AUTH DEBUG] Event organizer ID:`, event.organizer);
+      
+      // 1. Check by organizer ID
+      if (event.organizer && String(event.organizer) === String(req.user?.id)) {
+        isAuthorized = true;
+      } 
+      
+      // 2. Fallback: Check by email if ID check failed (or if organizer ID is missing)
+      if (!isAuthorized && event.organizerDetails?.contactEmail) {
+        const user = await User.findById(req.user?.id);
+        const userEmail = user?.email?.toLowerCase()?.trim();
+        const eventEmail = event.organizerDetails.contactEmail?.toLowerCase()?.trim();
+        
+        console.log(`[AUTH DEBUG] User email:`, userEmail, `Event contactEmail:`, eventEmail);
+        
+        if (userEmail && eventEmail && userEmail === eventEmail) {
+          isAuthorized = true;
+          console.log(`[AUTH DEBUG] Authorized via email fallback`);
+        }
+      }
+    }
+
+    if (!isAuthorized) {
+      console.log(`[AUTH DEBUG] Authorization FAILED for delete`);
+      return res.status(403).json({ message: "Forbidden: You are not authorized to delete this event" });
     }
 
     // Check for active bookings
@@ -311,8 +363,35 @@ export const updateEvent = async (req, res) => {
     if (!event) return res.status(404).json({ message: "Event not found" });
 
     // Authorization: only owner or admin
-    if (req.user?.role !== "admin" && String(event.organizer) !== String(req.user?.id)) {
-      return res.status(403).json({ message: "Forbidden" });
+    let isAuthorized = req.user?.role === "admin";
+    
+    if (!isAuthorized) {
+      console.log(`[AUTH DEBUG] Updating event. req.user:`, req.user);
+      console.log(`[AUTH DEBUG] Event organizer ID:`, event.organizer);
+
+      // 1. Check by organizer ID
+      if (event.organizer && String(event.organizer) === String(req.user?.id)) {
+        isAuthorized = true;
+      } 
+      
+      // 2. Fallback: Check by email if ID check failed (or if organizer ID is missing)
+      if (!isAuthorized && event.organizerDetails?.contactEmail) {
+        const user = await User.findById(req.user?.id);
+        const userEmail = user?.email?.toLowerCase()?.trim();
+        const eventEmail = event.organizerDetails.contactEmail?.toLowerCase()?.trim();
+        
+        console.log(`[AUTH DEBUG] User email:`, userEmail, `Event contactEmail:`, eventEmail);
+        
+        if (userEmail && eventEmail && userEmail === eventEmail) {
+          isAuthorized = true;
+          console.log(`[AUTH DEBUG] Authorized via email fallback`);
+        }
+      }
+    }
+
+    if (!isAuthorized) {
+      console.log(`[AUTH DEBUG] Authorization FAILED for update`);
+      return res.status(403).json({ message: "Forbidden: You are not authorized to edit this event" });
     }
 
     // Update date/month if provided
@@ -359,16 +438,52 @@ export const updateEvent = async (req, res) => {
       "price",
       "aboutEvent",
       "declaration",
+      "mapLink",
+      "capacity",
+      "refundPolicy",
     ];
 
     simpleFields.forEach((f) => {
       if (otherData[f] !== undefined) event[f] = otherData[f];
     });
 
+    // Update refundTiers
+    if (otherData.refundTiers !== undefined) {
+      try {
+        event.refundTiers = typeof otherData.refundTiers === "string" 
+          ? JSON.parse(otherData.refundTiers) 
+          : otherData.refundTiers;
+      } catch (err) {
+        console.error("Error parsing refundTiers in update:", err);
+      }
+    }
+
     // keyHighlights may come as array or single string
     if (otherData.keyHighlights !== undefined) {
       if (Array.isArray(otherData.keyHighlights)) event.keyHighlights = otherData.keyHighlights;
       else if (typeof otherData.keyHighlights === "string") event.keyHighlights = [otherData.keyHighlights];
+    }
+
+    // Update capacity and availableSeats logic
+    if (otherData.capacity !== undefined) {
+      const newCapacity = parseInt(otherData.capacity) || 0;
+      const currentCapacity = event.capacity || 0;
+      const currentAvailable = event.availableSeats !== undefined ? event.availableSeats : currentCapacity;
+      const soldSeats = Math.max(0, currentCapacity - currentAvailable);
+      
+      event.capacity = newCapacity;
+      event.availableSeats = Math.max(0, newCapacity - soldSeats);
+    }
+
+    // Update sessions
+    if (otherData.sessions !== undefined) {
+      try {
+        event.sessions = typeof otherData.sessions === "string" 
+          ? JSON.parse(otherData.sessions) 
+          : otherData.sessions;
+      } catch (err) {
+        console.error("Error parsing sessions in update:", err);
+      }
     }
 
     // Organizer details

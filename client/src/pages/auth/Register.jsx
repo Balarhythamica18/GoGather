@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, Building2, Globe, Briefcase, Phone } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
 import { toast } from "react-hot-toast";
 import { API_BASE_URL } from "../../config";
@@ -15,7 +15,11 @@ const Register = () => {
     name: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    businessName: "",
+    businessWebsite: "",
+    businessType: "",
+    phone: ""
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -27,6 +31,12 @@ const Register = () => {
   const validatePassword = (password) => {
     const regex = /^(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$/;
     return regex.test(password);
+  };
+
+  const isProfessionalEmail = (email) => {
+    const personalDomains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com"];
+    const domain = email.split("@")[1]?.toLowerCase();
+    return !personalDomains.includes(domain);
   };
 
   const handleSubmit = async (e) => {
@@ -44,13 +54,19 @@ const Register = () => {
       );
     }
 
+    if (role === "organizer") {
+      if (!isProfessionalEmail(form.email)) {
+        return setError("Organizers must use a professional/business email (no @gmail.com, etc.)");
+      }
+      if (!form.businessName || !form.businessWebsite || !form.phone) {
+        return setError("Please fill in all business details");
+      }
+    }
+
     setLoading(true);
     try {
       await axios.post(`${API_BASE_URL}/api/auth/register`, {
-        name: form.name,
-        email: form.email,
-        password: form.password,
-        confirmPassword: form.confirmPassword,
+        ...form,
         role
       }, { timeout: 15000 }); // 15 second timeout to prevent infinite hanging
 
@@ -112,9 +128,13 @@ const Register = () => {
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
-        <h2>Create Account</h2>
-        <p className="subtitle">Join the community and start exploring events.</p>
+      <div className={`auth-card ${role === "organizer" ? "organizer-card" : ""}`}>
+        <h2>{role === "organizer" ? "Organizer Registration" : "Create Account"}</h2>
+        <p className="subtitle">
+          {role === "organizer" 
+            ? "Register your business and start hosting professional events." 
+            : "Join the community and start exploring events."}
+        </p>
 
         {success && <div className="success-popup">{success}</div>}
         {error && <div className="error-popup">{error}</div>}
@@ -152,12 +172,64 @@ const Register = () => {
             <Mail className="input-icon" size={20} />
             <input
               type="email"
-              placeholder="Email Address"
+              placeholder={role === "organizer" ? "Business Email Address" : "Email Address"}
               required
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
+            {role === "organizer" && form.email && !isProfessionalEmail(form.email) && (
+              <span style={{ color: "#e11d48", fontSize: "11px", position: "absolute", bottom: "-16px", left: "4px" }}>
+                Please use a professional business email
+              </span>
+            )}
           </div>
+
+          {role === "organizer" && (
+            <>
+              <div className="input-wrapper">
+                <Building2 className="input-icon" size={20} />
+                <input
+                  type="text"
+                  placeholder="Business / Organization Name"
+                  required
+                  value={form.businessName}
+                  onChange={(e) => setForm({ ...form, businessName: e.target.value })}
+                />
+              </div>
+
+              <div className="input-wrapper">
+                <Globe className="input-icon" size={20} />
+                <input
+                  type="url"
+                  placeholder="Business Website (e.g., https://example.com)"
+                  required
+                  value={form.businessWebsite}
+                  onChange={(e) => setForm({ ...form, businessWebsite: e.target.value })}
+                />
+              </div>
+
+              <div className="input-wrapper">
+                <Briefcase className="input-icon" size={20} />
+                <input
+                  type="text"
+                  placeholder="Business Type (e.g., Event Planning, Music Agency)"
+                  value={form.businessType}
+                  onChange={(e) => setForm({ ...form, businessType: e.target.value })}
+                />
+              </div>
+
+              <div className="input-wrapper">
+                <Phone className="input-icon" size={20} />
+                <input
+                  type="tel"
+                  placeholder="Business Contact Phone"
+                  required
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                />
+              </div>
+            </>
+          )}
 
           <div className="input-wrapper">
             <Lock className="input-icon" size={20} />

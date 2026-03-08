@@ -82,7 +82,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #ff007a;
+  color: #0b0f5b;
   font-size: 18px;
   transition: all 0.2s;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -90,7 +90,7 @@
 }
 
 .remove-fav-btn:hover {
-  background: #ff007a;
+  background: #0b0f5b;
   color: white;
   transform: rotate(90deg) scale(1.1);
 }
@@ -129,11 +129,11 @@
 .favorite-price {
   font-size: 1.2rem;
   font-weight: 800;
-  color: #ff007a;
+  color: #0b0f5b;
 }
 
 .favorite-book-btn {
-  background: #ff007a;
+  background: #0b0f5b;
   color: white;
   border: none;
   padding: 10px 20px;

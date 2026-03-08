@@ -251,12 +251,11 @@ const EventApprovals = () => {
                     background: #fef2f2;
                 }
                 .action-btn.approve {
-                    background: #ff007a;
-                    color: #fff;
+                    background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
+                    color: white;
                 }
                 .action-btn.approve:hover {
-                    background: #e6006e;
-                    box-shadow: 0 4px 12px rgba(255, 0, 122, 0.3);
+                    box-shadow: 0 4px 12px rgba(11, 15, 91, 0.3);
                 }
                 .action-btn:disabled {
                     opacity: 0.5;

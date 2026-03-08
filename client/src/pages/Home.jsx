@@ -1,5 +1,5 @@
 import ComedyShow from '../components/Comedy/ComedyShow'
-import DiscountOffer from '../components/DiscountOffer/DiscountOffer'
+
 import Head from '../components/Head/Head'
 import MakeOwnEvent from '../components/MakeOwnEvent/MakeOwnEvent'
 
@@ -18,7 +18,7 @@ const Home = () => {
       <Head />
 
       <UpcomingEvents />
-      <DiscountOffer />
+
       <TopEvent />
       <ComedyShow />
       <MakeOwnEvent />

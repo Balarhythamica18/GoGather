@@ -57,7 +57,10 @@
 }
 
 .nav-link-item:hover {
-  color: #ff007a;
+  background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* RIGHT SECTION */
@@ -114,9 +117,9 @@
 }
 
 .icon-action-btn:hover {
-  color: #ff007a;
+  color: #0b0f5b;
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(11, 15, 91, 0.1);
 }
 
 .nav-icon-sm {
@@ -126,7 +129,7 @@
 
 /* BUTTONS */
 .primary-nav-btn {
-  background: #ff007a;
+  background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
   color: #fff;
   border: none;
   padding: 10px 24px;
@@ -134,17 +137,17 @@
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(255, 0, 122, 0.2);
+  box-shadow: 0 4px 15px rgba(11, 15, 91, 0.2);
   transition: all 0.3s ease;
 }
 
 .primary-nav-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 0, 122, 0.3);
+  box-shadow: 0 6px 20px rgba(11, 15, 91, 0.3);
 }
 
 .navbar-logout-btn {
-  background: #ff007a;
+  background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
   color: #fff;
   border: none;
   padding: 8px 18px;
@@ -153,19 +156,19 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 15px rgba(255, 0, 122, 0.2);
+  box-shadow: 0 4px 15px rgba(11, 15, 91, 0.2);
 }
 
 .navbar-logout-btn:hover {
-  background: #e6006e;
+  opacity: 0.9;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(255, 0, 122, 0.3);
+  box-shadow: 0 6px 20px rgba(11, 15, 91, 0.3);
 }
 
 .mobile-manage-btn {
   background: #f8f9fa;
   border: 1px solid #e9ecef;
-  color: #ff007a;
+  color: #0b0f5b;
   font-size: 16px;
   font-weight: 700;
   padding: 12px 30px;
@@ -179,8 +182,8 @@
 
 .mobile-manage-btn:hover {
   background: #fff;
-  border-color: #ff007a;
-  box-shadow: 0 4px 12px rgba(255, 0, 122, 0.1);
+  border-color: #0b0f5b;
+  box-shadow: 0 4px 12px rgba(11, 15, 91, 0.1);
 }
 
 /* HAMBURGER */

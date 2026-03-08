@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./Footer.css";
-import logo from "../../assets/logo.png";
+import Logo from "../common/Logo";
 import fb from "../../assets/fb.png";
 import twitter from "../../assets/twitter.png";
 import linkedin from "../../assets/linkedin.png";
@@ -13,7 +13,7 @@ const Footer = () => {
         {/* Left Section */}
         <div className="footer-brand">
           <div className="footer-logo">
-            <img src={logo} alt="GoGather Logo" />
+            <Logo variant="light" />
           </div>
           <p className="footer-description">
             GoGather is a modern event ticketing platform that empowers

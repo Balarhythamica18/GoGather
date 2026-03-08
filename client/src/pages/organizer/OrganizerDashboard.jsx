@@ -24,19 +24,25 @@ import {
   EyeOff
 } from "lucide-react";
 import StatCard from "../../components/organizer/StatCard";
+import EventDetailsModal from "../../components/organizer/EventDetailsModal";
+import QRScannerModal from "../../components/organizer/QRScannerModal";
 import DashboardSidebar from "../../components/organizer/DashboardSidebar";
+
+import "./OrganizerDashboard.css";
 
 const OrganizerDashboard = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
-  const [stats, setStats] = useState({
-    totalEvents: 0,
-    approvedEvents: 0,
-    pendingEvents: 0,
-    rejectedEvents: 0,
-    totalBookings: 0,
-    totalRevenue: 0
+  const [stats, setStats] = useState({ 
+    totalEvents: 0, 
+    approvedEvents: 0, 
+    pendingEvents: 0, 
+    totalBookings: 0, 
+    totalRevenue: 0 
   });
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const [organizerName, setOrganizerName] = useState("");
   const [organizerEmail, setOrganizerEmail] = useState("");
   const [isApprovedByAdmin, setIsApprovedByAdmin] = useState(false);
@@ -57,7 +63,6 @@ const OrganizerDashboard = () => {
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [settingsError, setSettingsError] = useState("");
   const [settingsSuccess, setSettingsSuccess] = useState("");
-  const [focusedInput, setFocusedInput] = useState(null);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -69,15 +74,11 @@ const OrganizerDashboard = () => {
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
       if (token) {
-        // Fetch events
         try {
           const eventsRes = await axios.get(`${API_BASE_URL}/api/events/my`, config);
           setEvents(eventsRes.data || []);
-        } catch (err) {
-          console.error("Error fetching events:", err);
-        }
+        } catch (err) { console.error("Error fetching events:", err); }
 
-        // Fetch stats
         try {
           const statsRes = await axios.get(`${API_BASE_URL}/api/events/stats`, config);
           setStats(statsRes.data || {
@@ -88,23 +89,13 @@ const OrganizerDashboard = () => {
             totalBookings: 0,
             totalRevenue: 0
           });
-        } catch (err) {
-          console.error("Error fetching stats:", err);
-        }
-      } else {
-        const res = await axios.get(`${API_BASE_URL}/api/events`);
-        setEvents(res.data || []);
+        } catch (err) { console.error("Error fetching stats:", err); }
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDelete = (event) => {
-    setEventToDelete(event);
-    setShowConfirmation(true);
   };
 
   const confirmDelete = async () => {
@@ -115,24 +106,12 @@ const OrganizerDashboard = () => {
       fetchData();
       setShowConfirmation(false);
       setEventToDelete(null);
+      toast.success("Event deleted successfully");
     } catch (error) {
-      if (error.response?.status === 404) {
-        // Event already gone (maybe due to auto-cleanup), just refresh
-        fetchData();
-        setShowConfirmation(false);
-        setEventToDelete(null);
-      } else {
-        console.error("Error deleting event:", error);
-        alert("Error deleting event: " + (error.response?.data?.message || error.message));
-        setShowConfirmation(false);
-        setEventToDelete(null);
-      }
+      console.error("Error deleting event:", error);
+      toast.error("Failed to delete event");
+      setShowConfirmation(false);
     }
-  };
-
-  const cancelDelete = () => {
-    setShowConfirmation(false);
-    setEventToDelete(null);
   };
 
   const handleLogout = () => {
@@ -167,10 +146,11 @@ const OrganizerDashboard = () => {
     init();
   }, []);
 
-  const filteredEvents = events.filter(event =>
-    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEvents = events.filter(event => {
+    const titleMatch = (event.title || "").toLowerCase().includes(searchTerm.toLowerCase());
+    const locationMatch = (event.location || "").toLowerCase().includes(searchTerm.toLowerCase());
+    return titleMatch || locationMatch;
+  });
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
@@ -232,364 +212,135 @@ const OrganizerDashboard = () => {
     }
   };
 
+  const handleEventAction = (event) => {
+    setSelectedEvent(event);
+    setShowDetails(true);
+  };
+
+  const handleOpenScanner = (event) => {
+    setSelectedEvent(event);
+    setShowScanner(true);
+    setShowDetails(false);
+  };
+
   return (
-    <div style={styles.layout}>
+    <div className="organizer-dashboard">
       <DashboardSidebar
         organizerName={organizerName || localStorage.getItem("userName")}
         onLogout={handleLogout}
       />
 
-      <main style={styles.mainContent} className="organizer-main-content">
-        <style>{`
-          @media (max-width: 1024px) {
-            .organizer-main-content {
-              margin-left: 0 !important;
-              padding: 32px 24px !important;
-            }
-            .sidebar-toggle-btn {
-              display: flex !important;
-            }
-            
-            /* Enable horizontal scroll for stats on tablets too if they don't fit */
-            .responsive-stats-grid {
-              display: flex !important;
-              overflow-x: auto !important;
-              gap: 16px !important;
-              padding-bottom: 12px;
-              margin-bottom: 24px;
-              margin-right: -24px;
-              margin-left: -24px;
-              padding-right: 24px;
-              padding-left: 24px;
-              -webkit-overflow-scrolling: touch;
-              scrollbar-width: none; /* Hide scrollbar but keep functionality */
-              scroll-snap-type: x mandatory;
-            }
-            .responsive-stats-grid::-webkit-scrollbar {
-              display: none;
-            }
-            .responsive-stats-grid > div {
-              flex: 0 0 220px !important;
-              min-width: 220px !important;
-              scroll-snap-align: start;
-            }
-          }
-
-          @media (max-width: 768px) {
-            .organizer-main-content {
-              padding: 24px 16px !important;
-            }
-            .dashboard-header {
-              flex-direction: column;
-              align-items: flex-start !important;
-              gap: 20px;
-              margin-bottom: 32px !important;
-            }
-            .header-actions {
-              width: 100%;
-              flex-direction: row !important;
-              flex-wrap: wrap;
-              align-items: center !important;
-              gap: 16px;
-            }
-            .tab-switcher {
-              flex: 1;
-              min-width: 200px;
-            }
-            .tab-switcher button {
-              flex: 1;
-            }
-            .header-actions > button {
-              flex: 0 0 auto;
-              width: auto !important;
-              padding: 12px 20px !important;
-              height: 48px;
-            }
-
-            .responsive-event-grid {
-              display: flex !important;
-              overflow-x: auto !important;
-              gap: 16px !important;
-              padding-bottom: 24px;
-              margin-bottom: 24px;
-              margin-right: -16px;
-              margin-left: -16px;
-              padding-right: 16px;
-              padding-left: 16px;
-              -webkit-overflow-scrolling: touch;
-              scrollbar-width: none;
-              scroll-snap-type: x mandatory;
-            }
-            .responsive-event-grid::-webkit-scrollbar {
-              display: none;
-            }
-            .responsive-event-grid > div {
-              flex: 0 0 280px !important;
-              min-width: 280px !important;
-              scroll-snap-align: center;
-            }
-          }
-
-          @media (max-width: 600px) {
-            .header-actions {
-              flex-direction: column-reverse !important;
-              align-items: stretch !important;
-              gap: 12px;
-            }
-            .tab-switcher, .header-actions > button {
-              width: 100% !important;
-            }
-            
-            .header-actions > button {
-              background: linear-gradient(135deg, #ff007a 0%, #ff4d97 100%) !important;
-              box-shadow: 0 8px 16px -4px rgba(255, 0, 122, 0.4) !important;
-              font-size: 15px !important;
-              letter-spacing: 0.01em;
-            }
-
-            .responsive-stats-grid {
-              margin-right: -16px;
-              margin-left: -16px;
-              padding-right: 16px;
-              padding-left: 16px;
-            }
-            
-            .responsive-stats-grid > div {
-              flex: 0 0 200px !important;
-              min-width: 200px !important;
-            }
-
-            .responsive-event-grid > div {
-              flex: 0 0 calc(100% - 48px) !important;
-              min-width: 260px !important;
-              scroll-snap-align: center;
-              box-shadow: 0 12px 24px -8px rgba(0,0,0,0.15) !important;
-              margin-bottom: 8px;
-            }
-
-            .settings-grid {
-              grid-template-columns: 1fr !important;
-              gap: 20px !important;
-            }
-            .settings-card {
-              padding: 20px !important;
-            }
-          }
-
-          /* General scroll enhancement */
-          .responsive-stats-grid, .responsive-event-grid {
-             scrollbar-width: none;
-          }
-          .responsive-stats-grid::-webkit-scrollbar, 
-          .responsive-event-grid::-webkit-scrollbar {
-            display: none;
-          }
-
-          @media (max-width: 600px) {
-            .content-section {
-              background: transparent !important;
-              padding: 0 !important;
-              box-shadow: none !important;
-            }
-            .section-header {
-              padding: 0 4px;
-            }
-          }
-        `}</style>
+      <main className="dashboard-main">
         {/* Header */}
-        <header style={styles.header} className="dashboard-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button
-              className="sidebar-toggle-btn"
-              onClick={() => window.dispatchEvent(new Event("toggleOrganizerSidebar"))}
-              style={styles.toggleBtn}
-            >
-              ☰
-            </button>
-            <div>
-              <h1 style={styles.title}>Welcome back, {organizerName || "Organizer"}!</h1>
-              <p style={styles.subtitle}>Here's what's happening with your events today.</p>
-            </div>
+        <header className="dashboard-header">
+          <div className="header-welcome">
+            <h1>Welcome back, {organizerName || "Organizer"}!</h1>
+            <p>Ready to host your next big event?</p>
           </div>
-          <div style={styles.headerActions} className="header-actions">
-            <div style={styles.tabSwitcher}>
+          <div className="header-actions">
+            <div className="tab-switcher">
               <button
-                style={{ ...styles.tabBtn, ...(activeTab === 'events' ? styles.tabBtnActive : {}) }}
+                className={`tab-btn ${activeTab === 'events' ? 'active' : ''}`}
                 onClick={() => setActiveTab('events')}
               >
                 Dashboard
               </button>
               <button
-                style={{ ...styles.tabBtn, ...(activeTab === 'settings' ? styles.tabBtnActive : {}) }}
+                className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
                 onClick={() => setActiveTab('settings')}
               >
                 Settings
               </button>
             </div>
-            <button style={styles.primaryButton} onClick={() => navigate("/add-event")}>
+            <button className="btn-primary" onClick={() => navigate("/add-event")}>
               <Plus size={18} />
-              Add New Event
+              New Event
             </button>
           </div>
         </header>
 
         {activeTab === 'events' ? (
           <>
-            {/* Verification Status Banner */}
-            {!isApprovedByAdmin && (
-              <div style={{
-                background: "linear-gradient(135deg, #fef2f2 0%, #fef5f5 100%)",
-                border: "2px solid #fecaca",
-                borderRadius: "12px",
-                padding: "20px",
-                marginBottom: "24px",
-                display: "flex",
-                alignItems: "center",
-                gap: "16px",
-                boxShadow: "0 4px 12px rgba(248, 113, 113, 0.1)"
-              }}>
-                <div style={{ color: "#dc2626", fontSize: "24px" }}>⏳</div>
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ margin: "0 0 4px 0", color: "#7f1d1d", fontSize: "16px", fontWeight: "600" }}>
-                    Pending Admin Verification
-                  </h3>
-                  <p style={{ margin: 0, color: "#991b1b", fontSize: "14px" }}>
-                    Your account is awaiting admin approval. Once approved, your events will be published directly without approval delays.
-                  </p>
-                </div>
+            {/* Status Banners */}
+            <div className={`status-banner ${isApprovedByAdmin ? 'approved' : 'pending'}`}>
+              <div style={{ fontSize: '24px' }}>{isApprovedByAdmin ? '✨' : '⏳'}</div>
+              <div>
+                <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '2px' }}>
+                  {isApprovedByAdmin ? 'Account Fully Approved' : 'Verification Pending'}
+                </h3>
+                <p style={{ fontSize: '14px', opacity: 0.9 }}>
+                  {isApprovedByAdmin
+                    ? 'Your events are now published instantly to the global audience.'
+                    : 'Your events will go live as soon as our team verifies your business.'}
+                </p>
               </div>
-            )}
-
-            {isApprovedByAdmin && (
-              <div style={{
-                background: "linear-gradient(135deg, #f0fdf4 0%, #f7fee7 100%)",
-                border: "2px solid #86efac",
-                borderRadius: "12px",
-                padding: "20px",
-                marginBottom: "24px",
-                display: "flex",
-                alignItems: "center",
-                gap: "16px",
-                boxShadow: "0 4px 12px rgba(34, 197, 94, 0.1)"
-              }}>
-                <div style={{ color: "#22c55e", fontSize: "24px" }}>✨</div>
-                <div style={{ flex: 1 }}>
-                  <h3 style={{ margin: "0 0 4px 0", color: "#166534", fontSize: "16px", fontWeight: "600" }}>
-                    Account Verified & Approved ✅
-                  </h3>
-                  <p style={{ margin: 0, color: "#1b4332", fontSize: "14px" }}>
-                    Great news! Your events will now be published directly without waiting for admin approval.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Stats Grid */}
-            <div style={styles.statsGrid} className="responsive-stats-grid">
-              <StatCard
-                title="Total Posted"
-                value={stats.totalEvents}
-                icon={Calendar}
-                color="#ff007a"
-              />
-              <StatCard
-                title="Approved Events"
-                value={stats.approvedEvents}
-                icon={CheckCircle}
-                color="#ff007a"
-              />
-              <StatCard
-                title="Total Bookings"
-                value={stats.totalBookings}
-                icon={Users}
-                color="#ff007a"
-              />
-              <StatCard
-                title="Total Revenue"
-                value={`₹${stats.totalRevenue.toLocaleString()}`}
-                icon={DollarSign}
-                color="#ff007a"
-              />
             </div>
 
-            {/* Content Section */}
-            <div style={styles.contentSection} className="content-section">
-              <div style={styles.sectionHeader}>
-                <h2 style={styles.sectionTitle}>Manage Events</h2>
-                <div style={styles.controls}>
-                  <div style={styles.searchWrapper}>
-                    <Search size={18} color="#94a3b8" />
+            {/* Stats Grid */}
+            <div className="stats-grid">
+              <StatCard title="Total Events" value={stats.totalEvents || 0} icon={Calendar} color="var(--primary)" trend="+2" />
+              <StatCard title="Approved" value={stats.approvedEvents || 0} icon={CheckCircle} color="var(--success)" trend="+1" />
+              <StatCard title="Bookings" value={stats.totalBookings || 0} icon={Users} color="var(--secondary)" trend="+12" />
+              <StatCard title="Revenue" value={`₹${(stats.totalRevenue || 0).toLocaleString()}`} icon={DollarSign} color="var(--primary)" trend="+₹5k" />
+            </div>
+
+            {/* Events Section */}
+            <div className="events-section">
+              <div className="section-header">
+                <h2 className="section-title">Manage Your Events</h2>
+                <div className="events-filters">
+                  <div className="search-input-group">
+                    <Search className="search-icon" size={18} />
                     <input
                       type="text"
                       placeholder="Search events..."
-                      style={styles.searchInput}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
-                  <button style={styles.secondaryButton}>
-                    <Filter size={18} />
-                    Filter
-                  </button>
+                  <button className="icon-btn"><Filter size={18} /></button>
                 </div>
               </div>
 
               {loading ? (
-                <div style={styles.loadingWrapper}>
-                  <p>Loading your events...</p>
+                <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  Loading events...
                 </div>
               ) : filteredEvents.length === 0 ? (
-                <div style={styles.emptyState}>
-                  <div style={styles.emptyIcon}>📅</div>
-                  <h3>No events found</h3>
-                  <p>You haven't created any events yet or none match your search.</p>
-                  <button style={styles.primaryButton} onClick={() => navigate("/add-event")}>
-                    Create Your First Event
-                  </button>
+                <div style={{ padding: '80px', textAlign: 'center' }}>
+                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>📅</div>
+                   <h3>No events found</h3>
+                   <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Time to create something amazing!</p>
+                   <button className="btn-primary" style={{ margin: '0 auto' }} onClick={() => navigate("/add-event")}>
+                     Create First Event
+                   </button>
                 </div>
               ) : (
-                <div style={styles.eventGrid} className="responsive-event-grid">
+                <div className="event-grid">
                   {filteredEvents.map((event) => (
-                    <div key={event._id} style={styles.eventCard}>
-                      <div style={styles.cardImageWrapper}>
-                        <img src={getImageUrl(event.image)} alt={event.title} style={styles.cardImage} />
-                        <div style={{
-                          ...styles.statusTag,
-                          ...(event.status === "approved" ? styles.statusApproved :
-                            event.status === "rejected" ? styles.statusRejected : styles.statusPending)
-                        }}>
-                          {event.status === "approved" ? <CheckCircle size={12} /> :
-                            event.status === "rejected" ? <AlertCircle size={12} /> : <Clock size={12} />}
-                          {event.status || "pending"}
+                                    <div
+                                        key={event._id}
+                                        className="event-card clickable"
+                                        onClick={() => handleEventAction(event)}
+                                    >
+                      <div className="card-image-box">
+                        <img src={getImageUrl(event.image)} alt={event.title} />
+                        <div className={`status-badge ${event.status || 'pending'}`}>
+                           {event.status === 'approved' ? <CheckCircle size={10} /> : <Clock size={10} />}
+                           {event.status || 'pending'}
                         </div>
                       </div>
-
-                      <div style={styles.cardBody}>
-                        <h3 style={styles.eventTitle}>{event.title}</h3>
-                        <div style={styles.eventMeta}>
-                          <span><Calendar size={14} /> {event.date} {event.month}</span>
-                          <span><MapPin size={14} /> {event.location}</span>
+                      <div className="card-content">
+                        <h3 className="card-title">{event.title}</h3>
+                        <div className="card-info">
+                          <div className="info-item"><Calendar size={14} /> {event.date} {event.month}</div>
+                          <div className="info-item"><MapPin size={14} /> {event.location}</div>
                         </div>
-
-                        <div style={styles.cardFooter}>
-                          <div style={styles.priceTag}>
-                            {event.price ? `₹${event.price}` : 'Free'}
-                          </div>
-                          <div style={styles.actionButtons}>
-                            <button
-                              style={styles.iconButton}
-                              onClick={() => navigate(`/add-event/${event._id}`)}
-                              title="Edit Event"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button
-                              style={{ ...styles.iconButton, color: '#f43f5e' }}
-                              onClick={() => handleDelete(event)}
-                              title="Delete Event"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                        <div className="card-actions">
+                          <div className="price-box">{event.price ? `₹${event.price}` : 'Free'}</div>
+                          <div className="action-btns">
+                            <button className="icon-btn" onClick={(e) => { e.stopPropagation(); navigate(`/add-event/${event._id}`); }}><Edit size={16} /></button>
+                            <button className="icon-btn delete" onClick={(e) => { e.stopPropagation(); setEventToDelete(event); setShowConfirmation(true); }}><Trash2 size={16} /></button>
                           </div>
                         </div>
                       </div>
@@ -600,198 +351,118 @@ const OrganizerDashboard = () => {
             </div>
           </>
         ) : (
-          <div style={styles.settingsSection}>
-            <div style={styles.sectionHeader}>
-              <h2 style={styles.sectionTitle}>Account Settings</h2>
-              <p style={styles.sectionSubtitle}>Manage your personal information and security.</p>
-            </div>
+          <div className="settings-container">
+             <div className="settings-grid">
+               <div className="settings-card">
+                 <h3><User size={20} color="var(--primary)" /> Profile Details</h3>
+                 <form onSubmit={handleUpdateProfile}>
+                   <div className="form-group">
+                     <label>Full Name</label>
+                     <div className="input-with-icon">
+                       <User size={18} className="field-icon" />
+                       <input
+                         type="text"
+                         value={settingsForm.name}
+                         onChange={(e) => setSettingsForm({...settingsForm, name: e.target.value})}
+                       />
+                     </div>
+                   </div>
+                   <div className="form-group">
+                     <label>Work Email</label>
+                     <div className="input-with-icon">
+                       <Mail size={18} className="field-icon" />
+                       <input
+                         type="email"
+                         value={settingsForm.email}
+                         onChange={(e) => setSettingsForm({...settingsForm, email: e.target.value})}
+                       />
+                     </div>
+                   </div>
+                   <button type="submit" className="btn-primary" disabled={settingsLoading} style={{ width: '100%', justifyContent: 'center' }}>
+                     {settingsLoading ? 'Updating...' : 'Save Changes'}
+                   </button>
+                 </form>
+               </div>
 
-            {settingsError && <div style={styles.errorBanner}>{settingsError}</div>}
-            {settingsSuccess && <div style={styles.successBanner}>{settingsSuccess}</div>}
-
-            <div style={styles.settingsGrid} className="settings-grid">
-              {/* Profile Settings */}
-              <div style={styles.settingsCard} className="settings-card">
-                <div style={styles.cardHeader}>
-                  <div style={styles.iconCircle}>
-                    <User size={20} color="#ff007a" />
-                  </div>
-                  <h3 style={styles.cardTitle}>Profile Information</h3>
-                </div>
-                <form onSubmit={handleUpdateProfile} style={styles.settingsForm}>
-                  <div style={styles.inputGroup}>
-                    <label style={styles.label}>Full Name</label>
-                    <div style={styles.inputWrapper}>
-                      <User size={18} style={styles.inputIcon} />
-                      <input
-                        type="text"
-                        style={{
-                          ...styles.premiumInput,
-                          ...(focusedInput === 'name' ? styles.premiumInputFocus : {})
-                        }}
-                        placeholder="Your Name"
-                        value={settingsForm.name}
-                        onFocus={() => setFocusedInput('name')}
-                        onBlur={() => setFocusedInput(null)}
-                        onChange={(e) => setSettingsForm({ ...settingsForm, name: e.target.value })}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div style={styles.inputGroup}>
-                    <label style={styles.label}>Email Address</label>
-                    <div style={styles.inputWrapper}>
-                      <Mail size={18} style={styles.inputIcon} />
-                      <input
-                        type="email"
-                        style={{
-                          ...styles.premiumInput,
-                          ...(focusedInput === 'email' ? styles.premiumInputFocus : {})
-                        }}
-                        placeholder="email@example.com"
-                        value={settingsForm.email}
-                        onFocus={() => setFocusedInput('email')}
-                        onBlur={() => setFocusedInput(null)}
-                        onChange={(e) => setSettingsForm({ ...settingsForm, email: e.target.value })}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <button
-                    type="submit"
-                    style={styles.premiumSubmitBtn}
-                    disabled={settingsLoading}
-                  >
-                    {settingsLoading ? "Updating..." : "Update Profile"}
-                  </button>
-                </form>
-              </div>
-
-              {/* Security Settings */}
-              <div style={styles.settingsCard} className="settings-card">
-                <div style={styles.cardHeader}>
-                  <div style={styles.iconCircle}>
-                    <Shield size={20} color="#ff007a" />
-                  </div>
-                  <h3 style={styles.cardTitle}>Security & Password</h3>
-                </div>
-                <form onSubmit={handleChangePassword} style={styles.settingsForm}>
-                  <div style={styles.inputGroup}>
-                    <label style={styles.label}>Current Password</label>
-                    <div style={styles.inputWrapper}>
-                      <Lock size={18} style={styles.inputIcon} />
-                      <input
-                        type={showCurrentPassword ? "text" : "password"}
-                        style={{
-                          ...styles.premiumInput,
-                          paddingRight: '45px',
-                          ...(focusedInput === 'currentPassword' ? styles.premiumInputFocus : {})
-                        }}
-                        placeholder="••••••••"
-                        value={settingsForm.currentPassword}
-                        onFocus={() => setFocusedInput('currentPassword')}
-                        onBlur={() => setFocusedInput(null)}
-                        onChange={(e) => setSettingsForm({ ...settingsForm, currentPassword: e.target.value })}
-                        required
-                      />
-                      <button
-                        type="button"
-                        style={styles.eyeButton}
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                      >
-                        {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                  </div>
-                  <div style={styles.inputGroup}>
-                    <label style={styles.label}>New Password</label>
-                    <div style={styles.inputWrapper}>
-                      <Lock size={18} style={styles.inputIcon} />
-                      <input
-                        type={showNewPassword ? "text" : "password"}
-                        style={{
-                          ...styles.premiumInput,
-                          paddingRight: '45px',
-                          ...(focusedInput === 'newPassword' ? styles.premiumInputFocus : {})
-                        }}
-                        placeholder="Min. 8 characters"
-                        value={settingsForm.newPassword}
-                        onFocus={() => setFocusedInput('newPassword')}
-                        onBlur={() => setFocusedInput(null)}
-                        onChange={(e) => setSettingsForm({ ...settingsForm, newPassword: e.target.value })}
-                        required
-                      />
-                      <button
-                        type="button"
-                        style={styles.eyeButton}
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                      >
-                        {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                  </div>
-                  <div style={styles.inputGroup}>
-                    <label style={styles.label}>Confirm New Password</label>
-                    <div style={styles.inputWrapper}>
-                      <Lock size={18} style={styles.inputIcon} />
-                      <input
-                        type={showConfirmPassword ? "text" : "password"}
-                        style={{
-                          ...styles.premiumInput,
-                          paddingRight: '45px',
-                          ...(focusedInput === 'confirmPassword' ? styles.premiumInputFocus : {})
-                        }}
-                        placeholder="Confirm new password"
-                        value={settingsForm.confirmPassword}
-                        onFocus={() => setFocusedInput('confirmPassword')}
-                        onBlur={() => setFocusedInput(null)}
-                        onChange={(e) => setSettingsForm({ ...settingsForm, confirmPassword: e.target.value })}
-                        required
-                      />
-                      <button
-                        type="button"
-                        style={styles.eyeButton}
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      >
-                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                  </div>
-                  <button
-                    type="submit"
-                    style={styles.premiumSubmitBtn}
-                    disabled={settingsLoading}
-                  >
-                    {settingsLoading ? "Saving..." : "Change Password"}
-                  </button>
-                </form>
-              </div>
-            </div>
+               <div className="settings-card">
+                 <h3><Shield size={20} color="var(--primary)" /> Security</h3>
+                 <form onSubmit={handleChangePassword}>
+                   <div className="form-group">
+                     <label>Current Password</label>
+                     <div className="input-with-icon">
+                       <Lock size={18} className="field-icon" />
+                       <input
+                         type={showCurrentPassword ? "text" : "password"}
+                         value={settingsForm.currentPassword}
+                         onChange={(e) => setSettingsForm({...settingsForm, currentPassword: e.target.value})}
+                       />
+                       <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)' }}>
+                         {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                       </button>
+                     </div>
+                   </div>
+                   <div className="form-group">
+                     <label>New Password</label>
+                     <div className="input-with-icon">
+                       <Lock size={18} className="field-icon" />
+                       <input
+                         type={showNewPassword ? "text" : "password"}
+                         value={settingsForm.newPassword}
+                         onChange={(e) => setSettingsForm({...settingsForm, newPassword: e.target.value})}
+                       />
+                        <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)' }}>
+                         {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                       </button>
+                     </div>
+                   </div>
+                   <button type="submit" className="btn-primary" disabled={settingsLoading} style={{ width: '100%', justifyContent: 'center' }}>
+                     {settingsLoading ? 'Saving...' : 'Update Password'}
+                   </button>
+                 </form>
+               </div>
+             </div>
+             {settingsSuccess && <div style={{ color: 'var(--success)', marginTop: '20px', fontWeight: '600' }}>{settingsSuccess}</div>}
+             {settingsError && <div style={{ color: 'var(--accent)', marginTop: '20px', fontWeight: '600' }}>{settingsError}</div>}
           </div>
         )}
       </main>
 
       {/* Confirmation Modal */}
-      {showConfirmation && eventToDelete && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
-            <div style={styles.modalIcon}>
-              <Trash2 size={32} color="#f43f5e" />
-            </div>
-            <h2 style={styles.modalTitle}>Delete Event?</h2>
-            <p style={styles.modalMessage}>
-              Are you sure you want to delete <strong>{eventToDelete.title}</strong>? This action cannot be undone.
-            </p>
-            <div style={styles.modalFooter}>
-              <button style={styles.cancelButton} onClick={cancelDelete}>Cancel</button>
-              <button style={styles.deleteConfirmButton} onClick={confirmDelete}>Yes, Delete</button>
-            </div>
+      {showConfirmation && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+             <div className="modal-icon-box">
+                <Trash2 color="var(--accent)" size={32} />
+             </div>
+             <h2 className="modal-title">Delete Event?</h2>
+             <p className="modal-text">This will permanently remove <strong>{eventToDelete?.title}</strong>. This action cannot be undone.</p>
+             <div className="modal-actions">
+               <button className="btn-cancel" onClick={() => { setShowConfirmation(false); setEventToDelete(null); }}>Cancel</button>
+               <button className="btn-delete" onClick={confirmDelete}>Delete Now</button>
+             </div>
           </div>
         </div>
       )}
+
+            {/* Modals */}
+            {showDetails && selectedEvent && (
+                <EventDetailsModal
+                    event={selectedEvent}
+                    onClose={() => setShowDetails(false)}
+                    onOpenScanner={handleOpenScanner}
+                />
+            )}
+
+            {showScanner && selectedEvent && (
+                <QRScannerModal
+                    event={selectedEvent}
+                    onClose={() => setShowScanner(false)}
+                />
+            )}
     </div>
   );
 };
+
 
 const styles = {
   layout: {
@@ -808,186 +479,6 @@ const styles = {
   },
   toggleBtn: {
     display: 'none',
-    background: 'none',
-    border: 'none',
-    fontSize: '24px',
-    color: '#64748b',
-    cursor: 'pointer',
-    padding: '4px',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '20px',
-  },
-  title: {
-    fontSize: '28px',
-    fontWeight: '700',
-    color: '#1e293b',
-    margin: '0 0 8px 0',
-    letterSpacing: '-0.02em',
-  },
-  subtitle: {
-    fontSize: '16px',
-    color: '#64748b',
-    margin: 0,
-  },
-  headerActions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '20px',
-  },
-  tabSwitcher: {
-    display: 'flex',
-    backgroundColor: '#fff',
-    padding: '4px',
-    borderRadius: '12px',
-    border: '1px solid #e2e8f0',
-  },
-  tabBtn: {
-    padding: '8px 16px',
-    borderRadius: '8px',
-    border: 'none',
-    backgroundColor: 'transparent',
-    color: '#64748b',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  tabBtnActive: {
-    backgroundColor: '#fff1f2',
-    color: '#ff007a',
-  },
-  primaryButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '12px 24px',
-    backgroundColor: '#ff007a',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '10px',
-    fontWeight: '600',
-    fontSize: '14px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    boxShadow: '0 4px 6px -1px rgba(255, 0, 122, 0.2)',
-  },
-  secondaryButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 16px',
-    backgroundColor: '#fff',
-    color: '#64748b',
-    border: '1px solid #e2e8f0',
-    borderRadius: '8px',
-    fontWeight: '500',
-    fontSize: '14px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-    gap: '24px',
-    marginBottom: '40px',
-  },
-  contentSection: {
-    backgroundColor: '#fff',
-    borderRadius: '16px',
-    padding: '32px',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
-  },
-  sectionHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '24px',
-  },
-  sectionTitle: {
-    fontSize: '20px',
-    fontWeight: '600',
-    color: '#1e293b',
-    margin: 0,
-  },
-  controls: {
-    display: 'flex',
-    gap: '12px',
-  },
-  searchWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    padding: '0 12px',
-    backgroundColor: '#f1f5f9',
-    borderRadius: '8px',
-    border: '1px solid #e2e8f0',
-    minWidth: '280px',
-  },
-  searchInput: {
-    border: 'none',
-    background: 'none',
-    padding: '10px 0',
-    fontSize: '14px',
-    color: '#1e293b',
-    outline: 'none',
-    width: '100%',
-  },
-  eventGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '24px',
-  },
-  eventCard: {
-    borderRadius: '12px',
-    overflow: 'hidden',
-    backgroundColor: '#fff',
-    border: '1px solid #e2e8f0',
-    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-  },
-  cardImageWrapper: {
-    position: 'relative',
-    height: '160px',
-    overflow: 'hidden',
-  },
-  cardImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  statusTag: {
-    position: 'absolute',
-    top: '12px',
-    right: '12px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    padding: '4px 8px',
-    borderRadius: '6px',
-    fontSize: '11px',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    backdropFilter: 'blur(4px)',
-  },
-  statusApproved: {
-    backgroundColor: 'rgba(16, 185, 129, 0.9)',
-    color: '#fff',
-  },
-  statusPending: {
-    backgroundColor: 'rgba(245, 158, 11, 0.9)',
-    color: '#fff',
-  },
-  statusRejected: {
-    backgroundColor: 'rgba(244, 63, 94, 0.9)',
-    color: '#fff',
-  },
-  settingsSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '32px',
   },
   sectionSubtitle: {
     fontSize: '14px',
@@ -1045,7 +536,7 @@ const styles = {
     width: '40px',
     height: '40px',
     borderRadius: '12px',
-    backgroundColor: '#fff1f2',
+    backgroundColor: '#eff6ff',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1074,13 +565,13 @@ const styles = {
     fontFamily: 'inherit',
   },
   premiumInputFocus: {
-    borderColor: '#ff007a',
+    borderColor: '#0b0f5b',
     backgroundColor: '#fff',
-    boxShadow: '0 0 0 4px rgba(255, 0, 122, 0.1)',
+    boxShadow: '0 0 0 4px rgba(11, 15, 91, 0.1)',
   },
   premiumSubmitBtn: {
     padding: '12px 24px',
-    backgroundColor: '#ff007a',
+    background: 'linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%)',
     color: '#fff',
     border: 'none',
     borderRadius: '12px',
@@ -1088,7 +579,7 @@ const styles = {
     fontSize: '14px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    boxShadow: '0 4px 12px rgba(255, 0, 122, 0.2)',
+    boxShadow: '0 4px 12px rgba(11, 15, 91, 0.2)',
     width: 'fit-content',
     marginTop: '5px',
   },
@@ -1136,7 +627,7 @@ const styles = {
   priceTag: {
     fontSize: '18px',
     fontWeight: '700',
-    color: '#ff007a',
+    color: '#0b0f5b',
   },
   actionButtons: {
     display: 'flex',

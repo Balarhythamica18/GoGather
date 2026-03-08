@@ -101,7 +101,7 @@ const UserTour = () => {
                     arrowColor: "#fff",
                     backgroundColor: "#fff",
                     overlayColor: "rgba(0, 0, 0, 0.75)",
-                    primaryColor: "#ff007a",
+                    primaryColor: "#0b0f5b",
                     textColor: "#222",
                     width: 320,
                     zIndex: 10000,
@@ -114,7 +114,7 @@ const UserTour = () => {
                     textAlign: "left",
                 },
                 buttonNext: {
-                    backgroundColor: "#ff007a",
+                    backgroundColor: "#0b0f5b",
                     borderRadius: "50px",
                     fontSize: "14px",
                     fontWeight: "700",

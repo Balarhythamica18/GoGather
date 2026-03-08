@@ -1,0 +1,55 @@
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.logo-icon-box {
+  width: 32px;
+  height: 32px;
+  background-color: #0b0f5b;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 20px;
+  transition: transform 0.2s ease;
+}
+
+.logo-text {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: -0.02em;
+}
+
+/* Variants */
+.app-logo.light .logo-text {
+  color: #fff;
+}
+
+.app-logo.light .logo-icon-box {
+  background-color: #fff;
+  color: #0b0f5b;
+}
+
+/* Hover effect */
+.app-logo:hover .logo-icon-box {
+  transform: scale(1.05);
+}
+
+@media (max-width: 480px) {
+  .logo-icon-box {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+  
+  .logo-text {
+    font-size: 18px;
+  }
+}
