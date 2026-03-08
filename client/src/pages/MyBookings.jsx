@@ -107,18 +107,18 @@ const MyBookings = () => {
         admirer: { label: 'Acoustic Admirer', color: '#10b981', icon: '🎧' }
       },
       art: {
-        soul: { label: 'Creative Soul', color: '#db2777', icon: '🎨' },
+        soul: { label: 'Creative Soul', color: '#6366f1', icon: '🎨' },
         eyeball: { label: 'Critical Eyeball', color: '#6366f1', icon: '🧐' },
         browser: { label: 'Social Browser', color: '#f97316', icon: '🍷' }
       },
       sports: {
-        fan: { label: 'Die-Hard Fan', color: '#f43f5e', icon: '📣' },
+        fan: { label: 'Die-Hard Fan', color: '#1e3a8a', icon: '📣' },
         analyst: { label: 'Tactical Analyst', color: '#06b6d4', icon: '📋' },
         lover: { label: 'Atmosphere Lover', color: '#8b5cf6', icon: '🏟️' }
       },
       food: {
         geek: { label: 'Gourmet Geek', color: '#fb923c', icon: '👨‍🍳' },
-        social: { label: 'Social Eater', color: '#ec4899', icon: '🥂' },
+        social: { label: 'Social Eater', color: '#4f46e5', icon: '🥂' },
         taster: { label: 'Curious Taster', color: '#84cc16', icon: '👅' }
       },
       rawstories: {
@@ -128,11 +128,11 @@ const MyBookings = () => {
       },
       "theatre drama": {
         critic: { label: 'Front Row Critic', color: '#7c3aed', icon: '🎭' },
-        enthusiast: { label: 'Dramatic Enthusiast', color: '#db2777', icon: '👏' },
+        enthusiast: { label: 'Dramatic Enthusiast', color: '#4338ca', icon: '👏' },
         whisperer: { label: 'Stage Whisperer', color: '#059669', icon: '🤫' }
       },
       default: {
-        dance: { label: 'Ready to Dance', color: '#db2777', icon: '💃' },
+        dance: { label: 'Ready to Dance', color: '#0b0f5b', icon: '💃' },
         quiet: { label: 'Quiet Observer', color: '#0d9488', icon: '👓' },
         networking: { label: 'Networking', color: '#ea580c', icon: '🤝' }
       }
@@ -181,7 +181,7 @@ const MyBookings = () => {
               </div>
 
               <div className="card-details">
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#db2777', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-blue)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   {booking.event?.category}
                 </span>
                 <h3>{booking.event?.title}</h3>
@@ -392,7 +392,7 @@ const MyBookings = () => {
                   </div>
                   <div className="info-item" style={{ gridColumn: '1 / -1' }}>
                     <span className="label" style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Seats/Qty</span>
-                    <span className="value" style={{ fontWeight: 700, color: '#db2777', fontSize: '1.1rem' }}>
+                    <span className="value" style={{ fontWeight: 700, color: 'var(--primary-blue)', fontSize: '1.1rem' }}>
                       {selectedTicket.seats?.length
                         ? selectedTicket.seats.join(", ")
                         : `${selectedTicket.ticketCount} Tickets`}

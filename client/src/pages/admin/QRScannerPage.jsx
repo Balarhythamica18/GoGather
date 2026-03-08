@@ -67,7 +67,7 @@ const QRScannerPage = () => {
         <div className="qr-scanner-container">
             <div className="scanner-card">
                 <div className="scanner-header">
-                    <ShieldCheck size={48} color="#db2777" style={{ marginBottom: '16px' }} />
+                    <ShieldCheck size={48} color="var(--primary-blue)" style={{ marginBottom: '16px' }} />
                     <h2>Entry Verification</h2>
                     <p>Scan the guest's QR code to grant access.</p>
                 </div>

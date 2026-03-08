@@ -226,15 +226,15 @@ textarea {
 /* Focus Effect */
 input:focus,
 textarea:focus {
-  border-color: #ec4899;
+  border-color: var(--primary-blue);
   background: #ffffff;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.15);
+  box-shadow: 0 0 0 2px rgba(11, 15, 91, 0.15);
 }
 
 /* Button */
 button {
-  background: #ec4899;
+  background: var(--primary-gradient);
   color: #ffffff;
   padding: 12px;
   border: none;
@@ -247,8 +247,11 @@ button {
 }
 
 button:hover {
-  background: #db2777;
+  background: var(--primary-hover-gradient);
+  transform: translateY(-1px);
 }
+
+
 
 button:disabled {
   opacity: 0.6;

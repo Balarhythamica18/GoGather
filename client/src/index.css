@@ -47,6 +47,10 @@ body {
 
 :root {
   --navbar-height: 70px;
+  --primary-gradient: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
+  --primary-hover-gradient: linear-gradient(180deg, #161b7e 0%, #0b0f5b 100%);
+  --primary-blue: #0b0f5b;
+  --accent-pink: #ec4899; /* Keeping for reference if needed, but will phase out */
 }
 
 /* Push content below fixed navbar */

@@ -1057,13 +1057,14 @@ const styles = {
         padding: '14px',
         borderRadius: '12px',
         border: 'none',
-        backgroundColor: '#ff007a',
+        backgroundColor: '#0b0f5b',
         color: '#fff',
         fontSize: '16px',
         fontWeight: '700',
         cursor: 'pointer',
         transition: 'all 0.2s ease',
-        boxShadow: '0 10px 15px -3px rgba(255, 0, 122, 0.3)',
+        background: "linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%)",
+        boxShadow: '0 10px 15px -3px rgba(11, 15, 91, 0.3)',
     },
 };
 

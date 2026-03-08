@@ -2,7 +2,7 @@
   --primary: #0b0f5b;
   --primary-light: #161b7e;
   --secondary: #6366f1;
-  --accent: #f43f5e;
+  --accent: #ef4444; /* Standard Red for danger actions instead of pink */
   --success: #10b981;
   --warning: #f59e0b;
   --bg-main: #f8fafc;
@@ -103,7 +103,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--primary);
+  background: var(--primary-gradient);
   color: white;
   padding: 12px 24px;
   border-radius: var(--radius-md);
@@ -117,7 +117,7 @@
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 20px 25px -5px rgba(11, 15, 91, 0.3);
-  background: var(--primary-light);
+  background: var(--primary-hover-gradient);
 }
 
 /* Stats */

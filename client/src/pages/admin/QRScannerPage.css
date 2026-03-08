@@ -97,7 +97,7 @@
 .btn-reset {
     margin-top: 20px;
     padding: 12px 24px;
-    background: #db2777;
+    background: var(--primary-gradient);
     color: white;
     border: none;
     border-radius: 12px;
@@ -107,5 +107,6 @@
 }
 
 .btn-reset:hover {
-    background: #be185d;
+    background: var(--primary-hover-gradient);
+    transform: translateY(-1px);
 }
