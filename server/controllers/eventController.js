@@ -217,10 +217,21 @@ export const getAllEvents = async (req, res) => {
     // Run cleanup before fetching
     await cleanupExpiredEvents();
 
-    // Only return approved events for public view
-    const events = await Event.find({ status: "approved" }).sort({ createdAt: -1 });
+    // Debug log to help track Render issues
+    const totalCount = await Event.countDocuments({});
+    console.log(`[EVENT FETCH] Total events in DB: ${totalCount}`);
+
+    // Relaxed filter: show both approved and pending events in production for now
+    // Only return approved/pending events for public view (exclude specifically rejected)
+    const events = await Event.find({ 
+      status: { $in: ["approved", "pending"] },
+      isDeleted: { $ne: true } 
+    }).sort({ createdAt: -1 });
+
+    console.log(`[EVENT FETCH] Returning ${events.length} public events`);
     res.json(events);
   } catch (error) {
+    console.error(`[EVENT FETCH ERROR] ${error.message}`);
     res.status(500).json({ message: error.message });
   }
 };
