@@ -341,29 +341,85 @@ const OrganizerDashboard = () => {
               ) : (
                 <div className="event-grid">
                   {filteredEvents.map((event) => (
-                                    <div
-                                        key={event._id}
-                                        className="event-card clickable"
-                                        onClick={() => handleEventAction(event)}
-                                    >
+                    <div
+                      key={event._id}
+                      className="event-card premium-hover"
+                      onClick={() => handleEventAction(event)}
+                    >
                       <div className="card-image-box">
                         <img src={getImageUrl(event.image)} alt={event.title} />
-                        <div className={`status-badge ${event.status || 'pending'}`}>
-                           {event.status === 'approved' ? <CheckCircle size={10} /> : <Clock size={10} />}
-                           {event.status || 'pending'}
+                        
+                        {/* Status Badge Overlay (Top Left) */}
+                        <div className={`status-badge-overlay ${event.status || 'pending'}`}>
+                          {event.status === 'approved' ? <CheckCircle size={12} /> : <Clock size={12} />}
+                          <span>{event.status || 'pending'}</span>
                         </div>
+
+                        {/* Date Badge Overlay (Top Right) */}
+                        <div className="date-badge-overlay">
+                          <span className="month">
+                            {event.month?.includes("-") 
+                              ? new Date(event.month).toLocaleString('en-US', { month: 'short' }).toUpperCase()
+                              : event.month?.slice(0, 3).toUpperCase()}
+                          </span>
+                          <span className="day">{event.date}</span>
+                        </div>
+
+                        <div className="card-image-overlay"></div>
                       </div>
+
                       <div className="card-content">
                         <h3 className="card-title">{event.title}</h3>
+                        
                         <div className="card-info">
-                          <div className="info-item"><Calendar size={14} /> {event.date} {event.month}</div>
-                          <div className="info-item"><MapPin size={14} /> {event.location}</div>
+                          <div className="info-item">
+                            <Calendar size={16} />
+                            <span>
+                              {event.date} {event.month?.includes("-") 
+                                ? new Date(event.month).toLocaleString('en-US', { month: 'long' })
+                                : event.month} {event.year || (event.month?.includes("-") ? "" : "2026")}
+                            </span>
+                          </div>
+                          <div className="info-item">
+                            <MapPin size={16} />
+                            <span>{event.location}</span>
+                          </div>
                         </div>
-                        <div className="card-actions">
-                          <div className="price-box">{event.price ? `₹${event.price}` : 'Free'}</div>
+
+                        <div className="card-footer-premium">
+                          <div className="price-tag">
+                            {event.price ? (
+                              <>
+                                <span className="currency">₹</span>
+                                <span className="amount">{event.price.toLocaleString()}</span>
+                              </>
+                            ) : (
+                              <span className="free">Free</span>
+                            )}
+                          </div>
+                          
                           <div className="action-btns">
-                            <button className="icon-btn" onClick={(e) => { e.stopPropagation(); navigate(`/add-event/${event._id}`); }}><Edit size={16} /></button>
-                            <button className="icon-btn delete" onClick={(e) => { e.stopPropagation(); setEventToDelete(event); setShowConfirmation(true); }}><Trash2 size={16} /></button>
+                            <button 
+                              className="icon-btn" 
+                              title="Edit Event"
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                navigate(`/add-event/${event._id}`); 
+                              }}
+                            >
+                              <Edit size={18} />
+                            </button>
+                            <button 
+                              className="icon-btn delete" 
+                              title="Delete Event"
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                setEventToDelete(event); 
+                                setShowConfirmation(true); 
+                              }}
+                            >
+                              <Trash2 size={18} />
+                            </button>
                           </div>
                         </div>
                       </div>

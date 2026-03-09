@@ -89,6 +89,7 @@ const AddEvent = () => {
                         organizerPhone: ev.organizerDetails?.contactPhone || "",
                         mapLink: ev.mapLink || "",
                         availableSeats: ev.availableSeats || 0,
+                        capacity: ev.capacity || 0,
                         sessions: ev.sessions || [],
                         refundPolicy: ev.refundPolicy || "",
                         refundTiers: ev.refundTiers || [],

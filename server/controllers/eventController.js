@@ -522,12 +522,19 @@ export const updateEvent = async (req, res) => {
     // Update capacity and availableSeats logic
     if (otherData.capacity !== undefined) {
       const newCapacity = parseInt(otherData.capacity) || 0;
-      const currentCapacity = event.capacity || 0;
-      const currentAvailable = event.availableSeats !== undefined ? event.availableSeats : currentCapacity;
-      const soldSeats = Math.max(0, currentCapacity - currentAvailable);
+      
+      // Calculate actual sold seats from confirmed bookings to ensure accuracy
+      const confirmedBookings = await Booking.find({ 
+        eventId: req.params.id, 
+        status: "confirmed" 
+      });
+      
+      const soldSeats = confirmedBookings.reduce((sum, b) => 
+        sum + (b.seats?.length || b.ticketCount || 1), 0);
 
       event.capacity = newCapacity;
       event.availableSeats = Math.max(0, newCapacity - soldSeats);
+      console.log(`[CAPACITY UPDATE] Event ${event._id}: Capacity set to ${newCapacity}, Available seats calculated as ${event.availableSeats} (Sold: ${soldSeats})`);
     }
 
     // Update sessions
