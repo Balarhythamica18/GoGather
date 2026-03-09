@@ -70,6 +70,7 @@ const EventDetailPage = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     console.log("Fetching event with ID:", id);
     axios
       .get(`${API_BASE_URL}/api/events/${id}`)

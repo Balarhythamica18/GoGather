@@ -9,14 +9,31 @@ const RecommendedEvents = ({ currentEventId, currentCategory }) => {
     const [recommended, setRecommended] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const isUpcomingEvent = (event) => {
+        if (event.declaration) return true;
+        if (event.month && event.date) {
+            try {
+                const eventDate = new Date(`${event.month}-${event.date}`);
+                const currentDate = new Date();
+                const thresholdDate = new Date(currentDate.getTime() + 45 * 24 * 60 * 60 * 1000);
+                return eventDate > thresholdDate;
+            } catch (e) {
+                return false;
+            }
+        }
+        return false;
+    };
+
     useEffect(() => {
         const fetchRecommended = async () => {
             try {
                 const res = await axios.get(`${API_BASE_URL}/api/events`);
                 let allEvents = res.data;
 
-                // Filter out the current event
-                let filtered = allEvents.filter(event => event._id !== currentEventId);
+                // Filter out the current event and upcoming events
+                let filtered = allEvents.filter(event => 
+                    event._id !== currentEventId && !isUpcomingEvent(event)
+                );
 
                 // Try to find events in the same category first
                 let sameCategory = filtered.filter(event =>

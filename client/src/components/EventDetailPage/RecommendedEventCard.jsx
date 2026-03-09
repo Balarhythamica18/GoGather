@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { getImageUrl } from "../../utils/imageUtils";
+import { Calendar, MapPin, ArrowRight, Tag } from "lucide-react";
 import "./RecommendedEvents.css";
 
 const RecommendedEventCard = ({ event, category }) => {
@@ -27,19 +28,28 @@ const RecommendedEventCard = ({ event, category }) => {
         <Link to={`/events/${source}/${event._id}`} className="rec-card">
             <div className="rec-card-image">
                 <img src={getImageUrl(event.image)} alt={event.title} />
-                <div className="rec-card-category">{event.category}</div>
+                <div className="rec-card-category">
+                    <Tag size={12} />
+                    {event.category}
+                </div>
             </div>
             <div className="rec-card-content">
                 <div className="rec-card-top">
                     <span className="rec-card-date">
+                        <Calendar size={14} className="rec-icon" />
                         {formatDate(event.date, event.month)}
                     </span>
                     <span className="rec-card-price">{formatPrice(event.price)}</span>
                 </div>
                 <h3 className="rec-card-title">{event.title}</h3>
                 <div className="rec-card-footer">
-                    <span className="rec-card-location">📍 {event.location}</span>
-                    <span className="rec-card-arrow">→</span>
+                    <span className="rec-card-location">
+                        <MapPin size={14} className="rec-icon" />
+                        {event.location}
+                    </span>
+                    <div className="rec-card-arrow">
+                        <ArrowRight size={18} />
+                    </div>
                 </div>
             </div>
         </Link>
