@@ -52,14 +52,11 @@ const TopEvent = () => {
 
       if (event.month && event.date) {
         try {
-          const eventDate = new Date(
-            `${event.month}-${String(event.date).padStart(2, "0")}`
-          );
-          const currentDate = new Date();
-          const oneMonthLater = new Date(
-            currentDate.getTime() + 45 * 24 * 60 * 60 * 1000
-          );
-          if (eventDate > oneMonthLater) return false;
+          const eventDate = new Date(`${event.month}-${String(event.date).padStart(2, "0")}T00:00:00`);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          if (eventDate < today) return false;
         } catch (e) {
           console.error("Error parsing date:", e);
         }

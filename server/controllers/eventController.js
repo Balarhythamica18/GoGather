@@ -625,16 +625,53 @@ export const getMyStats = async (req, res) => {
 export const debugEvents = async (req, res) => {
   try {
     const totalEvents = await Event.countDocuments({});
+    const approvedEvents = await Event.countDocuments({ status: "approved" });
+    const pendingEvents = await Event.countDocuments({ status: "pending" });
+    const deletedEvents = await Event.countDocuments({ isDeleted: true });
 
     // Masked URI for safety
     const rawUri = process.env.MONGODB_URI || "";
-    const maskedUri = rawUri.replace(/:([^@]+)@/, ":****@");
+    let mongodbHost = "Unknown";
+    let dbName = "Unknown";
+    
+    if (rawUri.includes("@")) {
+      mongodbHost = rawUri.split('@')[1]?.split('/')[0] || "Unknown";
+      const rest = rawUri.split('@')[1] || "";
+      dbName = rest.split('/')[1]?.split('?')[0] || "Default (test)";
+    } else if (rawUri.startsWith("mongodb://")) {
+      mongodbHost = rawUri.split("://")[1]?.split("/")[0] || "localhost";
+      dbName = rawUri.split("://")[1]?.split("/")[1]?.split("?")[0] || "Default (test)";
+    }
+
+    const eventsSummary = await Event.find({}, 'title status month date declaration').limit(10).lean();
 
     res.json({
       dbStatus: "OK",
       totalEvents,
-      mongodbHost: maskedUri.split('@')[1]?.split('/')[0] || "Unknown",
-      serverTime: new Date().toISOString(),
+      stats: {
+        approved: approvedEvents,
+        pending: pendingEvents,
+        deleted: deletedEvents
+      },
+      events: eventsSummary.map(e => ({
+        title: e.title,
+        status: e.status,
+        date: `${e.month}-${e.date}`,
+        hasDeclaration: !!e.declaration
+      })),
+      mongodb: {
+        host: mongodbHost,
+        database: dbName,
+        uri_prefix: rawUri.substring(0, 15) + "..."
+      },
+      server: {
+        time: new Date().toISOString(),
+        node_env: process.env.NODE_ENV || "development",
+        port: process.env.PORT || "5000"
+      },
+      clientConfig: {
+        render_url: "https://gogather-server.onrender.com"
+      }
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
