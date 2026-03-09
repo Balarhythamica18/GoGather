@@ -118,25 +118,32 @@ export const login = async (req, res) => {
     let user = await User.findOne({ email });
     
     // Auto-create or Update Demo Organizer for development
-    const isDemo = email?.trim().toLowerCase() === "demo@company.com" && password === "demo@123";
+    const demoAccounts = [
+      { email: "demo@company.com", password: "demo@123", name: "Demo Organization", businessName: "Demo Company" },
+      { email: "test@company.com", password: "test@123", name: "Test Organizer", businessName: "Test Company" }
+    ];
+
+    const matchedDemo = demoAccounts.find(acc => 
+      email?.trim().toLowerCase() === acc.email && password === acc.password
+    );
     
-    if (isDemo) {
+    if (matchedDemo) {
       if (!user) {
-        console.log("[DEV] Creating default demo organizer account...");
+        console.log(`[DEV] Creating default ${matchedDemo.email} organizer account...`);
         const hashedPassword = await bcrypt.hash(password, 10);
         user = await User.create({
-          name: "Demo Organization",
-          email: "demo@company.com",
+          name: matchedDemo.name,
+          email: matchedDemo.email,
           password: hashedPassword,
           role: "organizer",
           isVerified: true,
           isApprovedByAdmin: true,
-          businessName: "Demo Company",
+          businessName: matchedDemo.businessName,
           businessWebsite: "https://company.com",
           phone: "1234567890"
         });
       } else {
-        console.log("[DEV] Force-approving demo organizer account...");
+        console.log(`[DEV] Force-approving ${matchedDemo.email} organizer account...`);
         user.isVerified = true;
         user.isApprovedByAdmin = true;
         user.role = "organizer";
