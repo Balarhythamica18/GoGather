@@ -120,7 +120,7 @@ const EventDetailPage = () => {
       <div className="edp-wrapper">
         <div className="edp-left">
           <div className="edp-image-box">
-            {!imageLoaded && <div className="edp-image-skeleton"></div>}
+            <div className={`edp-image-skeleton ${imageLoaded ? "hidden" : ""}`}></div>
             <img 
               src={getImageUrl(event.image)} 
               alt={event.title} 

@@ -189,7 +189,7 @@
 }
 
 .book-btn:hover {
-  background-color: #e6005c;
+  background: #0b0f5b;
 }
 
 /* Details */
@@ -378,7 +378,7 @@
 }
 
 .eventpage-apply-btn:hover {
-  background: #e6005c;
+  background: #0b0f5b;
 }
 
 .eventpage-overlay {
