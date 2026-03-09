@@ -73,33 +73,50 @@ const UpcomingEvents = () => {
 
       <div className="events-grid">
         {events.slice(0, visibleCount).map((event) => (
-          <div
-            key={event._id}
-            className="event-card"
-            onClick={() => handleClick(event._id)}
-          >
-            <div className="event-img">
+          <article key={event._id} className="card">
+            <div className="card__image">
+              <img
+                src={getImageUrl(event.image)}
+                alt={event.title}
+                onError={(e) => (e.target.src = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800")}
+              />
               <div className="upcoming-badge">Upcoming</div>
-              <img src={getImageUrl(event.image)} alt={event.title} />
-              <div className="location-box">📍 {event.location}</div>
             </div>
 
-            <div className="event-info">
-              <div className="date-box">
-                <div className="month-text">
-                  {formatMonth(event.month)}
+            <div className="card__body">
+              <h3 className="card__title">{event.title}</h3>
+              <p className="card__desc">{event.description}</p>
+
+              <div className="card__meta">
+                <div className="meta-left">
+                  <span className="loc">📍 {event.location}</span>
+                  <span className="cat">{event.category}</span>
                 </div>
-                <div className="date-text">
-                  {event.date}
+                <div className="meta-right">
+                  <span className="price">
+                    {typeof event.price === 'string' && event.price.toLowerCase() === 'free'
+                      ? "Free"
+                      : `Rs.${event.price}`}
+                  </span>
                 </div>
               </div>
 
-              <div className="title-desc">
-                <div className="event-title">{event.title}</div>
-                <div className="event-desc">{event.description}</div>
+              <div className="card__actions">
+                <button
+                  className="btn btn--primary"
+                  onClick={() => navigate(`/seats/upcoming/${event._id}`)}
+                >
+                  Book Now
+                </button>
+                <button
+                  className="btn btn--ghost"
+                  onClick={() => navigate(`/events/upcoming/${event._id}`)}
+                >
+                  Details
+                </button>
               </div>
             </div>
-          </div>
+          </article>
         ))}
       </div>
 

@@ -3,7 +3,7 @@
 ========================= */
 .head-section {
   width: 100%;
-  padding: 100px 20px;
+  padding: 80px 20px 40px;
   background-color: #ffffff;
   position: relative;
   display: flex;
@@ -11,7 +11,7 @@
   border-bottom: 1px solid #e2e8f0;
   justify-content: center;
   text-align: center;
-  height: 80vh;
+  height: 70vh;
 }
 
 /* =========================

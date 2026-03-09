@@ -9,7 +9,7 @@
   text-align: left;
   font-size: 28px;
   font-weight: 700;
-  margin-bottom: 25px;
+  margin-bottom: 15px;
   color: #0d0f5a;
 }
 
@@ -128,10 +128,11 @@
 
 /* Day */
 .card__date .day {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: #0d0f5a;
   line-height: 1.1;
+  margin-top: -2px;
 }
 
 /* Card Body */
@@ -172,19 +173,20 @@
 
 /* Location */
 .meta-left .loc {
-  font-size: 13px;
-  font-weight: 600;
-  color: #444;
+  font-size: 12px;
+  font-weight: 500;
+  color: #555;
 }
 
 /* Category - smaller */
 .meta-left .cat {
   font-size: 10px;
   font-weight: 500;
-  color: #0984e3;
+  color: #0d0f5a;
   background: #f2f2f2;
-  padding: 2px 6px;
+  padding: 3px 8px;
   border-radius: 6px;
+  text-transform: capitalize;
 }
 
 /* Price on right */
