@@ -1,15 +1,15 @@
 /* ===================== MAIN LAYOUT ===================== */
 .edp-wrapper {
   display: flex;
-  gap: 56px;
-  padding: 70px 10%;
+  gap: 48px;
+  padding: 70px 6%;
   background: #fdfdfd;
   min-height: 100vh;
 }
 
 /* LEFT SIDE */
 .edp-left {
-  flex: 1.6;
+  flex: 1.4;
 }
 
 /* ===================== HERO IMAGE ===================== */
@@ -30,7 +30,7 @@
 
 .edp-image-box img {
   width: 100%;
-  height: 480px;
+  height: 420px;
   object-fit: cover;
   transition: transform 0.7s ease;
   display: block;
@@ -240,17 +240,17 @@
 /* ===================== RIGHT SIDEBAR ===================== */
 
 .edp-right {
-  flex: 1;
+  flex: 1.1;
 }
 
 .edp-sticky-box {
   position: sticky;
   top: 100px;
   background: #ffffff;
-  padding: 38px;
+  padding: 40px;
   border-radius: 28px;
-  box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.12);
-  border: 1px solid #f3f4f6;
+  box-shadow: 0 40px 80px -20px rgba(15, 23, 42, 0.08);
+  border: 1px solid #eef2f6;
   display: flex;
   flex-direction: column;
 }
