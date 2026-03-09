@@ -1,9 +1,9 @@
 .upcoming-container {
   width: min(1400px, 90%);
   margin: 50px auto;
-  padding: 40px;
-  background: #ffffff;
-  border-radius: 24px;
+  padding: 40px 0;
+  background: transparent;
+  border-radius: 0;
 }
 
 .upcoming-title {
