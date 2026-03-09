@@ -7,7 +7,7 @@ import "./UpcomingEvents.css";
 
 const UpcomingEvents = () => {
   const [events, setEvents] = useState([]);
-  const [visibleCount, setVisibleCount] = useState(4);
+  const [visibleCount, setVisibleCount] = useState(8);
   const navigate = useNavigate();
 
   useEffect(() => {
