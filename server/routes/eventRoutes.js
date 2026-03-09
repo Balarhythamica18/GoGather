@@ -9,6 +9,7 @@ import {
   deleteEvent,
   getMyEvents,
   getMyStats,
+  debugEvents,
 } from "../controllers/eventController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
@@ -30,7 +31,7 @@ router.get("/my", authMiddleware, getMyEvents);
 
 // Return stats for logged-in organizer
 router.get("/stats", authMiddleware, getMyStats);
-
+router.get("/debug", debugEvents);
 router.get("/:id", getEventById);
 
 export default router;

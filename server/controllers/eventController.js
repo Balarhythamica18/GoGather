@@ -577,3 +577,22 @@ export const getMyStats = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const debugEvents = async (req, res) => {
+  try {
+    const totalEvents = await Event.countDocuments({});
+    
+    // Masked URI for safety
+    const rawUri = process.env.MONGODB_URI || "";
+    const maskedUri = rawUri.replace(/:([^@]+)@/, ":****@");
+    
+    res.json({
+      dbStatus: "OK",
+      totalEvents,
+      mongodbHost: maskedUri.split('@')[1]?.split('/')[0] || "Unknown",
+      serverTime: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
