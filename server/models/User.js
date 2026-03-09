@@ -19,13 +19,13 @@ const userSchema = new mongoose.Schema({
 
   role: {
     type: String,
-    enum: ["user", "organizer", "admin"],
+    enum: ["user", "organizer"],
     default: "user"
   },
 
   isApprovedByAdmin: {
     type: Boolean,
-    default: false
+    default: true
   },
 
   image: {

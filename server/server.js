@@ -21,7 +21,6 @@ import connectDB from "./configs/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
-import adminRoutes from "./routes/adminRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
 import { containsHarmfulWords } from "./utils/moderation.js";
 import cloudinary from "./configs/cloudinary.js";
@@ -88,10 +87,6 @@ app.use("/api/events", eventRoutes);
 
 // Booking routes
 app.use("/api/bookings", bookingRoutes);
-
-// Admin routes
-app.use("/api/admin", adminRoutes);
-console.log("Admin routes registered at /api/admin");
 
 // Serve uploads folder
 app.use("/uploads", express.static(uploadsDir));

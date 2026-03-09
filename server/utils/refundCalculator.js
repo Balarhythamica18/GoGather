@@ -4,20 +4,51 @@ import { calculateHoursRemaining } from "./dateUtils.js";
  * Calculate refund percentage and amount based on policies and tiers
  * @param {Object} booking - The booking object
  * @param {Object} event - The event object
+ * @param {Boolean} forceFullRefund - If true, returns 100% (used for organizer cancellations)
  * @returns {Object} - { percentage, amount, policyName }
  */
-export const calculateRefund = (booking, event) => {
+export const calculateRefund = (booking, event, forceFullRefund = false) => {
   if (!booking || booking.amount === 0) {
     return { percentage: 0, amount: 0, policyName: "Free Booking/No Payment" };
   }
 
+  if (forceFullRefund) {
+    return {
+      percentage: 100,
+      amount: booking.amount,
+      policyName: "100% Refund (Event Cancelled by Organizer)"
+    };
+  }
+
   const hoursRemaining = calculateHoursRemaining(event);
   let refundPercentage = 0;
-  let policyName = "Non-refundable (Less than 24 hours before event)";
+  let policyName = "Non-refundable (Standard Policy)";
   let hasAppliedPolicy = false;
 
-  // 1. Check Event-Specific Policies
-  if (event && event.refundPolicy) {
+  // 1. Check Structured Refund Tiers (Prioritize these over text)
+  if (event && event.refundTiers && event.refundTiers.length > 0) {
+    // Sort tiers by hoursBefore descending to find the highest applicable tier
+    const sortedTiers = [...event.refundTiers].sort((a, b) => b.hoursBefore - a.hoursBefore);
+    
+    for (const tier of sortedTiers) {
+      if (hoursRemaining >= tier.hoursBefore) {
+        refundPercentage = tier.refundPercentage;
+        policyName = `${tier.refundPercentage}% Refund (Tier: ${tier.hoursBefore}h+ before event)`;
+        hasAppliedPolicy = true;
+        break;
+      }
+    }
+    
+    // If we have tiers but none applied (too late), it's 0
+    if (!hasAppliedPolicy) {
+      refundPercentage = 0;
+      policyName = "No Refund (Refund period has passed)";
+      hasAppliedPolicy = true;
+    }
+  }
+
+  // 2. Check Event-Specific Text Policies (Only if no tiers applied)
+  if (!hasAppliedPolicy && event && event.refundPolicy) {
     const policy = event.refundPolicy.toLowerCase().trim();
     if (policy.includes("no refund") || policy.includes("non-refundable")) {
       refundPercentage = 0;
@@ -34,29 +65,7 @@ export const calculateRefund = (booking, event) => {
     }
   }
 
-  // 2. Check Structured Refund Tiers
-  if (!hasAppliedPolicy && event && event.refundTiers && event.refundTiers.length > 0) {
-    // Sort tiers by hoursBefore descending to find the highest applicable tier
-    const sortedTiers = [...event.refundTiers].sort((a, b) => b.hoursBefore - a.hoursBefore);
-    
-    for (const tier of sortedTiers) {
-      if (hoursRemaining >= tier.hoursBefore) {
-        refundPercentage = tier.refundPercentage;
-        policyName = `${tier.refundPercentage}% Refund (Tier: ${tier.hoursBefore}h+ before event)`;
-        hasAppliedPolicy = true;
-        break;
-      }
-    }
-    
-    // If we have tiers but none applied (too late), it's 0
-    if (!hasAppliedPolicy) {
-      refundPercentage = 0;
-      policyName = "No Refund (Last tier surpassed)";
-      hasAppliedPolicy = true;
-    }
-  }
-
-  // 3. Fallback to System Policies
+  // 3. Fallback to System Default Policies
   if (!hasAppliedPolicy) {
     const bookingTime = new Date(booking.createdAt);
     const now = new Date();
@@ -72,6 +81,9 @@ export const calculateRefund = (booking, event) => {
     } else if (hoursRemaining >= 24) {
       refundPercentage = 50;
       policyName = "50% Refund (24-48 hours notice)";
+    } else {
+      refundPercentage = 0;
+      policyName = "Non-refundable (Less than 24 hours notice)";
     }
   }
 

@@ -52,8 +52,8 @@ export const handleEventCancellation = async (
           continue;
         }
 
-        // 3. Process refund based on professional centralized logic
-        const { amount: refundAmount, policyName: refundPolicyApplied } = calculateRefund(booking, event);
+        // 3. Process refund based on professional centralized logic (Force 100% for organizer cancellation)
+        const { amount: refundAmount, policyName: refundPolicyApplied } = calculateRefund(booking, event, true);
         console.log(`[EVENT CANCELLATION] Applied ${refundPolicyApplied} for booking ${booking._id}: ₹${refundAmount}`);
 
         // 4. Update booking status

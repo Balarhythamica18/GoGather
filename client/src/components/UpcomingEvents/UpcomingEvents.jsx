@@ -104,13 +104,8 @@ const UpcomingEvents = () => {
               <div className="card__actions">
                 <button
                   className="btn btn--primary"
-                  onClick={() => navigate(`/seats/upcoming/${event._id}`)}
-                >
-                  Book Now
-                </button>
-                <button
-                  className="btn btn--ghost"
                   onClick={() => navigate(`/events/upcoming/${event._id}`)}
+                  style={{ width: '100%' }}
                 >
                   Details
                 </button>

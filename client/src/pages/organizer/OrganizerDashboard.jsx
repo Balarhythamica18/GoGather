@@ -284,20 +284,6 @@ const OrganizerDashboard = () => {
 
         {activeTab === 'events' ? (
           <>
-            {/* Status Banners */}
-            <div className={`status-banner ${isApprovedByAdmin ? 'approved' : 'pending'}`}>
-              <div style={{ fontSize: '24px' }}>{isApprovedByAdmin ? '✨' : '⏳'}</div>
-              <div>
-                <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '2px' }}>
-                  {isApprovedByAdmin ? 'Account Fully Approved' : 'Verification Pending'}
-                </h3>
-                <p style={{ fontSize: '14px', opacity: 0.9 }}>
-                  {isApprovedByAdmin
-                    ? 'Your events are now published instantly to the global audience.'
-                    : 'Your events will go live as soon as our team verifies your business.'}
-                </p>
-              </div>
-            </div>
 
             {/* Stats Grid */}
             <div className="stats-grid">
@@ -349,11 +335,6 @@ const OrganizerDashboard = () => {
                       <div className="card-image-box">
                         <img src={getImageUrl(event.image)} alt={event.title} />
                         
-                        {/* Status Badge Overlay (Top Left) */}
-                        <div className={`status-badge-overlay ${event.status || 'pending'}`}>
-                          {event.status === 'approved' ? <CheckCircle size={12} /> : <Clock size={12} />}
-                          <span>{event.status || 'pending'}</span>
-                        </div>
 
                         {/* Date Badge Overlay (Top Right) */}
                         <div className="date-badge-overlay">
