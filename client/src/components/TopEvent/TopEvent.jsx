@@ -55,9 +55,9 @@ const TopEvent = () => {
           const eventDate = new Date(`${event.month}-${String(event.date).padStart(2, "0")}T00:00:00`);
           const today = new Date();
           today.setHours(0, 0, 0, 0);
-          
+
           const fortyFiveDaysLater = new Date(today.getTime() + 45 * 24 * 60 * 60 * 1000);
-        
+
           // Show events happening WITHIN the next 45 days
           return eventDate >= today && eventDate <= fortyFiveDaysLater;
         } catch (e) {
@@ -129,7 +129,7 @@ const TopEvent = () => {
 
               <div className="card__meta">
                 <div className="meta-left">
-                  <span className="loc">📍 {ev.location}</span>
+                  <span className="loc"> 📍 {ev.location}</span>
                   <span className="cat">{ev.category}</span>
                 </div>
                 <div className="meta-right">

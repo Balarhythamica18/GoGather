@@ -86,23 +86,11 @@ const UpcomingEvents = () => {
               <h3 className="card__title">{event.title}</h3>
               <p className="card__desc">{event.description}</p>
 
-              <div className="card__meta">
-                <div className="meta-left">
-                  <span className="loc">📍 {event.location}</span>
-                  <span className="cat">{event.category}</span>
-                </div>
-                <div className="meta-right">
-                  <span className="price">
-                    {typeof event.price === 'string' && event.price.toLowerCase() === 'free'
-                      ? "Free"
-                      : `Rs.${event.price}`}
-                  </span>
-                </div>
-              </div>
+
 
               <div className="card__actions">
                 <button
-                  className="btn btn--primary"
+                  className="btn btn--ghost"
                   onClick={() => navigate(`/events/upcoming/${event._id}`)}
                   style={{ width: '100%' }}
                 >

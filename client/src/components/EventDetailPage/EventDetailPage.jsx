@@ -256,9 +256,11 @@ const EventDetailPage = () => {
                     <p className="info-label">Ticket Price</p>
                     <div className="edp-price-display">
                       <span className="edp-price-value">
-                        {typeof event.price === 'string' && event.price.toLowerCase() === 'free'
-                          ? "FREE"
-                          : `₹${event.price}`}
+                        {event.status === 'completed' 
+                          ? "EVENT ENDED" 
+                          : (typeof event.price === 'string' && event.price.toLowerCase() === 'free'
+                            ? "FREE"
+                            : `₹${event.price}`)}
                       </span>
                     </div>
                   </div>
@@ -273,8 +275,10 @@ const EventDetailPage = () => {
                 <button
                   className="edp-book-btn"
                   onClick={() => navigate(`/seats/${category}/${id}`)}
+                  disabled={event.status === 'completed'}
+                  style={event.status === 'completed' ? { opacity: 0.5, cursor: 'not-allowed', background: '#64748b' } : {}}
                 >
-                  Book Now
+                  {event.status === 'completed' ? 'Event Ended' : 'Book Now'}
                 </button>
 
                 <button

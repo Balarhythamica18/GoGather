@@ -224,13 +224,13 @@ export const cleanupExpiredEvents = async () => {
     if (expiredEvents.length > 0) {
       const expiredIds = expiredEvents.map(e => e._id);
 
-      // 2. Delete Bookings associated with these events
-      await Booking.deleteMany({ eventId: { $in: expiredIds } });
+      // 2. Instead of deleting, mark events as completed
+      await Event.updateMany(
+        { _id: { $in: expiredIds } },
+        { $set: { status: "completed" } }
+      );
 
-      // 3. Delete the Events themselves
-      await Event.deleteMany({ _id: { $in: expiredIds } });
-
-      console.log(`[CLEANUP] Automatically removed ${expiredEvents.length} expired events and their bookings. ✅`);
+      console.log(`[CLEANUP] Automatically marked ${expiredEvents.length} expired events as COMPLETED. ✅`);
     } else {
       console.log(`[CLEANUP] No expired events found to remove. ✅`);
     }
@@ -251,7 +251,7 @@ export const getAllEvents = async (req, res) => {
     // Relaxed filter: show both approved and pending events in production for now
     // Only return approved/pending events for public view (exclude specifically rejected)
     const events = await Event.find({
-      status: { $in: ["approved", "pending"] },
+      status: "approved",
       isDeleted: { $ne: true }
     }).sort({ createdAt: -1 });
 

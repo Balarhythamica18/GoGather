@@ -175,8 +175,11 @@ const MyBookings = () => {
                 ) : (
                   <img src={getImageUrl(booking.event?.image)} alt={booking.event?.title} />
                 )}
-                <span className={`status-badge ${booking.status} ${booking.isUsed ? 'used' : ''}`}>
-                  {booking.cancelledBy === "organizer" ? 'Organizer Cancelled' : (booking.status === 'cancelled' ? 'Cancelled' : (booking.isUsed ? 'Already Used' : 'Upcoming'))}
+                <span className={`status-badge ${booking.status} ${booking.isUsed ? 'used' : ''} ${booking.event?.status === 'completed' ? 'completed' : ''}`}>
+                  {booking.cancelledBy === "organizer" ? 'Organizer Cancelled' : 
+                   (booking.status === 'cancelled' ? 'Cancelled' : 
+                   (booking.event?.status === 'completed' ? 'Event Ended' :
+                   (booking.isUsed ? 'Already Used' : 'Upcoming')))}
                 </span>
               </div>
 
@@ -282,12 +285,35 @@ const MyBookings = () => {
                 <button
                   className="view-ticket-btn"
                   onClick={() => setSelectedTicket(booking)}
-                  disabled={booking.status === 'cancelled'}
+                  disabled={booking.status === 'cancelled' || booking.event?.status === 'completed'}
                 >
                   <QrCode size={18} />
-                  {booking.status === 'cancelled' ? 'Cancelled' : 'View Ticket'}
+                  {booking.status === 'cancelled' ? 'Cancelled' : (booking.event?.status === 'completed' ? 'Event Ended' : 'View Ticket')}
                 </button>
-                {booking.status !== 'cancelled' && !booking.isUsed && (
+                {booking.status !== 'cancelled' && booking.event?.status === 'completed' && (
+                   <button 
+                     className="rate-experience-btn"
+                     style={{
+                       marginTop: '8px',
+                       width: '100%',
+                       padding: '10px',
+                       borderRadius: '10px',
+                       border: '1px solid #e2e8f0',
+                       background: '#fff',
+                       color: 'var(--primary-blue)',
+                       fontWeight: 600,
+                       cursor: 'pointer',
+                       display: 'flex',
+                       alignItems: 'center',
+                       justifyContent: 'center',
+                       gap: '8px',
+                       fontSize: '0.85rem'
+                     }}
+                   >
+                     🚀 Rate Experience
+                   </button>
+                )}
+                {booking.status !== 'cancelled' && !booking.isUsed && booking.event?.status !== 'completed' && (
                   <button
                     className="cancel-ticket-btn"
                     onClick={() => handleCancel(booking._id)}
