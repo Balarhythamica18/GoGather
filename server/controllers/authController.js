@@ -221,7 +221,7 @@ export const getCurrentUser = async (req, res) => {
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
     const user = await User.findById(userId).select(
-      "name email role image isApprovedByAdmin"
+      "name email role image isApprovedByAdmin businessName businessWebsite businessType phone location businessDescription"
     );
 
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -237,7 +237,13 @@ export const getCurrentUser = async (req, res) => {
       role: user.role,
       image: user.image,
       hasBooked: !!hasBooked,
-      isApprovedByAdmin: user.isApprovedByAdmin
+      isApprovedByAdmin: user.isApprovedByAdmin,
+      businessName: user.businessName,
+      businessWebsite: user.businessWebsite,
+      businessType: user.businessType,
+      phone: user.phone,
+      location: user.location,
+      businessDescription: user.businessDescription
     });
   } catch (error) {
     console.error("Get user error:", error);

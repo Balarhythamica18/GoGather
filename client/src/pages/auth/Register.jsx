@@ -274,26 +274,30 @@ const Register = () => {
           </button>
         </form>
 
-        <div className="google-auth-separator">
-          <hr />
-          <span>OR</span>
-        </div>
+        {role === "user" && (
+          <>
+            <div className="google-auth-separator">
+              <hr />
+              <span>OR</span>
+            </div>
 
-        <div className="google-login-wrapper">
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={() => {
-              setError("Google Registration Failed");
-              toast.error("Google Registration Failed");
-            }}
-            use_fedcm_for_prompt={true}
-            theme="outline"
-            shape="pill"
-            text="signup_with"
-            size="large"
-            width="100%"
-          />
-        </div>
+            <div className="google-login-wrapper">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => {
+                  setError("Google Registration Failed");
+                  toast.error("Google Registration Failed");
+                }}
+                use_fedcm_for_prompt={true}
+                theme="outline"
+                shape="pill"
+                text="signup_with"
+                size="large"
+                width="100%"
+              />
+            </div>
+          </>
+        )}
 
         <p className="auth-switch">
           Already have an account? <Link to="/login">Login here</Link>

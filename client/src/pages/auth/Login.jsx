@@ -189,26 +189,30 @@ const Login = () => {
           </Link>
         </div>
 
-        <div className="google-auth-separator">
-          <hr />
-          <span>OR</span>
-        </div>
+        {role === "user" && (
+          <>
+            <div className="google-auth-separator">
+              <hr />
+              <span>OR</span>
+            </div>
 
-        <div className="google-login-wrapper">
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={() => {
-              setError("Google Login Failed");
-              toast.error("Google Login Failed");
-            }}
-            use_fedcm_for_prompt={true}
-            theme="outline"
-            shape="pill"
-            text="continue_with"
-            size="large"
-            width="100%"
-          />
-        </div>
+            <div className="google-login-wrapper">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => {
+                  setError("Google Login Failed");
+                  toast.error("Google Login Failed");
+                }}
+                use_fedcm_for_prompt={true}
+                theme="outline"
+                shape="pill"
+                text="continue_with"
+                size="large"
+                width="100%"
+              />
+            </div>
+          </>
+        )}
 
         <p className="auth-switch">
           Don’t have an account? <Link to="/register">Create one for free</Link>

@@ -21,7 +21,12 @@ import {
   Lock,
   Shield,
   Eye,
-  EyeOff
+  EyeOff,
+  Building2,
+  Globe,
+  Briefcase,
+  Phone,
+  AlignLeft
 } from "lucide-react";
 import StatCard from "../../components/organizer/StatCard";
 import EventDetailsModal from "../../components/organizer/EventDetailsModal";
@@ -56,6 +61,12 @@ const OrganizerDashboard = () => {
   const [settingsForm, setSettingsForm] = useState({
     name: "",
     email: "",
+    businessName: "",
+    businessWebsite: "",
+    businessType: "",
+    phone: "",
+    location: "",
+    businessDescription: "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: ""
@@ -135,7 +146,13 @@ const OrganizerDashboard = () => {
           setSettingsForm(prev => ({
             ...prev,
             name: profile.data.name || "",
-            email: profile.data.email || ""
+            email: profile.data.email || "",
+            businessName: profile.data.businessName || "",
+            businessWebsite: profile.data.businessWebsite || "",
+            businessType: profile.data.businessType || "",
+            phone: profile.data.phone || "",
+            location: profile.data.location || "",
+            businessDescription: profile.data.businessDescription || ""
           }));
         } catch (err) {
           console.error("Error fetching profile:", err.response?.data || err.message);
@@ -162,7 +179,13 @@ const OrganizerDashboard = () => {
       const token = localStorage.getItem("token");
       const res = await axios.put(`${API_BASE_URL}/api/auth/update-profile`, {
         name: settingsForm.name,
-        email: settingsForm.email
+        email: settingsForm.email,
+        businessName: settingsForm.businessName,
+        businessWebsite: settingsForm.businessWebsite,
+        businessType: settingsForm.businessType,
+        phone: settingsForm.phone,
+        location: settingsForm.location,
+        businessDescription: settingsForm.businessDescription
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -352,77 +375,226 @@ const OrganizerDashboard = () => {
           </>
         ) : (
           <div className="settings-container">
-             <div className="settings-grid">
-               <div className="settings-card">
-                 <h3><User size={20} color="var(--primary)" /> Profile Details</h3>
-                 <form onSubmit={handleUpdateProfile}>
-                   <div className="form-group">
-                     <label>Full Name</label>
-                     <div className="input-with-icon">
-                       <User size={18} className="field-icon" />
-                       <input
-                         type="text"
-                         value={settingsForm.name}
-                         onChange={(e) => setSettingsForm({...settingsForm, name: e.target.value})}
-                       />
-                     </div>
-                   </div>
-                   <div className="form-group">
-                     <label>Work Email</label>
-                     <div className="input-with-icon">
-                       <Mail size={18} className="field-icon" />
-                       <input
-                         type="email"
-                         value={settingsForm.email}
-                         onChange={(e) => setSettingsForm({...settingsForm, email: e.target.value})}
-                       />
-                     </div>
-                   </div>
-                   <button type="submit" className="btn-primary" disabled={settingsLoading} style={{ width: '100%', justifyContent: 'center' }}>
-                     {settingsLoading ? 'Updating...' : 'Save Changes'}
-                   </button>
-                 </form>
-               </div>
+            <div className="settings-grid">
+              {/* Left Column: Business & Personal */}
+              <div className="settings-left-col">
+                {/* Business Profile Card */}
+                <div className="settings-card">
+                  <div className="settings-card-header">
+                    <div className="settings-icon-circle">
+                      <Building2 size={20} color="var(--primary)" />
+                    </div>
+                    <h3>Business Profile</h3>
+                  </div>
+                  <form onSubmit={handleUpdateProfile}>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Business Name</label>
+                        <div className="input-with-icon">
+                          <Building2 size={18} className="field-icon" />
+                          <input
+                            type="text"
+                            className="premium-input"
+                            placeholder="Enter business name"
+                            value={settingsForm.businessName}
+                            onChange={(e) => setSettingsForm({...settingsForm, businessName: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <label>Business Website</label>
+                        <div className="input-with-icon">
+                          <Globe size={18} className="field-icon" />
+                          <input
+                            type="url"
+                            className="premium-input"
+                            placeholder="https://example.com"
+                            value={settingsForm.businessWebsite}
+                            onChange={(e) => setSettingsForm({...settingsForm, businessWebsite: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                    </div>
 
-               <div className="settings-card">
-                 <h3><Shield size={20} color="var(--primary)" /> Security</h3>
-                 <form onSubmit={handleChangePassword}>
-                   <div className="form-group">
-                     <label>Current Password</label>
-                     <div className="input-with-icon">
-                       <Lock size={18} className="field-icon" />
-                       <input
-                         type={showCurrentPassword ? "text" : "password"}
-                         value={settingsForm.currentPassword}
-                         onChange={(e) => setSettingsForm({...settingsForm, currentPassword: e.target.value})}
-                       />
-                       <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)' }}>
-                         {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                       </button>
-                     </div>
-                   </div>
-                   <div className="form-group">
-                     <label>New Password</label>
-                     <div className="input-with-icon">
-                       <Lock size={18} className="field-icon" />
-                       <input
-                         type={showNewPassword ? "text" : "password"}
-                         value={settingsForm.newPassword}
-                         onChange={(e) => setSettingsForm({...settingsForm, newPassword: e.target.value})}
-                       />
-                        <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)' }}>
-                         {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                       </button>
-                     </div>
-                   </div>
-                   <button type="submit" className="btn-primary" disabled={settingsLoading} style={{ width: '100%', justifyContent: 'center' }}>
-                     {settingsLoading ? 'Saving...' : 'Update Password'}
-                   </button>
-                 </form>
-               </div>
-             </div>
-             {settingsSuccess && <div style={{ color: 'var(--success)', marginTop: '20px', fontWeight: '600' }}>{settingsSuccess}</div>}
-             {settingsError && <div style={{ color: 'var(--accent)', marginTop: '20px', fontWeight: '600' }}>{settingsError}</div>}
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Business Type</label>
+                        <div className="input-with-icon">
+                          <Briefcase size={18} className="field-icon" />
+                          <input
+                            type="text"
+                            className="premium-input"
+                            placeholder="e.g. Event Agency"
+                            value={settingsForm.businessType}
+                            onChange={(e) => setSettingsForm({...settingsForm, businessType: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <label>Location / HQ</label>
+                        <div className="input-with-icon">
+                          <MapPin size={18} className="field-icon" />
+                          <input
+                            type="text"
+                            className="premium-input"
+                            placeholder="City, Country"
+                            value={settingsForm.location}
+                            onChange={(e) => setSettingsForm({...settingsForm, location: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Business Description</label>
+                      <div className="input-with-icon">
+                        <AlignLeft size={18} className="field-icon" style={{ top: '18px' }} />
+                        <textarea
+                          className="premium-input"
+                          placeholder="Tell us about your organization..."
+                          value={settingsForm.businessDescription}
+                          onChange={(e) => setSettingsForm({...settingsForm, businessDescription: e.target.value})}
+                          style={{ minHeight: '100px', paddingLeft: '48px', paddingTop: '14px' }}
+                        />
+                      </div>
+                    </div>
+
+                    <button type="submit" className="btn-primary" disabled={settingsLoading} style={{ marginTop: '10px' }}>
+                      {settingsLoading ? 'Updating Profile...' : 'Save Profile Changes'}
+                    </button>
+                  </form>
+                </div>
+
+                {/* Personal Info Card */}
+                <div className="settings-card" style={{ marginTop: '32px' }}>
+                  <div className="settings-card-header">
+                    <div className="settings-icon-circle">
+                      <User size={20} color="var(--primary)" />
+                    </div>
+                    <h3>Account Information</h3>
+                  </div>
+                  <form onSubmit={handleUpdateProfile}>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Full Name</label>
+                        <div className="input-with-icon">
+                          <User size={18} className="field-icon" />
+                          <input
+                            type="text"
+                            className="premium-input"
+                            value={settingsForm.name}
+                            onChange={(e) => setSettingsForm({...settingsForm, name: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <label>Phone Number</label>
+                        <div className="input-with-icon">
+                          <Phone size={18} className="field-icon" />
+                          <input
+                            type="tel"
+                            className="premium-input"
+                            value={settingsForm.phone}
+                            onChange={(e) => setSettingsForm({...settingsForm, phone: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <label>Work Email</label>
+                      <div className="input-with-icon">
+                        <Mail size={18} className="field-icon" />
+                        <input
+                          type="email"
+                          className="premium-input"
+                          value={settingsForm.email}
+                          onChange={(e) => setSettingsForm({...settingsForm, email: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <button type="submit" className="btn-primary" disabled={settingsLoading}>
+                      {settingsLoading ? 'Saving...' : 'Update Account Info'}
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              {/* Right Column: Security */}
+              <div className="settings-right-col">
+                <div className="settings-card">
+                  <div className="settings-card-header">
+                    <div className="settings-icon-circle">
+                      <Shield size={20} color="var(--primary)" />
+                    </div>
+                    <h3>Security Settings</h3>
+                  </div>
+                  <form onSubmit={handleChangePassword}>
+                    <div className="form-group">
+                      <label>Current Password</label>
+                      <div className="input-with-icon">
+                        <Lock size={18} className="field-icon" />
+                        <input
+                          type={showCurrentPassword ? "text" : "password"}
+                          className="premium-input"
+                          placeholder="••••••••"
+                          value={settingsForm.currentPassword}
+                          onChange={(e) => setSettingsForm({...settingsForm, currentPassword: e.target.value})}
+                        />
+                        <button type="button" className="pw-toggle" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
+                          {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <label>New Password</label>
+                      <div className="input-with-icon">
+                        <Lock size={18} className="field-icon" />
+                        <input
+                          type={showNewPassword ? "text" : "password"}
+                          className="premium-input"
+                          placeholder="Min. 8 characters"
+                          value={settingsForm.newPassword}
+                          onChange={(e) => setSettingsForm({...settingsForm, newPassword: e.target.value})}
+                        />
+                        <button type="button" className="pw-toggle" onClick={() => setShowNewPassword(!showNewPassword)}>
+                          {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="form-group">
+                      <label>Confirm New Password</label>
+                      <div className="input-with-icon">
+                        <Lock size={18} className="field-icon" />
+                        <input
+                          type={showConfirmPassword ? "text" : "password"}
+                          className="premium-input"
+                          placeholder="Repeat new password"
+                          value={settingsForm.confirmPassword}
+                          onChange={(e) => setSettingsForm({...settingsForm, confirmPassword: e.target.value})}
+                        />
+                        <button type="button" className="pw-toggle" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                          {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                    <button type="submit" className="btn-primary" disabled={settingsLoading} style={{ width: '100%' }}>
+                      {settingsLoading ? 'Updating Password...' : 'Update Password'}
+                    </button>
+                  </form>
+                </div>
+
+                {settingsSuccess && (
+                  <div className="settings-msg success">
+                    <CheckCircle size={18} /> {settingsSuccess}
+                  </div>
+                )}
+                {settingsError && (
+                  <div className="settings-msg error">
+                    <AlertCircle size={18} /> {settingsError}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </main>
