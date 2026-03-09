@@ -55,8 +55,10 @@ const TopEvent = () => {
           const eventDate = new Date(`${event.month}-${String(event.date).padStart(2, "0")}T00:00:00`);
           const today = new Date();
           today.setHours(0, 0, 0, 0);
+          const fortyFiveDaysLater = new Date(today.getTime() + 45 * 24 * 60 * 60 * 1000);
           
-          if (eventDate < today) return false;
+          // Show only events scheduled MORE THAN 45 days from now
+          return eventDate > fortyFiveDaysLater;
         } catch (e) {
           console.error("Error parsing date:", e);
         }

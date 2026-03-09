@@ -23,9 +23,10 @@ const UpcomingEvents = () => {
               const eventDate = new Date(`${event.month}-${String(event.date).padStart(2, "0")}T00:00:00`);
               const today = new Date();
               today.setHours(0, 0, 0, 0);
+              const fortyFiveDaysLater = new Date(today.getTime() + 45 * 24 * 60 * 60 * 1000);
 
-              // Show everything from today onwards
-              return eventDate >= today;
+              // Only show events within the next 45 days
+              return eventDate >= today && eventDate <= fortyFiveDaysLater;
             } catch (e) {
               console.error("Error parsing event date:", e);
               return false;
