@@ -1,19 +1,22 @@
 import mongoose from "mongoose";
 
 const connectDB = async () => {
-  const uri = process.env.MONGODB_URI;
+  let uri = process.env.MONGODB_URI;
 
   if (!uri) {
     console.error("❌ MONGODB_URI is not defined in environment variables!");
     return;
   }
 
+  // Sanitize: Trim whitespace and remove surrounding quotes if they exist
+  uri = uri.trim().replace(/^["'](.+)["']$/, '$1');
+
   try {
     mongoose.connection.on("connected", () => {
       console.log("Mongoose connected to DB");
     });
 
-    console.log("Attempting to connect to MongoDB...");
+    console.log(`Attempting to connect to MongoDB (URI Length: ${uri.length})...`);
     await mongoose.connect(uri);
     console.log("MongoDB connected successfully");
   } catch (error) {
