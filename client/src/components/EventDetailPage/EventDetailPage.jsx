@@ -94,9 +94,45 @@ const EventDetailPage = () => {
   }
 
   if (!event) return (
-    <div className="edp-loading-container">
-      <div className="spinner"></div>
-      <h2>Loading Event Details...</h2>
+    <div className="edp-wrapper skeleton-state">
+      <div className="edp-left">
+        <div className="edp-image-box skeleton-block hero-skeleton"></div>
+        <div className="edp-section">
+          <div className="skeleton-title"></div>
+          <div className="skeleton-text"></div>
+          <div className="skeleton-text"></div>
+          <div className="skeleton-text short"></div>
+        </div>
+        <div className="edp-section">
+          <div className="skeleton-title"></div>
+          <div className="edp-highlights-grid">
+            {[1, 2, 3, 4].map(i => <div key={i} className="skeleton-tag"></div>)}
+          </div>
+        </div>
+      </div>
+      <div className="edp-right">
+        <div className="edp-sticky-box">
+          <div className="skeleton-main-title"></div>
+          <div className="edp-info">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="info-row">
+                <div className="skeleton-icon-box"></div>
+                <div className="info-text-container">
+                  <div className="skeleton-label"></div>
+                  <div className="skeleton-value"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="skeleton-text"></div>
+          <div className="skeleton-text short"></div>
+          <div className="edp-actions-row">
+            <div className="skeleton-btn main-btn"></div>
+            <div className="skeleton-btn icon-btn"></div>
+            <div className="skeleton-btn icon-btn"></div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
@@ -120,7 +156,7 @@ const EventDetailPage = () => {
       <div className="edp-wrapper">
         <div className="edp-left">
           <div className="edp-image-box">
-            <div className={`edp-image-skeleton ${imageLoaded ? "hidden" : ""}`}></div>
+            <div className={`skeleton-block hero-skeleton ${imageLoaded ? "hidden" : ""}`} style={{ marginBottom: 0 }}></div>
             <img 
               src={getImageUrl(event.image)} 
               alt={event.title} 
