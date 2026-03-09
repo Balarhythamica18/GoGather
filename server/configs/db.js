@@ -10,8 +10,14 @@ const connectDB = async () => {
     return;
   }
 
-  // Sanitize: Trim whitespace and remove surrounding quotes if they exist
+  // Sanitize: 
+  // 1. Trim whitespace
+  // 2. Remove surrounding quotes
+  // 3. Remove accidental "MONGODB_URI=" prefix if someone pasted the whole line
   uri = uri.trim().replace(/^["'](.+)["']$/, '$1');
+  if (uri.startsWith("MONGODB_URI=")) {
+    uri = uri.replace("MONGODB_URI=", "");
+  }
 
   try {
     mongoose.connection.on("connected", () => {
