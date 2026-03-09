@@ -63,6 +63,10 @@ const ComedyShow = () => {
     }
 
     return true;
+  }).sort((a, b) => {
+    const dateA = new Date(`${a.month}-${String(a.date).padStart(2, "0")}T00:00:00`);
+    const dateB = new Date(`${b.month}-${String(b.date).padStart(2, "0")}T00:00:00`);
+    return dateA - dateB;
   });
 
   useEffect(() => {

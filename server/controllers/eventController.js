@@ -656,7 +656,9 @@ export const debugEvents = async (req, res) => {
       events: eventsSummary.map(e => ({
         title: e.title,
         status: e.status,
-        date: `${e.month}-${e.date}`,
+        raw_month: e.month,
+        raw_date: e.date,
+        parsed_date_test: new Date(`${e.month}-${String(e.date).padStart(2, "0")}T00:00:00`).toString(),
         hasDeclaration: !!e.declaration
       })),
       mongodb: {
