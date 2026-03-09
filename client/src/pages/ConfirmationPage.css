@@ -1,6 +1,6 @@
 .confirmation-container {
     min-height: calc(100vh - 80px);
-    background: radial-gradient(circle at top right, #eff6ff 0%, #f1f5f9 100%);
+    background: radial-gradient(circle at top right, #f0f9ff 0%, #f8fafc 100%);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -13,7 +13,7 @@
     width: 100%;
     max-width: 550px;
     border-radius: 32px;
-    box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 40px 80px -20px rgba(11, 15, 91, 0.08);
     padding: 3.5rem 2.5rem;
     text-align: center;
     border: 1px solid rgba(11, 15, 91, 0.05);
@@ -57,9 +57,9 @@
 }
 
 .confirmation-card h2 {
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 800;
-    color: #1e293b;
+    color: #0b0f5b;
     margin-bottom: 0.75rem;
     letter-spacing: -0.02em;
 }
@@ -71,125 +71,193 @@
     line-height: 1.5;
 }
 
+.printable-ticket {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+.printable-ticket:hover {
+    box-shadow: 0 20px 40px -10px rgba(11, 15, 91, 0.05);
+}
+
 .ticket-info {
     background: #f8fafc;
     border-radius: 20px;
-    padding: 2rem;
-    margin-bottom: 2.5rem;
-    border: 2px dashed #e2e8f0;
+    padding: 2.5rem;
+    border: 2px dashed #cbd5e1;
     text-align: left;
     position: relative;
     overflow: hidden;
 }
 
-.ticket-info::before,
-.ticket-info::after {
-    content: '';
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    background: #ffffff;
-    border-radius: 50%;
-    top: 50%;
-    transform: translateY(-50%);
-    border: 1px solid rgba(11, 15, 91, 0.05);
-}
-
-.ticket-info::before {
-    left: -12px;
-}
-
-.ticket-info::after {
-    right: -12px;
-}
-
 .info-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
     font-size: 0.95rem;
-    align-items: center;
+    align-items: flex-start;
+    gap: 20px;
 }
 
 .info-row:last-child {
     margin-bottom: 0;
-    padding-top: 1rem;
-    border-top: 2px solid #f1f5f9;
+    padding-top: 1.25rem;
+    border-top: 1px dashed #e2e8f0;
 }
 
 .info-row label {
     color: #94a3b8;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+    width: 100px;
+    text-align: left;
 }
 
 .info-row span {
     color: #1e293b;
     font-weight: 700;
+    text-align: right;
+    word-break: break-word;
+    flex: 1;
+}
+
+.status-confirmed {
+    color: #10b981 !important;
+    background: #f0fdf4;
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    display: inline-block;
+    border: 1px solid rgba(16, 185, 129, 0.1);
 }
 
 .qr-section {
-    margin: 2.5rem 0;
+    margin-top: 2rem;
+    text-align: center;
 }
 
-.qr-section p {
+.qr-label {
     font-weight: 700;
-    font-size: 1rem;
-    margin-bottom: 1.25rem;
-    color: #475569;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.qr-container {
+    display: inline-block;
+    position: relative;
+    padding: 20px;
+    background: white;
 }
 
 .qr-section img {
-    width: 200px;
-    height: 200px;
-    border-radius: 20px;
-    padding: 12px;
-    background: white;
-    border: 1px solid #f1f5f9;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-    transition: transform 0.3s ease;
+    width: 180px;
+    height: 180px;
+    display: block;
 }
 
-.qr-section img:hover {
-    transform: scale(1.05);
+/* Decorative corners */
+.corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #0b0f5b;
 }
+
+.corner-tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+.corner-tr { top: 0; right: 0; border-left: none; border-bottom: none; }
+.corner-bl { bottom: 0; left: 0; border-right: none; border-top: none; }
+.corner-br { bottom: 0; right: 0; border-left: none; border-top: none; }
 
 .action-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    width: 100%;
-    padding: 1.25rem;
-    background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
-    color: white;
-    border: none;
+    gap: 10px;
+    flex: 1;
+    padding: 1rem;
     border-radius: 16px;
-    font-weight: 800;
-    font-size: 1.1rem;
+    font-weight: 700;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
-    box-shadow: 0 12px 24px -6px rgba(11, 15, 91, 0.3);
 }
 
-.action-btn:hover {
-    background: #e6006e;
-    transform: translateY(-3px);
-    box-shadow: 0 20px 30px -10px rgba(11, 15, 91, 0.4);
+.primary-btn {
+    background: #0b0f5b;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(11, 15, 91, 0.2);
+}
+
+.primary-btn:hover {
+    background: #0d1275;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(11, 15, 91, 0.3);
+}
+
+.secondary-btn {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.secondary-btn:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+    transform: translateY(-2px);
 }
 
 .email-note {
-    margin-top: 2rem;
-    font-size: 0.9rem;
+    margin-top: 2.5rem;
+    font-size: 0.85rem;
     color: #94a3b8;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     font-weight: 500;
+}
+
+/* PRINT STYLES - Focused but inclusive of the main card */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .confirmation-card, .confirmation-card * {
+        visibility: visible;
+    }
+
+    .confirmation-card {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 2rem;
+        border: none;
+        box-shadow: none;
+    }
+
+    .action-btn {
+        display: none !important;
+    }
+
+    .confirmation-container {
+        background: white !important;
+        padding: 0 !important;
+    }
 }
 
 @media (max-width: 600px) {
@@ -200,4 +268,8 @@
     .confirmation-card {
         padding: 2.5rem 1.5rem;
     }
-}
+
+    .ticket-info {
+        padding: 1.5rem;
+    }
+}

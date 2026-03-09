@@ -236,7 +236,7 @@
 }
 
 .pay-button:hover:not(:disabled) {
-    background: #e6006e;
+    background: #0d1275;
     transform: translateY(-3px);
     box-shadow: 0 20px 30px -10px rgba(11, 15, 91, 0.4);
 }

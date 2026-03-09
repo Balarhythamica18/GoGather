@@ -146,9 +146,9 @@
 }
 
 .favorite-book-btn:hover {
-  background: #e6006e;
+  background: #0d1275;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 0, 122, 0.3);
+  box-shadow: 0 6px 20px rgba(11, 15, 91, 0.3);
 }
 
 @media (max-width: 768px) {

@@ -55,8 +55,10 @@ const ComedyShow = () => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
-        // Comedy shows always show for any future date
-        return eventDate >= today;
+        const fortyFiveDaysLater = new Date(today.getTime() + 45 * 24 * 60 * 60 * 1000);
+        
+        // Show comedy events happening WITHIN the next 45 days
+        return eventDate >= today && eventDate <= fortyFiveDaysLater;
       } catch (e) {
         console.error("Error parsing date:", e);
       }

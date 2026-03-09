@@ -38,7 +38,7 @@
 
 .chatbot-trigger:hover {
     transform: scale(1.1) rotate(5deg);
-    box-shadow: 0 12px 30px rgba(255, 0, 122, 0.4);
+    box-shadow: 0 12px 30px rgba(11, 15, 91, 0.4);
 }
 
 .chatbot-window {
@@ -307,7 +307,7 @@
 }
 
 .chatbot-send-btn:hover:not(:disabled) {
-    background: #e6006e;
+    background: #0d1275;
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(11, 15, 91, 0.3);
 }
@@ -657,7 +657,7 @@
 }
 
 .chat-login-btn:hover {
-    background: #e6006e;
+    background: #0d1275;
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(11, 15, 91, 0.3);
 }

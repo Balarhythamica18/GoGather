@@ -24,11 +24,10 @@ const UpcomingEvents = () => {
               const today = new Date();
               today.setHours(0, 0, 0, 0);
               
-              const sixteenDaysLater = new Date(today.getTime() + 16 * 24 * 60 * 60 * 1000);
               const fortyFiveDaysLater = new Date(today.getTime() + 45 * 24 * 60 * 60 * 1000);
-
-              // Only show events between 16 and 45 days from now
-              return eventDate >= sixteenDaysLater && eventDate <= fortyFiveDaysLater;
+              
+              // ONLY show events that are MORE than 45 days away
+              return eventDate > fortyFiveDaysLater;
             } catch (e) {
               console.error("Error parsing event date:", e);
               return false;

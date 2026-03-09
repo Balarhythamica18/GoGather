@@ -56,11 +56,10 @@ const TopEvent = () => {
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           
-          const fifteenDaysLater = new Date(today.getTime() + 15 * 24 * 60 * 60 * 1000);
           const fortyFiveDaysLater = new Date(today.getTime() + 45 * 24 * 60 * 60 * 1000);
-          
-          // Show events within 15 days OR after 45 days
-          return (eventDate >= today && eventDate <= fifteenDaysLater) || (eventDate > fortyFiveDaysLater);
+        
+          // Show events happening WITHIN the next 45 days
+          return eventDate >= today && eventDate <= fortyFiveDaysLater;
         } catch (e) {
           console.error("Error parsing date:", e);
         }
