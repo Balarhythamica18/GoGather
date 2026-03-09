@@ -23,20 +23,36 @@ export const createEvent = async (req, res) => {
 
 
     let imageUrl = req.body.image || null;
+    let brochureUrl = req.body.brochure || null;
 
-    if (req.file) {
-      try {
-        const result = await cloudinary.uploader.upload(req.file.path, {
-          folder: "gogather/events",
-        });
-        imageUrl = result.secure_url;
-        // Delete local file after upload
-        if (fs.existsSync(req.file.path)) {
-          fs.unlinkSync(req.file.path);
+    if (req.files) {
+      if (req.files.image && req.files.image[0]) {
+        try {
+          const result = await cloudinary.uploader.upload(req.files.image[0].path, {
+            folder: "gogather/events",
+          });
+          imageUrl = result.secure_url;
+          if (fs.existsSync(req.files.image[0].path)) {
+            fs.unlinkSync(req.files.image[0].path);
+          }
+        } catch (uploadError) {
+          console.error("Cloudinary Image Upload Error:", uploadError);
         }
-      } catch (uploadError) {
-        console.error("Cloudinary Upload Error:", uploadError);
-        return res.status(500).json({ message: "Failed to upload image to cloud." });
+      }
+
+      if (req.files.brochure && req.files.brochure[0]) {
+        try {
+          const result = await cloudinary.uploader.upload(req.files.brochure[0].path, {
+            folder: "gogather/brochures",
+            resource_type: "auto" // Important for PDFs
+          });
+          brochureUrl = result.secure_url;
+          if (fs.existsSync(req.files.brochure[0].path)) {
+            fs.unlinkSync(req.files.brochure[0].path);
+          }
+        } catch (uploadError) {
+          console.error("Cloudinary Brochure Upload Error:", uploadError);
+        }
       }
     }
 
@@ -46,6 +62,8 @@ export const createEvent = async (req, res) => {
       month: month,
       date: dayOnly,
       image: imageUrl,
+      brochure: brochureUrl,
+      instructions: req.body.instructions || "",
       organizerDetails: {
         name: req.body.organizerName,
         contactEmail: req.body.organizerEmail,
@@ -59,8 +77,8 @@ export const createEvent = async (req, res) => {
     // Parse sessions if provided
     if (req.body.sessions) {
       try {
-        eventData.sessions = typeof req.body.sessions === "string" 
-          ? JSON.parse(req.body.sessions) 
+        eventData.sessions = typeof req.body.sessions === "string"
+          ? JSON.parse(req.body.sessions)
           : req.body.sessions;
       } catch (err) {
         console.error("Error parsing sessions:", err);
@@ -70,8 +88,8 @@ export const createEvent = async (req, res) => {
     // Parse refundTiers if provided
     if (req.body.refundTiers) {
       try {
-        eventData.refundTiers = typeof req.body.refundTiers === "string" 
-          ? JSON.parse(req.body.refundTiers) 
+        eventData.refundTiers = typeof req.body.refundTiers === "string"
+          ? JSON.parse(req.body.refundTiers)
           : req.body.refundTiers;
       } catch (err) {
         console.error("Error parsing refundTiers:", err);
@@ -86,7 +104,7 @@ export const createEvent = async (req, res) => {
         if (user) {
           eventData.organizerDetails.name = user.name || eventData.organizerDetails.name;
           eventData.organizerDetails.contactEmail = user.email || eventData.organizerDetails.contactEmail;
-          
+
           // Auto-approve events if organizer is verified by admin
           if (user.isApprovedByAdmin) {
             eventData.status = "approved";
@@ -163,15 +181,24 @@ export const createEvent = async (req, res) => {
 
 export const getEventById = async (req, res) => {
   try {
+    const { id } = req.params;
+    console.log(`[EVENT DEBUG] Fetching event with ID: ${id}`);
+    
     // Run cleanup to ensure we don't return an expired event
     await cleanupExpiredEvents();
 
-    const event = await Event.findById(req.params.id);
+    const event = await Event.findById(id);
     if (!event) {
-      return res.status(404).json({ message: "Event not found" });
+      console.warn(`[EVENT DEBUG] Event NOT FOUND in DB for ID: ${id}`);
+      return res.status(404).json({ 
+        message: "Event not found", 
+        debugId: id,
+        timestamp: new Date().toISOString()
+      });
     }
     res.json(event);
   } catch (error) {
+    console.error(`[EVENT DEBUG] Error fetching event by ID (${req.params.id}):`, error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -223,9 +250,9 @@ export const getAllEvents = async (req, res) => {
 
     // Relaxed filter: show both approved and pending events in production for now
     // Only return approved/pending events for public view (exclude specifically rejected)
-    const events = await Event.find({ 
+    const events = await Event.find({
       status: { $in: ["approved", "pending"] },
-      isDeleted: { $ne: true } 
+      isDeleted: { $ne: true }
     }).sort({ createdAt: -1 });
 
     console.log(`[EVENT FETCH] Returning ${events.length} public events`);
@@ -278,24 +305,24 @@ export const deleteEvent = async (req, res) => {
 
     // Authorization: only owner or admin can delete
     let isAuthorized = req.user?.role === "admin";
-    
+
     if (!isAuthorized) {
       console.log(`[AUTH DEBUG] Deleting event. req.user:`, req.user);
       console.log(`[AUTH DEBUG] Event organizer ID:`, event.organizer);
-      
+
       // 1. Check by organizer ID
       if (event.organizer && String(event.organizer) === String(req.user?.id)) {
         isAuthorized = true;
-      } 
-      
+      }
+
       // 2. Fallback: Check by email if ID check failed (or if organizer ID is missing)
       if (!isAuthorized && event.organizerDetails?.contactEmail) {
         const user = await User.findById(req.user?.id);
         const userEmail = user?.email?.toLowerCase()?.trim();
         const eventEmail = event.organizerDetails.contactEmail?.toLowerCase()?.trim();
-        
+
         console.log(`[AUTH DEBUG] User email:`, userEmail, `Event contactEmail:`, eventEmail);
-        
+
         if (userEmail && eventEmail && userEmail === eventEmail) {
           isAuthorized = true;
           console.log(`[AUTH DEBUG] Authorized via email fallback`);
@@ -375,7 +402,7 @@ export const updateEvent = async (req, res) => {
 
     // Authorization: only owner or admin
     let isAuthorized = req.user?.role === "admin";
-    
+
     if (!isAuthorized) {
       console.log(`[AUTH DEBUG] Updating event. req.user:`, req.user);
       console.log(`[AUTH DEBUG] Event organizer ID:`, event.organizer);
@@ -383,16 +410,16 @@ export const updateEvent = async (req, res) => {
       // 1. Check by organizer ID
       if (event.organizer && String(event.organizer) === String(req.user?.id)) {
         isAuthorized = true;
-      } 
-      
+      }
+
       // 2. Fallback: Check by email if ID check failed (or if organizer ID is missing)
       if (!isAuthorized && event.organizerDetails?.contactEmail) {
         const user = await User.findById(req.user?.id);
         const userEmail = user?.email?.toLowerCase()?.trim();
         const eventEmail = event.organizerDetails.contactEmail?.toLowerCase()?.trim();
-        
+
         console.log(`[AUTH DEBUG] User email:`, userEmail, `Event contactEmail:`, eventEmail);
-        
+
         if (userEmail && eventEmail && userEmail === eventEmail) {
           isAuthorized = true;
           console.log(`[AUTH DEBUG] Authorized via email fallback`);
@@ -420,23 +447,39 @@ export const updateEvent = async (req, res) => {
       }
     }
 
-    // Image: if a new file uploaded, use it; else if image field provided, use it; otherwise preserve existing
-    if (req.file) {
-      try {
-        const result = await cloudinary.uploader.upload(req.file.path, {
-          folder: "gogather/events",
-        });
-        event.image = result.secure_url;
-        // Delete local file
-        if (fs.existsSync(req.file.path)) {
-          fs.unlinkSync(req.file.path);
+    // Image & Brochure: if a new file uploaded, use it; else if field provided, use it; otherwise preserve existing
+    if (req.files) {
+      if (req.files.image && req.files.image[0]) {
+        try {
+          const result = await cloudinary.uploader.upload(req.files.image[0].path, {
+            folder: "gogather/events",
+          });
+          event.image = result.secure_url;
+          if (fs.existsSync(req.files.image[0].path)) {
+            fs.unlinkSync(req.files.image[0].path);
+          }
+        } catch (uploadError) {
+          console.error("Cloudinary Update Image Error:", uploadError);
         }
-      } catch (uploadError) {
-        console.error("Cloudinary Update Upload Error:", uploadError);
-        return res.status(500).json({ message: "Failed to update image on cloud." });
       }
-    } else if (otherData.image) {
-      event.image = otherData.image;
+
+      if (req.files.brochure && req.files.brochure[0]) {
+        try {
+          const result = await cloudinary.uploader.upload(req.files.brochure[0].path, {
+            folder: "gogather/brochures",
+            resource_type: "auto"
+          });
+          event.brochure = result.secure_url;
+          if (fs.existsSync(req.files.brochure[0].path)) {
+            fs.unlinkSync(req.files.brochure[0].path);
+          }
+        } catch (uploadError) {
+          console.error("Cloudinary Update Brochure Error:", uploadError);
+        }
+      }
+    } else {
+      if (otherData.image) event.image = otherData.image;
+      if (otherData.brochure) event.brochure = otherData.brochure;
     }
 
     // Update simple fields if provided in body
@@ -452,6 +495,7 @@ export const updateEvent = async (req, res) => {
       "mapLink",
       "capacity",
       "refundPolicy",
+      "instructions",
     ];
 
     simpleFields.forEach((f) => {
@@ -461,8 +505,8 @@ export const updateEvent = async (req, res) => {
     // Update refundTiers
     if (otherData.refundTiers !== undefined) {
       try {
-        event.refundTiers = typeof otherData.refundTiers === "string" 
-          ? JSON.parse(otherData.refundTiers) 
+        event.refundTiers = typeof otherData.refundTiers === "string"
+          ? JSON.parse(otherData.refundTiers)
           : otherData.refundTiers;
       } catch (err) {
         console.error("Error parsing refundTiers in update:", err);
@@ -481,7 +525,7 @@ export const updateEvent = async (req, res) => {
       const currentCapacity = event.capacity || 0;
       const currentAvailable = event.availableSeats !== undefined ? event.availableSeats : currentCapacity;
       const soldSeats = Math.max(0, currentCapacity - currentAvailable);
-      
+
       event.capacity = newCapacity;
       event.availableSeats = Math.max(0, newCapacity - soldSeats);
     }
@@ -489,8 +533,8 @@ export const updateEvent = async (req, res) => {
     // Update sessions
     if (otherData.sessions !== undefined) {
       try {
-        event.sessions = typeof otherData.sessions === "string" 
-          ? JSON.parse(otherData.sessions) 
+        event.sessions = typeof otherData.sessions === "string"
+          ? JSON.parse(otherData.sessions)
           : otherData.sessions;
       } catch (err) {
         console.error("Error parsing sessions in update:", err);
@@ -581,11 +625,11 @@ export const getMyStats = async (req, res) => {
 export const debugEvents = async (req, res) => {
   try {
     const totalEvents = await Event.countDocuments({});
-    
+
     // Masked URI for safety
     const rawUri = process.env.MONGODB_URI || "";
     const maskedUri = rawUri.replace(/:([^@]+)@/, ":****@");
-    
+
     res.json({
       dbStatus: "OK",
       totalEvents,

@@ -48,86 +48,80 @@ const DashboardSidebar = ({ organizerName, onLogout }) => {
                         padding: 32px 16px;
                         z-index: 1000;
                         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
                     }
 
                     .sidebar-logo {
                         padding: 0 12px 32px 12px;
-                        border-bottom: 1px solid #f1f5f9;
+                        border-bottom: 1.5px solid #f1f5f9;
                         margin-bottom: 32px;
                     }
 
                     .sidebar-nav {
                         display: flex;
                         flex-direction: column;
-                        gap: 6px;
+                        gap: 8px;
                         flex: 1;
                     }
 
                     .nav-button {
                         display: flex;
                         align-items: center;
-                        gap: 12px;
-                        padding: 12px 16px;
-                        border-radius: 12px;
+                        gap: 14px;
+                        padding: 14px 16px;
+                        border-radius: 14px;
                         border: none;
                         background: transparent;
                         color: #64748b;
-                        font-family: inherit;
+                        font-family: 'Outfit', sans-serif;
                         font-size: 15px;
-                        font-weight: 600;
+                        font-weight: 700;
                         cursor: pointer;
                         transition: all 0.2s ease;
                         text-align: left;
-                        position: relative;
                     }
 
                     .nav-button:hover {
                         background: #f8fafc;
                         color: #0b0f5b;
+                        transform: translateX(4px);
                     }
 
                     .nav-button.active {
-                        background: #eff6ff;
-                        color: #0b0f5b;
-                    }
-
-                    .nav-button.active::after {
-                        content: '';
-                        position: absolute;
-                        right: 8px;
-                        width: 6px;
-                        height: 6px;
-                        background: #0b0f5b;
-                        border-radius: 50%;
+                        background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
+                        color: #fff;
+                        box-shadow: 0 8px 16px rgba(11, 15, 91, 0.2);
                     }
 
                     .sidebar-footer {
                         margin-top: auto;
                         padding-top: 24px;
-                        border-top: 1px solid #f1f5f9;
+                        border-top: 1.5px solid #f1f5f9;
                     }
 
                     .user-profile {
                         display: flex;
                         align-items: center;
-                        gap: 12px;
-                        padding: 12px;
+                        gap: 14px;
+                        padding: 16px;
                         background: #f8fafc;
-                        border-radius: 16px;
-                        margin-bottom: 16px;
+                        border-radius: 20px;
+                        margin-bottom: 20px;
+                        border: 1px solid #e2e8f0;
                     }
 
                     .user-avatar {
-                        width: 40px;
-                        height: 40px;
-                        background: #0b0f5b;
+                        width: 44px;
+                        height: 44px;
+                        background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
                         color: white;
-                        border-radius: 12px;
+                        border-radius: 14px;
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        font-weight: 700;
-                        font-size: 16px;
+                        font-weight: 800;
+                        font-size: 18px;
+                        box-shadow: 0 4px 10px rgba(11, 15, 91, 0.2);
                     }
 
                     .user-info {
@@ -136,8 +130,8 @@ const DashboardSidebar = ({ organizerName, onLogout }) => {
                     }
 
                     .user-name {
-                        font-size: 14px;
-                        font-weight: 700;
+                        font-size: 15px;
+                        font-weight: 800;
                         color: #1e293b;
                         margin: 0;
                         white-space: nowrap;
@@ -147,6 +141,7 @@ const DashboardSidebar = ({ organizerName, onLogout }) => {
 
                     .user-role {
                         font-size: 12px;
+                        font-weight: 600;
                         color: #64748b;
                         margin: 0;
                     }
@@ -154,21 +149,24 @@ const DashboardSidebar = ({ organizerName, onLogout }) => {
                     .logout-button {
                         display: flex;
                         align-items: center;
+                        justify-content: center;
                         gap: 12px;
                         width: 100%;
-                        padding: 12px 16px;
-                        border-radius: 12px;
-                        border: 1px solid #fee2e2;
-                        background: transparent;
-                        color: #ef4444;
-                        font-weight: 600;
+                        padding: 14px;
+                        border-radius: 14px;
+                        border: 1.5px solid #e2e8f0;
+                        background: white;
+                        color: #64748b;
+                        font-weight: 700;
                         font-size: 14px;
                         cursor: pointer;
                         transition: all 0.2s;
                     }
 
                     .logout-button:hover {
-                        background: #fef2f2;
+                        background: #fff5f5;
+                        color: #ef4444;
+                        border-color: #fee2e2;
                     }
 
                     @media (max-width: 1024px) {
@@ -182,7 +180,7 @@ const DashboardSidebar = ({ organizerName, onLogout }) => {
                             position: fixed;
                             inset: 0;
                             background: rgba(15, 23, 42, 0.4);
-                            backdrop-filter: blur(4px);
+                            backdrop-filter: blur(8px);
                             z-index: 999;
                             opacity: 0;
                             visibility: hidden;

@@ -1,23 +1,21 @@
 import React from 'react';
 
-const StatCard = ({ title, value, icon: Icon, trend, color = 'var(--primary)' }) => {
+const StatCard = ({ title, value, icon: Icon, trend, color = '#0b0f5b' }) => {
+    const isPositive = trend?.startsWith('+');
+    
     return (
         <div className="stat-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                    <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        {title}
-                    </span>
-                    <h3 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--text-main)', margin: '8px 0' }}>
-                        {value}
-                    </h3>
+            <div className="stat-card-header">
+                <div className="stat-card-info">
+                    <span className="stat-card-title">{title}</span>
+                    <h3 className="stat-card-value">{value}</h3>
                     {trend && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: '700', color: trend.startsWith('+') ? 'var(--success)' : 'var(--accent)' }}>
-                           <span style={{ fontSize: '10px' }}>{trend.startsWith('+') ? '▲' : '▼'}</span> {trend}
+                        <div className={`stat-card-trend ${isPositive ? 'positive' : 'negative'}`}>
+                           <span className="trend-arrow">{isPositive ? '▲' : '▼'}</span> {trend}
                         </div>
                     )}
                 </div>
-                <div style={{ padding: '12px', background: `${color}10`, borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="stat-card-icon-box" style={{ backgroundColor: `${color}15` }}>
                     <Icon size={24} color={color} />
                 </div>
             </div>

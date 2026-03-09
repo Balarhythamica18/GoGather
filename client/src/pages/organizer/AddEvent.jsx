@@ -44,13 +44,18 @@ const AddEvent = () => {
         sessions: [], // [{ title, startTime, endTime }]
         refundPolicy: "",
         refundTiers: [], // [{ hoursBefore, refundPercentage }]
+        instructions: "",
+        brochure: "",
     });
 
     const [sessionInput, setSessionInput] = useState({ title: "", startTime: "", endTime: "" });
     const [tierInput, setTierInput] = useState({ hoursBefore: "", refundPercentage: "" });
+    const [highlightInput, setHighlightInput] = useState("");
 
     const [image, setImage] = useState(null);
+    const [brochure, setBrochure] = useState(null);
     const [preview, setPreview] = useState(null);
+    const [brochureName, setBrochureName] = useState("");
     const [loading, setLoading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [modalType, setModalType] = useState("create"); // "create" or "update"
@@ -88,9 +93,13 @@ const AddEvent = () => {
                         sessions: ev.sessions || [],
                         refundPolicy: ev.refundPolicy || "",
                         refundTiers: ev.refundTiers || [],
+                        instructions: ev.instructions || "",
+                        brochure: ev.brochure || "",
                     });
                     setImage(null);
+                    setBrochure(null);
                     if (ev.image) setPreview(getImageUrl(ev.image));
+                    if (ev.brochure) setBrochureName("Existing Brochure");
                 } catch (err) {
                     console.error("Error loading event for edit:", err);
                 }
@@ -132,8 +141,12 @@ const AddEvent = () => {
         }
     };
 
-    const handleHighlightsChange = (e) => {
-        setForm((f) => ({ ...f, keyHighlights: e.target.value.split(",").map(h => h.trim()) }));
+    const handleBrochureChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setBrochure(file);
+            setBrochureName(file.name);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -161,7 +174,7 @@ const AddEvent = () => {
 
         formData.set("category", finalCategory);
         (form.keyHighlights || []).forEach((highlight) => formData.append("keyHighlights", highlight));
-        
+
         // Add as JSON strings
         formData.append("sessions", JSON.stringify(form.sessions));
         formData.append("refundTiers", JSON.stringify(form.refundTiers));
@@ -169,8 +182,13 @@ const AddEvent = () => {
         if (image) {
             formData.append("image", image);
         } else if (form.image) {
-            // Keep existing image if no new one selected
             formData.set("image", form.image);
+        }
+
+        if (brochure) {
+            formData.append("brochure", brochure);
+        } else if (form.brochure) {
+            formData.set("brochure", form.brochure);
         }
 
         // Form validation
@@ -343,7 +361,67 @@ const AddEvent = () => {
                                         onChange={handleChange}
                                         style={styles.textareaCompact}
                                         value={form.description}
+                                        required
                                     />
+                                </div>
+
+                                <div style={styles.inputGroup}>
+                                    <label style={styles.label}>About Event (Detailed)</label>
+                                    <textarea
+                                        name="aboutEvent"
+                                        placeholder="Full details about the event, what to expect, etc..."
+                                        onChange={handleChange}
+                                        style={styles.textareaCompact}
+                                        value={form.aboutEvent}
+                                        rows={5}
+                                    />
+                                </div>
+
+                                <div style={styles.inputGroup}>
+                                    <label style={styles.label}>Key Highlights</label>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <input
+                                            placeholder="e.g. VIP Seating, Free Parking..."
+                                            style={styles.input}
+                                            value={highlightInput}
+                                            onChange={(e) => setHighlightInput(e.target.value)}
+                                            onKeyPress={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    if (highlightInput.trim()) {
+                                                        setForm({ ...form, keyHighlights: [...form.keyHighlights, highlightInput.trim()] });
+                                                        setHighlightInput("");
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                        <button
+                                            type="button"
+                                            style={styles.addSessionBtn}
+                                            onClick={() => {
+                                                if (highlightInput.trim()) {
+                                                    setForm({ ...form, keyHighlights: [...form.keyHighlights, highlightInput.trim()] });
+                                                    setHighlightInput("");
+                                                }
+                                            }}
+                                        >
+                                            Add
+                                        </button>
+                                    </div>
+                                    {form.keyHighlights.length > 0 && (
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
+                                            {form.keyHighlights.map((h, idx) => (
+                                                <div key={idx} style={styles.highlightTag}>
+                                                    {h}
+                                                    <Trash2
+                                                        size={12}
+                                                        style={{ cursor: 'pointer', marginLeft: '6px' }}
+                                                        onClick={() => setForm({ ...form, keyHighlights: form.keyHighlights.filter((_, i) => i !== idx) })}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -400,7 +478,7 @@ const AddEvent = () => {
                                 <h3 style={styles.cardTitle}>Professional Details</h3>
                                 <div style={styles.grid2} className="add-event-grid-2">
                                     <div style={styles.inputGroup}>
-                                        <label style={styles.label}>Ticket Capacity <span style={{color: '#ef4444'}}>*</span></label>
+                                        <label style={styles.label}>Ticket Capacity <span style={{ color: '#ef4444' }}>*</span></label>
                                         <input
                                             type="number"
                                             name="capacity"
@@ -459,7 +537,7 @@ const AddEvent = () => {
                                             Add
                                         </button>
                                     </div>
-                                    
+
                                     {form.sessions.length > 0 && (
                                         <div style={styles.sessionList}>
                                             {form.sessions.map((s, idx) => (
@@ -492,6 +570,18 @@ const AddEvent = () => {
                                 </div>
 
                                 <div style={styles.inputGroup}>
+                                    <label style={styles.label}>Special Instructions for Attendees</label>
+                                    <textarea
+                                        name="instructions"
+                                        placeholder="e.g. Please bring valid ID, arrive 30 mins early..."
+                                        onChange={handleChange}
+                                        style={styles.textareaCompact}
+                                        value={form.instructions}
+                                        rows={3}
+                                    />
+                                </div>
+
+                                <div style={styles.inputGroup}>
                                     <label style={styles.label}>Applied Refund Tiers (System Logic)</label>
                                     <div style={styles.tierGrid}>
                                         <div style={styles.tierInputWrapper}>
@@ -519,10 +609,12 @@ const AddEvent = () => {
                                             style={styles.addTierBtn}
                                             onClick={() => {
                                                 if (tierInput.hoursBefore !== "" && tierInput.refundPercentage !== "") {
-                                                    setForm({ ...form, refundTiers: [...form.refundTiers, { 
-                                                        hoursBefore: parseInt(tierInput.hoursBefore), 
-                                                        refundPercentage: parseInt(tierInput.refundPercentage) 
-                                                    }].sort((a, b) => b.hoursBefore - a.hoursBefore) });
+                                                    setForm({
+                                                        ...form, refundTiers: [...form.refundTiers, {
+                                                            hoursBefore: parseInt(tierInput.hoursBefore),
+                                                            refundPercentage: parseInt(tierInput.refundPercentage)
+                                                        }].sort((a, b) => b.hoursBefore - a.hoursBefore)
+                                                    });
                                                     setTierInput({ hoursBefore: "", refundPercentage: "" });
                                                 }
                                             }}
@@ -530,7 +622,7 @@ const AddEvent = () => {
                                             Add Tier
                                         </button>
                                     </div>
-                                    
+
                                     {form.refundTiers.length > 0 && (
                                         <div style={styles.tierList}>
                                             {form.refundTiers.map((t, idx) => (
@@ -548,7 +640,7 @@ const AddEvent = () => {
                                         </div>
                                     )}
                                     <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '8px' }}>
-                                        <Info size={12} style={{verticalAlign: 'middle', marginRight: '4px'}} />
+                                        <Info size={12} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
                                         System uses these tiers to automatically calculate refunds. Example: 48h before = 50% refund.
                                     </p>
                                 </div>
@@ -589,6 +681,32 @@ const AddEvent = () => {
                                     </label>
                                 </div>
                                 <p style={styles.helpText}>Recommended: 1200 x 600px, max 5MB</p>
+
+                                <div style={{ marginTop: '24px' }}>
+                                    <label style={styles.label}>Event Brochure (Optional)</label>
+                                    <div style={styles.brochureUpload}>
+                                        <input
+                                            type="file"
+                                            accept=".pdf,image/*"
+                                            id="event-brochure"
+                                            onChange={handleBrochureChange}
+                                            style={{ display: 'none' }}
+                                        />
+                                        <label htmlFor="event-brochure" style={styles.brochureBtn}>
+                                            <Info size={16} />
+                                            {brochureName || "Upload PDF/Image Brochure"}
+                                        </label>
+                                        {brochureName && (
+                                            <button
+                                                type="button"
+                                                style={styles.removeBrochure}
+                                                onClick={() => { setBrochure(null); setBrochureName(""); }}
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
 
                             <div style={styles.card}>
@@ -797,6 +915,44 @@ const styles = {
         flexDirection: "column",
         gap: "8px",
         marginTop: "12px",
+    },
+    highlightTag: {
+        backgroundColor: "#f1f5f9",
+        color: "#475569",
+        padding: "6px 12px",
+        borderRadius: "20px",
+        fontSize: "13px",
+        display: "flex",
+        alignItems: "center",
+        border: "1px solid #e2e8f0",
+    },
+    brochureUpload: {
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        marginTop: "8px",
+    },
+    brochureBtn: {
+        flex: 1,
+        padding: "10px 16px",
+        borderRadius: "8px",
+        border: "1px dashed #cbd5e1",
+        backgroundColor: "#f8fafc",
+        color: "#64748b",
+        fontSize: "14px",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        transition: "all 0.2s",
+    },
+    removeBrochure: {
+        padding: "10px",
+        borderRadius: "8px",
+        border: "none",
+        backgroundColor: "#fee2e2",
+        color: "#ef4444",
+        cursor: "pointer",
     },
     sessionItem: {
         display: "flex",

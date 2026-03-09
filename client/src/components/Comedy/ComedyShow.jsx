@@ -10,6 +10,14 @@ const ComedyShow = () => {
   const navigate = useNavigate();
 
   const [events, setEvents] = useState([]);
+  const [showArrows, setShowArrows] = useState(false);
+
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollWidth, clientWidth } = scrollRef.current;
+      setShowArrows(scrollWidth > clientWidth);
+    }
+  };
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -57,6 +65,12 @@ const ComedyShow = () => {
     return true;
   });
 
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener("resize", checkScroll);
+    return () => window.removeEventListener("resize", checkScroll);
+  }, [comedyShows]);
+
   const scrollLeft = () => {
     scrollRef.current.scrollBy({ left: -320, behavior: "smooth" });
   };
@@ -71,9 +85,11 @@ const ComedyShow = () => {
         <h2>Best Stand-Up Comedy Shows</h2>
       </div>
 
-      <button className="scroll-btn left" onClick={scrollLeft}>
-        ❮
-      </button>
+      {showArrows && (
+        <button className="scroll-btn left" onClick={scrollLeft}>
+          ❮
+        </button>
+      )}
 
       <div className="comedy-events__grid" ref={scrollRef}>
         {comedyShows.map((show) => (
@@ -134,9 +150,11 @@ const ComedyShow = () => {
         ))}
       </div>
 
-      <button className="scroll-btn right" onClick={scrollRight}>
-        ❯
-      </button>
+      {showArrows && (
+        <button className="scroll-btn right" onClick={scrollRight}>
+          ❯
+        </button>
+      )}
     </section>
   );
 };

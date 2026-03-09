@@ -5,14 +5,45 @@ import { API_BASE_URL } from "../../config";
 import { getImageUrl } from "../../utils/imageUtils";
 import "./EventDetailPage.css";
 import { useFavorites } from "../../context/FavoritesContext";
-import { Heart } from "lucide-react";
 import RecommendedEvents from "./RecommendedEvents";
+import { 
+  Calendar, 
+  MapPin, 
+  Clock, 
+  Tag, 
+  FileText, 
+  Info, 
+  Layers, 
+  ExternalLink,
+  ShieldCheck,
+  User,
+  Mail,
+  Phone,
+  Heart,
+  Share2
+} from "lucide-react";
 
 const EventDetailPage = () => {
   const { id, category } = useParams();
   const [event, setEvent] = useState(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
   const navigate = useNavigate();
+
+  const formatDate = (monthStr, dateStr) => {
+    if (!monthStr || !dateStr) return "";
+    try {
+      const [year, month] = monthStr.split("-");
+      const dateObj = new Date(year, parseInt(month) - 1, dateStr);
+      return dateObj.toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      });
+    } catch (e) {
+      return `${dateStr} ${monthStr}`;
+    }
+  };
 
   const formatTime = (timeStr) => {
     if (!timeStr) return "";
@@ -23,14 +54,51 @@ const EventDetailPage = () => {
     return `${displayHours}:${minutes} ${ampm}`;
   };
 
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: event.title,
+        text: `Check out this event: ${event.title}`,
+        url: window.location.href,
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert("Link copied to clipboard!");
+    }
+  };
+
+  const [error, setError] = useState(null);
+
   useEffect(() => {
+    console.log("Fetching event with ID:", id);
     axios
       .get(`${API_BASE_URL}/api/events/${id}`)
-      .then((res) => setEvent(res.data))
-      .catch((err) => console.error(err));
+      .then((res) => {
+        setEvent(res.data);
+        setError(null);
+      })
+      .catch((err) => {
+        console.error("Fetch error:", err);
+        setError(err.response?.data?.message || "Failed to load event details");
+      });
   }, [id]);
 
-  if (!event) return <h2>Loading...</h2>;
+  if (error) {
+    return (
+      <div className="edp-error-container">
+        <h2>Oops! {error}</h2>
+        <p>It seems this event is no longer available or was moved.</p>
+        <button className="edp-book-btn" onClick={() => navigate("/events")}>Browse Other Events</button>
+      </div>
+    );
+  }
+
+  if (!event) return (
+    <div className="edp-loading-container">
+      <div className="spinner"></div>
+      <h2>Loading Event Details...</h2>
+    </div>
+  );
 
   const isUpcoming = (() => {
     if (category === "upcoming" || !!event.declaration) return true;
@@ -52,7 +120,13 @@ const EventDetailPage = () => {
       <div className="edp-wrapper">
         <div className="edp-left">
           <div className="edp-image-box">
-            <img src={getImageUrl(event.image)} alt={event.title} />
+            {!imageLoaded && <div className="edp-image-skeleton"></div>}
+            <img 
+              src={getImageUrl(event.image)} 
+              alt={event.title} 
+              onLoad={() => setImageLoaded(true)}
+              className={imageLoaded ? "loaded" : ""}
+            />
           </div>
 
           {event.aboutEvent && (
@@ -64,26 +138,66 @@ const EventDetailPage = () => {
 
           {event.keyHighlights && event.keyHighlights.length > 0 && (
             <div className="edp-section">
-              <h2>Key Highlights</h2>
-              <ul className="edp-highlights">
+              <h2><Layers size={20} className="section-icon" /> Key Highlights</h2>
+              <div className="edp-highlights-grid">
                 {event.keyHighlights.map((item, i) => (
-                  <li key={i}>{item}</li>
+                  <div key={i} className="edp-highlight-tag">
+                    <ShieldCheck size={14} />
+                    {item}
+                  </div>
                 ))}
-              </ul>
+              </div>
+            </div>
+          )}
+
+          {event.sessions && event.sessions.length > 0 && (
+            <div className="edp-section">
+              <h2><Clock size={20} className="section-icon" /> Event Schedule</h2>
+              <div className="edp-sessions-list">
+                {event.sessions.map((session, i) => (
+                  <div key={i} className="edp-session-card">
+                    <div className="session-time">
+                      <span>{session.startTime}</span>
+                      <div className="time-divider"></div>
+                      <span>{session.endTime}</span>
+                    </div>
+                    <div className="session-info">
+                      <h3>{session.title}</h3>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {event.instructions && (
+            <div className="edp-section instructions-section">
+              <h2><Info size={20} className="section-icon" /> Special Instructions</h2>
+              <div className="edp-instructions-box">
+                <p>{event.instructions}</p>
+              </div>
             </div>
           )}
 
           {event.organizerDetails && (
-            <div className="edp-section">
-              <h2>Organizer</h2>
-              <p className="edp-org-name">{event.organizerDetails.name}</p>
-              <p>{event.organizerDetails.description}</p>
-              <p>
-                <strong>Email:</strong> {event.organizerDetails.contactEmail}
-              </p>
-              <p>
-                <strong>Phone:</strong> {event.organizerDetails.contactPhone}
-              </p>
+            <div className="edp-section organizer-section">
+              <h2><User size={20} className="section-icon" /> Organizer Info</h2>
+              <div className="edp-organizer-profile">
+                <div className="org-main-info">
+                  <h3 className="edp-org-name">{event.organizerDetails.name}</h3>
+                  <p className="org-desc">{event.organizerDetails.description || "Leading event organizer committed to creating memorable experiences."}</p>
+                </div>
+                <div className="org-contact-grid">
+                  <div className="contact-item">
+                    <Mail size={14} />
+                    <span>{event.organizerDetails.contactEmail}</span>
+                  </div>
+                  <div className="contact-item">
+                    <Phone size={14} />
+                    <span>{event.organizerDetails.contactPhone}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -100,45 +214,62 @@ const EventDetailPage = () => {
             <h1 className="edp-title">{event.title}</h1>
 
             <div className="edp-info">
-              <p>
-                <strong>Date:</strong> {event.date} {event.month}
-              </p>
+              <div className="info-row">
+                <Calendar size={22} strokeWidth={1.5} />
+                <div className="info-text-container">
+                  <p className="info-label">Date</p>
+                  <p className="info-value">{formatDate(event.month, event.date)}</p>
+                </div>
+              </div>
+
               {event.time && (
-                <p>
-                  <strong>Time:</strong> {formatTime(event.time)}
-                </p>
-              )}
-              <p>
-                <strong>Location:</strong> {event.location}
-              </p>
-              {event.address && (
-                <p>
-                  <strong>Address:</strong> {event.address}
-                </p>
-              )}
-              <p>
-                <strong>Category:</strong> {event.category}
-              </p>
-
-              {isUpcoming ? (
-                <span className="edp-upcoming-badge">Upcoming</span>
-              ) : (
-                <div className="edp-price">
-                  <strong>Price:</strong>
-                  <span className="edp-price-value">
-                    {typeof event.price === 'string' && event.price.toLowerCase() === 'free'
-                      ? " Free"
-                      : ` Rs.${event.price}`}
-                  </span>
-
+                <div className="info-row">
+                  <Clock size={22} strokeWidth={1.5} />
+                  <div className="info-text-container">
+                    <p className="info-label">Time</p>
+                    <p className="info-value">{formatTime(event.time)} onwards</p>
+                  </div>
                 </div>
               )}
+
+              <div className="info-row">
+                <MapPin size={22} strokeWidth={1.5} />
+                <div className="info-text-container">
+                  <p className="info-label">Venue</p>
+                  <p className="info-value">{event.address || event.location}</p>
+                </div>
+              </div>
+
+              <div className="info-row">
+                <Tag size={22} strokeWidth={1.5} />
+                <div className="info-text-container">
+                  <p className="info-label">Category</p>
+                  <p className="info-value">{event.category}</p>
+                </div>
+              </div>
+
+              <div className="price-ticket-section">
+                {isUpcoming ? (
+                  <span className="edp-upcoming-badge">Registration Opens Soon</span>
+                ) : (
+                  <div className="edp-price-container">
+                    <p className="info-label">Ticket Price</p>
+                    <div className="edp-price-display">
+                      <span className="edp-price-value">
+                        {typeof event.price === 'string' && event.price.toLowerCase() === 'free'
+                          ? "FREE"
+                          : `₹${event.price}`}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <p className="edp-description">{event.description}</p>
 
             {!isUpcoming && (
-              <div className="edp-actions">
+              <div className="edp-actions-row">
                 <button
                   className="edp-book-btn"
                   onClick={() => navigate(`/seats/${category}/${id}`)}
@@ -163,16 +294,40 @@ const EventDetailPage = () => {
                   aria-label="Add to favourites"
                 >
                   <Heart
-                    size={24}
+                    size={22}
                     fill={isFavorite(id) ? "#0b0f5b" : "none"}
                     color={isFavorite(id) ? "#0b0f5b" : "#666"}
                   />
                 </button>
+
+                <button
+                  className="edp-share-btn"
+                  onClick={handleShare}
+                  aria-label="Share event"
+                >
+                  <Share2 size={22} color="#64748b" />
+                </button>
               </div>
             )}
 
+            {event.brochure && (
+              <a 
+                href={event.brochure} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="edp-brochure-link"
+              >
+                <FileText size={18} />
+                Download Event Brochure
+                <ExternalLink size={14} />
+              </a>
+            )}
+
             {event.declaration && (
-              <p className="edp-declaration">{event.declaration}</p>
+              <div className="edp-declaration-box">
+                <Info size={16} />
+                <p>{event.declaration}</p>
+              </div>
             )}
           </div>
         </div>

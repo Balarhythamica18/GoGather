@@ -253,7 +253,10 @@ export const updateProfile = async (req, res) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const { email, name, password, currentPassword } = req.body;
+    const { 
+      email, name, password, currentPassword,
+      businessName, businessWebsite, businessType, phone, location, businessDescription
+    } = req.body;
     const user = await User.findById(userId);
 
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -261,10 +264,8 @@ export const updateProfile = async (req, res) => {
     const nameChanged = name && name !== user.name;
     const emailChanged = email && email !== user.email;
 
-    // Handle Name Update
+    // Handle Basic Info
     if (name) user.name = name;
-
-    // Handle Email Update
     if (email && email !== user.email) {
       const existingUser = await User.findOne({ email });
       if (existingUser) {
@@ -272,6 +273,14 @@ export const updateProfile = async (req, res) => {
       }
       user.email = email;
     }
+
+    // Handle Business Details
+    if (businessName !== undefined) user.businessName = businessName;
+    if (businessWebsite !== undefined) user.businessWebsite = businessWebsite;
+    if (businessType !== undefined) user.businessType = businessType;
+    if (phone !== undefined) user.phone = phone;
+    if (location !== undefined) user.location = location;
+    if (businessDescription !== undefined) user.businessDescription = businessDescription;
 
     // Handle Password Update
     if (password) {
@@ -309,7 +318,6 @@ export const updateProfile = async (req, res) => {
         );
       } catch (syncError) {
         console.error("Failed to sync profile change to events:", syncError);
-        // We don't fail the profile update if sync fails, but we log it
       }
     }
 

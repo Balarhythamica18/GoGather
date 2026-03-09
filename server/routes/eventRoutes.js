@@ -16,8 +16,8 @@ import authMiddleware from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 // Create & update & delete require authentication
-router.post("/", authMiddleware, upload.single("image"), createEvent);
-router.put("/:id", authMiddleware, upload.single("image"), updateEvent);
+router.post("/", authMiddleware, upload.fields([{ name: 'image', maxCount: 1 }, { name: 'brochure', maxCount: 1 }]), createEvent);
+router.put("/:id", authMiddleware, upload.fields([{ name: 'image', maxCount: 1 }, { name: 'brochure', maxCount: 1 }]), updateEvent);
 router.delete("/:id", authMiddleware, deleteEvent);
 
 // Return all events (public)

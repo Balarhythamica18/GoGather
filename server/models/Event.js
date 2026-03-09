@@ -85,6 +85,15 @@ const eventSchema = new mongoose.Schema(
         refundPercentage: Number, // Percentage to refund
       },
     ],
+    // 🆕 BROCHURE & INSTRUCTIONS
+    brochure: {
+      type: String,
+      default: "",
+    },
+    instructions: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

@@ -448,10 +448,9 @@ const SeatLayout = ({ event, user }) => {
           <span>{totalAmount === 0 ? "Free" : `₹${totalAmount}`}</span>
         </p>
 
-        {seatPrice > 0 && (
+        {event.refundPolicy && (
           <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
-            * <strong>Refund Policy:</strong> {event.refundPolicy || "100% refund within 2h of booking. Thereafter, 90% refund (>48h) or 50% refund (24-48h). Non-refundable if <24h."}
-            {event.refundPolicy ? event.refundPolicy : "Thereafter, 90% refund (>48h) or 50% refund (24-48h). Non-refundable if <24h."}
+            * <strong>Refund Policy:</strong> {event.refundPolicy}
           </div>
         )}
 

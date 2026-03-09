@@ -2,14 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
-import { X, CheckCircle, AlertCircle, Clock, Info } from "lucide-react";
+import { X, CheckCircle, AlertCircle, Clock, Info, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
 
 const QRScannerModal = ({ event, onClose }) => {
     const [scanResult, setScanResult] = useState(null);
     const [scanning, setScanning] = useState(true);
     const [loading, setLoading] = useState(false);
-    const scannerRef = useRef(null);
 
     useEffect(() => {
         const scanner = new Html5QrcodeScanner(
@@ -17,7 +16,8 @@ const QRScannerModal = ({ event, onClose }) => {
             {
                 fps: 10,
                 qrbox: { width: 250, height: 250 },
-                aspectRatio: 1.0
+                aspectRatio: 1.0,
+                showTorchButtonIfSupported: true,
             },
             /* verbose= */ false
         );
@@ -75,18 +75,14 @@ const QRScannerModal = ({ event, onClose }) => {
         }
     };
 
-    const resetScanner = () => {
-        setScanResult(null);
-        setScanning(true);
-        window.location.reload(); // Quick fix to re-mount scanner properly if needed, 
-        // but better to just re-instantiate. However, html5-qrcode can be finicky with re-renders.
-    };
-
     return (
         <div style={styles.overlay}>
             <div style={styles.modal}>
                 <div style={styles.header}>
-                    <h2 style={styles.title}>Ticket Verification</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <ShieldCheck size={24} color="#0b0f5b" />
+                        <h2 style={styles.title}>Secure Verification</h2>
+                    </div>
                     <button onClick={onClose} style={styles.closeBtn}>
                         <X size={20} />
                     </button>
@@ -94,26 +90,29 @@ const QRScannerModal = ({ event, onClose }) => {
 
                 <div style={styles.content}>
                     <div style={styles.eventInfo}>
-                        <Info size={16} />
+                        <Info size={16} color="#0b0f5b" />
                         <span>Validating for: <strong>{event.title}</strong></span>
                     </div>
 
                     {scanning && !scanResult ? (
                         <div style={styles.scannerContainer}>
                             <div id="reader" style={styles.reader}></div>
-                            <p style={styles.hint}>Position the QR code within the frame to scan</p>
+                            <div style={styles.hintContainer}>
+                                <div style={styles.hintPulse}></div>
+                                <p style={styles.hint}>Align the QR code within the frame to scan</p>
+                            </div>
                         </div>
                     ) : (
                         <div style={styles.resultContainer}>
                             {loading ? (
                                 <div style={styles.loadingState}>
                                     <div style={styles.spinner}></div>
-                                    <p>Verifying Ticket...</p>
+                                    <p style={styles.loadingText}>Verifying entry credentials...</p>
                                 </div>
                             ) : scanResult.success ? (
                                 <div style={styles.successState}>
                                     <div style={styles.iconWrapperSuccess}>
-                                        <CheckCircle size={64} color="#10b981" />
+                                        <CheckCircle size={80} color="#10b981" />
                                     </div>
                                     <h3 style={styles.resultTitle}>{scanResult.message}</h3>
                                     <div style={styles.detailsCard}>
@@ -125,6 +124,10 @@ const QRScannerModal = ({ event, onClose }) => {
                                             <span style={styles.detailLabel}>Seats/Tickets:</span>
                                             <span style={styles.detailValue}>{scanResult.details?.seats}</span>
                                         </div>
+                                        <div style={styles.detailRow}>
+                                            <span style={styles.detailLabel}>Timestamp:</span>
+                                            <span style={styles.detailValue}>{new Date().toLocaleTimeString()}</span>
+                                        </div>
                                     </div>
                                     <button onClick={() => window.location.reload()} style={styles.nextBtn}>
                                         Scan Next Ticket
@@ -134,15 +137,15 @@ const QRScannerModal = ({ event, onClose }) => {
                                 <div style={styles.errorState}>
                                     <div style={styles.iconWrapperError}>
                                         {scanResult.message?.includes("⏳") ? (
-                                            <Clock size={64} color="#d97706" />
+                                            <Clock size={80} color="#f59e0b" />
                                         ) : (
-                                            <AlertCircle size={64} color="#ef4444" />
+                                            <AlertCircle size={80} color="#ef4444" />
                                         )}
                                     </div>
                                     <h3 style={styles.resultTitle}>{scanResult.message}</h3>
                                     <p style={styles.errorSub}>{scanResult.subMessage}</p>
                                     <button onClick={() => window.location.reload()} style={styles.retryBtn}>
-                                        Try Again
+                                        Return to Scanner
                                     </button>
                                 </div>
                             )}
@@ -150,6 +153,35 @@ const QRScannerModal = ({ event, onClose }) => {
                     )}
                 </div>
             </div>
+
+            <style>{`
+                @keyframes spin { to { transform: rotate(360deg); } }
+                @keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-8px); }
+                    75% { transform: translateX(8px); }
+                }
+                @keyframes pulse {
+                    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(11, 15, 91, 0.4); }
+                    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(11, 15, 91, 0); }
+                    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(11, 15, 91, 0); }
+                }
+                #reader__scan_region {
+                    background: #f8fafc !important;
+                    border-radius: 20px !important;
+                }
+                #reader__dashboard_section_csr button {
+                    background: #0b0f5b !important;
+                    color: white !important;
+                    border: none !important;
+                    padding: 10px 20px !important;
+                    border-radius: 12px !important;
+                    font-weight: 700 !important;
+                    cursor: pointer !important;
+                    font-family: inherit !important;
+                }
+            `}</style>
         </div>
     );
 };
@@ -157,11 +189,9 @@ const QRScannerModal = ({ event, onClose }) => {
 const styles = {
     overlay: {
         position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+        inset: 0,
+        backgroundColor: 'rgba(15, 23, 42, 0.4)',
+        backdropFilter: 'blur(12px)',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -170,44 +200,54 @@ const styles = {
     },
     modal: {
         backgroundColor: '#fff',
-        borderRadius: '24px',
+        borderRadius: '32px',
         width: '100%',
-        maxWidth: '500px',
+        maxWidth: '520px',
         overflow: 'hidden',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
+        fontFamily: "'Outfit', sans-serif",
     },
     header: {
-        padding: '20px 24px',
-        borderBottom: '1px solid #f1f5f9',
+        padding: '28px 32px',
+        borderBottom: '1.5px solid #f1f5f9',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
     },
     title: {
-        fontSize: '18px',
+        fontSize: '20px',
         fontWeight: '800',
-        color: '#1e293b',
+        color: '#0f172a',
         margin: 0,
+        letterSpacing: '-0.02em',
     },
     closeBtn: {
-        background: 'none',
+        background: '#f8fafc',
         border: 'none',
         color: '#94a3b8',
         cursor: 'pointer',
+        padding: '10px',
+        borderRadius: '14px',
+        transition: 'all 0.2s',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     content: {
-        padding: '24px',
+        padding: '32px',
     },
     eventInfo: {
         display: 'flex',
         alignItems: 'center',
-        gap: '8px',
-        padding: '12px',
+        gap: '12px',
+        padding: '16px',
         backgroundColor: '#f8fafc',
-        borderRadius: '12px',
-        fontSize: '13px',
-        color: '#64748b',
-        marginBottom: '24px',
+        borderRadius: '16px',
+        fontSize: '14px',
+        fontWeight: '600',
+        color: '#475569',
+        marginBottom: '32px',
+        border: '1px solid #f1f5f9',
     },
     scannerContainer: {
         display: 'flex',
@@ -216,29 +256,54 @@ const styles = {
     },
     reader: {
         width: '100%',
-        borderRadius: '16px',
+        borderRadius: '24px',
         overflow: 'hidden',
-        border: 'none !important',
+        border: '2px solid #f1f5f9',
+    },
+    hintContainer: {
+        marginTop: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        backgroundColor: '#fff',
+        padding: '8px 20px',
+        borderRadius: '50px',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+        border: '1.5px solid #f1f5f9',
+    },
+    hintPulse: {
+        width: '8px',
+        height: '8px',
+        backgroundColor: '#0b0f5b',
+        borderRadius: '50%',
+        animation: 'pulse 2s infinite',
     },
     hint: {
-        marginTop: '16px',
         fontSize: '14px',
-        color: '#94a3b8',
+        fontWeight: '700',
+        color: '#64748b',
         textAlign: 'center',
+        margin: 0,
     },
     resultContainer: {
         textAlign: 'center',
-        padding: '20px 0',
+        padding: '10px 0',
     },
     loadingState: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '16px',
+        gap: '20px',
+        padding: '40px 0',
+    },
+    loadingText: {
+        fontSize: '15px',
+        fontWeight: '700',
+        color: '#64748b',
     },
     spinner: {
-        width: '40px',
-        height: '40px',
+        width: '48px',
+        height: '48px',
         border: '4px solid #f1f5f9',
         borderTop: '4px solid #0b0f5b',
         borderRadius: '50%',
@@ -248,74 +313,87 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        animation: 'scaleUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
     },
     iconWrapperSuccess: {
-        marginBottom: '20px',
-        animation: 'scaleUp 0.3s ease-out',
+        marginBottom: '24px',
     },
     resultTitle: {
-        fontSize: '22px',
-        fontWeight: '800',
-        color: '#1e293b',
-        margin: '0 0 16px 0',
+        fontSize: '24px',
+        fontWeight: '900',
+        color: '#0f172a',
+        margin: '0 0 20px 0',
+        letterSpacing: '-0.02em',
     },
     detailsCard: {
         width: '100%',
-        backgroundColor: '#f1f5f9',
-        padding: '16px',
-        borderRadius: '12px',
-        marginBottom: '24px',
+        backgroundColor: '#f8fafc',
+        padding: '24px',
+        borderRadius: '20px',
+        marginBottom: '32px',
         textAlign: 'left',
+        border: '1.5px solid #f1f5f9',
     },
     detailRow: {
         display: 'flex',
         justifyContent: 'space-between',
-        marginBottom: '8px',
+        marginBottom: '12px',
+        paddingBottom: '12px',
+        borderBottom: '1px solid #f1f5f9',
     },
     detailLabel: {
         fontSize: '13px',
-        color: '#64748b',
+        fontWeight: '800',
+        color: '#94a3b8',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
     },
     detailValue: {
-        fontSize: '14px',
-        fontWeight: '700',
-        color: '#1e293b',
+        fontSize: '15px',
+        fontWeight: '800',
+        color: '#0f172a',
     },
     nextBtn: {
         width: '100%',
-        padding: '14px',
-        borderRadius: '12px',
+        padding: '18px',
+        borderRadius: '18px',
         border: 'none',
-        backgroundColor: '#10b981',
+        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
         color: '#fff',
         fontSize: '16px',
-        fontWeight: '700',
+        fontWeight: '800',
         cursor: 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        boxShadow: '0 10px 20px -5px rgba(16, 185, 129, 0.3)',
     },
     errorState: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-    },
-    iconWrapperError: {
-        marginBottom: '20px',
         animation: 'shake 0.5s ease-in-out',
     },
-    errorSub: {
-        fontSize: '14px',
-        color: '#64748b',
+    iconWrapperError: {
         marginBottom: '24px',
+    },
+    errorSub: {
+        fontSize: '15px',
+        fontWeight: '600',
+        color: '#64748b',
+        marginBottom: '32px',
+        lineHeight: '1.5',
     },
     retryBtn: {
         width: '100%',
-        padding: '14px',
-        borderRadius: '12px',
+        padding: '18px',
+        borderRadius: '18px',
         border: 'none',
-        backgroundColor: '#ef4444',
+        background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
         color: '#fff',
         fontSize: '16px',
-        fontWeight: '700',
+        fontWeight: '800',
         cursor: 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        boxShadow: '0 10px 20px -5px rgba(239, 68, 68, 0.3)',
     },
 };
 

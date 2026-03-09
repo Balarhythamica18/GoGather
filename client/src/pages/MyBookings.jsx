@@ -181,7 +181,7 @@ const MyBookings = () => {
               </div>
 
               <div className="card-details">
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-blue)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <span className="card-category">
                   {booking.event?.category}
                 </span>
                 <h3>{booking.event?.title}</h3>
@@ -416,8 +416,8 @@ const MyBookings = () => {
           <div className="ticket-modal confirm-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header confirm">
               <button className="close-modal" onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))}><X size={20} /></button>
-              <AlertTriangle size={32} style={{ marginBottom: '12px', color: '#fff' }} />
-              <h3 style={{ margin: 0 }}>{confirmModal.title}</h3>
+              <AlertTriangle size={48} color="#ffffff" />
+              <h3>{confirmModal.title}</h3>
             </div>
             <div className="modal-body">
               <p style={{ color: '#64748b', lineHeight: '1.6', marginBottom: '24px' }}>{confirmModal.message}</p>
