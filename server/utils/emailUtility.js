@@ -127,7 +127,7 @@ export const sendEmail = async (options, blocking = true) => {
                 .catch(error => {
                     console.error(`[EMAIL ERROR (PROMAILER-BG)] Failed to send to ${options.to}:`, error.message);
                     console.log("[EMAIL INFO] ProMailer background failed. Initiating fallback chain...");
-                    
+
                     // Execute fallback manually in background
                     executeFallbackMethods(mailOptions, false, options.to)
                         .catch(fallbackErr => console.error("[EMAIL FATAL BG] All fallback methods failed:", fallbackErr.message));
@@ -140,88 +140,6 @@ export const sendEmail = async (options, blocking = true) => {
         }
     }
 
-    // 2. Try Brevo API (Primary for local development)
-        try {
-            const brevoPayload = {
-                sender: {
-                    name: "GoGather",
-                    email: adminEmail
-                },
-                to: [{
-                    email: mailOptions.to
-                }],
-                subject: mailOptions.subject,
-                htmlContent: mailOptions.html,
-                replyTo: mailOptions.replyTo || { email: adminEmail }
-            };
-
-            if (blocking) {
-                const response = await axios.post('https://api.brevo.com/v3/smtp/email', brevoPayload, {
-                    headers: {
-                        'api-key': brevoApiKey,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                console.log(`[EMAIL SUCCESS (BREVO-API)] Sent to ${options.to}. MessageID: ${response.data.messageId}`);
-                return response.data;
-            } else {
-                // Background execution
-                axios.post('https://api.brevo.com/v3/smtp/email', brevoPayload, {
-                    headers: {
-                        'api-key': brevoApiKey,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => console.log(`[EMAIL SUCCESS (BREVO-API-BG)] Sent to ${options.to}. MessageID: ${response.data.messageId}`))
-                .catch(error => {
-                    console.error(`[EMAIL ERROR (BREVO-API-BG)] Failed to send to ${options.to}:`, error.response?.data?.message || error.message);
-                    console.log("[EMAIL INFO] Brevo API background failed. Initiating fallback chain...");
-                    
-                    // Execute fallback manually in background
-                    executeFallbackMethods(mailOptions, false, options.to)
-                        .catch(fallbackErr => console.error("[EMAIL FATAL BG] All fallback methods failed:", fallbackErr.message));
-                });
-                return;
-            }
-        } catch (error) {
-            console.error(`[EMAIL ERROR (BREVO-API)] Failed to send to ${options.to}:`, error.response?.data?.message || error.message);
-            // Continue to fallback methods
-        }
-    }
-
-    // Fallback methods grouped into a helper so background tasks can call them too
-    const executeFallbackMethods = async (mailOptions, blockingFlag, recipient) => {
-        // 2. Try Resend API (Secondary)
-        if (resendApiKey) {
-            const sendViaApi = async () => {
-                try {
-                    const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-                    const response = await axios.post('https://api.resend.com/emails', {
-                        from: fromEmail,
-                        to: mailOptions.to,
-                        subject: mailOptions.subject,
-                        html: mailOptions.html,
-                        reply_to: mailOptions.replyTo || mailOptions.reply_to
-                    }, {
-                        headers: {
-                            'Authorization': `Bearer ${resendApiKey}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    console.log(`[EMAIL SUCCESS (RESEND-API)] Sent to ${recipient}. ID: ${response.data.id}`);
-                    return response.data;
-                } catch (error) {
-                    const errorMsg = error.response?.data?.message || error.message;
-                    console.error(`[EMAIL ERROR (RESEND-API)] Failed to send to ${recipient}:`, errorMsg);
-                    if (!brevoTransporter && !emailPass) {
-                        if (blockingFlag) throw new Error(`Email delivery failed: ${errorMsg}`);
-                    }
-                }
-                // The outer function will naturally continue down to the fallback methods block below
-            }
-        }
-    }
-    
     // Fallback methods grouped into a helper so background tasks can call them too
     const executeFallbackMethods = async (mailOptions, blockingFlag, recipient) => {
         // 2. Try Resend API (Secondary)
@@ -351,8 +269,5 @@ export const sendEmail = async (options, blocking = true) => {
 
     // Execute fallback normally for blocking calls that failed ProMailer/Brevo API synchronously
     return await executeFallbackMethods(mailOptions, blocking, options.to);
-
 };
-
-export default { sendEmail };
 
