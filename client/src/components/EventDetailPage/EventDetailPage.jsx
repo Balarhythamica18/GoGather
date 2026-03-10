@@ -7,6 +7,7 @@ import "./EventDetailPage.css";
 import { useFavorites } from "../../context/FavoritesContext";
 import { Heart } from "lucide-react";
 import RecommendedEvents from "./RecommendedEvents";
+import Skeleton from "../ui/Skeleton";
 
 const EventDetailPage = () => {
   const { id, category } = useParams();
@@ -30,7 +31,42 @@ const EventDetailPage = () => {
       .catch((err) => console.error(err));
   }, [id]);
 
-  if (!event) return <h2>Loading...</h2>;
+  if (!event) return (
+    <div className="edp-wrapper" style={{ minHeight: '80vh' }}>
+      <div className="edp-left">
+        <div className="edp-image-box">
+          <Skeleton height="400px" borderRadius="20px" />
+        </div>
+        <div className="edp-section" style={{ marginTop: '30px' }}>
+          <Skeleton width="40%" height="32px" style={{ marginBottom: '20px' }} />
+          <Skeleton width="100%" height="20px" style={{ marginBottom: '10px' }} />
+          <Skeleton width="100%" height="20px" style={{ marginBottom: '10px' }} />
+          <Skeleton width="80%" height="20px" />
+        </div>
+        <div className="edp-section">
+          <Skeleton width="40%" height="32px" style={{ marginBottom: '20px' }} />
+          <Skeleton width="60%" height="20px" style={{ marginBottom: '10px' }} />
+          <Skeleton width="50%" height="20px" />
+        </div>
+      </div>
+      <div className="edp-right">
+        <div className="edp-sticky-box" style={{ background: '#fff', padding: '30px', borderRadius: '24px', border: '1px solid #f1f5f9' }}>
+          <Skeleton width="80%" height="40px" style={{ marginBottom: '30px' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '30px' }}>
+            <Skeleton width="60%" height="24px" />
+            <Skeleton width="70%" height="24px" />
+            <Skeleton width="50%" height="24px" />
+            <Skeleton width="65%" height="24px" />
+          </div>
+          <Skeleton width="40%" height="32px" style={{ marginBottom: '20px', marginTop: '30px' }} />
+          <div style={{ display: 'flex', gap: '15px', marginTop: '40px' }}>
+            <Skeleton width="80%" height="56px" borderRadius="16px" style={{ flex: 1 }} />
+            <Skeleton width="56px" height="56px" borderRadius="16px" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   const isUpcoming = (() => {
     if (category === "upcoming" || !!event.declaration) return true;
@@ -47,12 +83,21 @@ const EventDetailPage = () => {
     return false;
   })();
 
+  const handleImageError = (e) => {
+    e.target.src = "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800";
+    e.target.onerror = null;
+  };
+
   return (
     <>
       <div className="edp-wrapper">
         <div className="edp-left">
           <div className="edp-image-box">
-            <img src={getImageUrl(event.image)} alt={event.title} />
+            <img
+              src={getImageUrl(event.image)}
+              alt={event.title}
+              onError={handleImageError}
+            />
           </div>
 
           {event.aboutEvent && (
@@ -138,7 +183,7 @@ const EventDetailPage = () => {
             <p className="edp-description">{event.description}</p>
 
             {!isUpcoming && (
-              <div className="edp-actions">
+              <div className="edp-actions-row">
                 <button
                   className="edp-book-btn"
                   onClick={() => navigate(`/seats/${category}/${id}`)}
@@ -171,6 +216,9 @@ const EventDetailPage = () => {
               </div>
             )}
 
+            {event.declaration && (
+              <p className="edp-declaration">{event.declaration}</p>
+            )}
             {event.declaration && (
               <p className="edp-declaration">{event.declaration}</p>
             )}

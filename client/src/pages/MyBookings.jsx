@@ -5,6 +5,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { getImageUrl } from "../utils/imageUtils";
 import { API_BASE_URL } from "../config";
 import "./MyBookings.css";
+import Skeleton from "../components/ui/Skeleton";
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -12,6 +13,8 @@ const MyBookings = () => {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [confirmModal, setConfirmModal] = useState({ show: false, title: "", message: "", onConfirm: null });
   const [resultModal, setResultModal] = useState({ show: false, type: "success", title: "", message: "", data: null });
+
+  const [isCancellingId, setIsCancellingId] = useState(null);
 
   useEffect(() => {
     fetchBookings();
@@ -38,6 +41,7 @@ const MyBookings = () => {
       message: "Are you sure you want to cancel this booking? Refund will be calculated based on the policy.",
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, show: false }));
+        setIsCancellingId(bookingId); // Set loading state immediately upon confirm
         const token = localStorage.getItem("token");
         try {
           const res = await axios.post(`${API_BASE_URL}/api/bookings/cancel`, { bookingId }, {
@@ -62,6 +66,8 @@ const MyBookings = () => {
             title: "Cancellation Failed",
             message: err.response?.data?.error || "Failed to cancel booking"
           });
+        } finally {
+          setIsCancellingId(null); // Clear loading state
         }
       }
     });
@@ -142,7 +148,31 @@ const MyBookings = () => {
     return set[vibeId] || { label: 'Unknown Vibe', color: '#94a3b8', icon: '✨' };
   };
 
-  if (loading) return <div className="my-bookings-container"><h2>Loading your experiences...</h2></div>;
+  if (loading) return (
+    <div className="my-bookings-container">
+      <h2>My Adventures</h2>
+      <div className="bookings-grid">
+        {[1, 2, 3].map((_, index) => (
+          <div key={index} className="premium-booking-card" style={{ padding: '0', overflow: 'hidden' }}>
+            <Skeleton height="200px" borderRadius="0" />
+            <div style={{ padding: '20px' }}>
+              <Skeleton width="30%" height="20px" style={{ marginBottom: '10px' }} />
+              <Skeleton width="80%" height="28px" style={{ marginBottom: '20px' }} />
+              <Skeleton width="60%" height="16px" style={{ marginBottom: '10px' }} />
+              <Skeleton width="70%" height="16px" style={{ marginBottom: '10px' }} />
+              <div style={{ marginTop: '20px' }}>
+                <Skeleton width="100%" height="80px" borderRadius="12px" style={{ marginBottom: '15px' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Skeleton width="30%" height="24px" />
+                  <Skeleton width="40%" height="40px" borderRadius="10px" />
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="my-bookings-container">
@@ -176,10 +206,10 @@ const MyBookings = () => {
                   <img src={getImageUrl(booking.event?.image)} alt={booking.event?.title} />
                 )}
                 <span className={`status-badge ${booking.status} ${booking.isUsed ? 'used' : ''} ${booking.event?.status === 'completed' ? 'completed' : ''}`}>
-                  {booking.cancelledBy === "organizer" ? 'Organizer Cancelled' : 
-                   (booking.status === 'cancelled' ? 'Cancelled' : 
-                   (booking.event?.status === 'completed' ? 'Event Ended' :
-                   (booking.isUsed ? 'Already Used' : 'Upcoming')))}
+                  {booking.cancelledBy === "organizer" ? 'Organizer Cancelled' :
+                    (booking.status === 'cancelled' ? 'Cancelled' :
+                      (booking.event?.status === 'completed' ? 'Event Ended' :
+                        (booking.isUsed ? 'Already Used' : 'Upcoming')))}
                 </span>
               </div>
 
@@ -291,40 +321,16 @@ const MyBookings = () => {
                   {booking.status === 'cancelled' ? 'Cancelled' : (booking.event?.status === 'completed' ? 'Event Ended' : 'View Ticket')}
                 </button>
                 {booking.status !== 'cancelled' && booking.event?.status === 'completed' && (
-                   <button 
-                     className="rate-experience-btn"
-                     style={{
-                       marginTop: '8px',
-                       width: '100%',
-                       padding: '10px',
-                       borderRadius: '10px',
-                       border: '1px solid #e2e8f0',
-                       background: '#fff',
-                       color: 'var(--primary-blue)',
-                       fontWeight: 600,
-                       cursor: 'pointer',
-                       display: 'flex',
-                       alignItems: 'center',
-                       justifyContent: 'center',
-                       gap: '8px',
-                       fontSize: '0.85rem'
-                     }}
-                   >
-                     🚀 Rate Experience
-                   </button>
-                )}
-                {booking.status !== 'cancelled' && !booking.isUsed && booking.event?.status !== 'completed' && (
                   <button
-                    className="cancel-ticket-btn"
-                    onClick={() => handleCancel(booking._id)}
+                    className="rate-experience-btn"
                     style={{
                       marginTop: '8px',
                       width: '100%',
                       padding: '10px',
                       borderRadius: '10px',
-                      border: '1px solid #fee2e2',
+                      border: '1px solid #e2e8f0',
                       background: '#fff',
-                      color: '#ef4444',
+                      color: 'var(--primary-blue)',
                       fontWeight: 600,
                       cursor: 'pointer',
                       display: 'flex',
@@ -334,8 +340,44 @@ const MyBookings = () => {
                       fontSize: '0.85rem'
                     }}
                   >
-                    <X size={16} />
-                    Cancel Ticket
+                    🚀 Rate Experience
+                  </button>
+                )}
+                {booking.status !== 'cancelled' && !booking.isUsed && booking.event?.status !== 'completed' && (
+                  <button
+                    className="cancel-ticket-btn"
+                    onClick={() => handleCancel(booking._id)}
+                    disabled={isCancellingId === booking._id}
+                    style={{
+                      marginTop: '8px',
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '10px',
+                      border: '1px solid #fee2e2',
+                      background: '#fff',
+                      color: isCancellingId === booking._id ? '#9ca3af' : '#ef4444',
+                      fontWeight: 600,
+                      cursor: isCancellingId === booking._id ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      fontSize: '0.85rem',
+                      opacity: isCancellingId === booking._id ? 0.7 : 1
+                    }}
+                  >
+                    {isCancellingId === booking._id ? (
+                      <>
+                        <div className="spinner" style={{ width: '16px', height: '16px', border: '2px solid #9ca3af', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                        Processing...
+                        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+                      </>
+                    ) : (
+                      <>
+                        <X size={16} />
+                        Cancel Ticket
+                      </>
+                    )}
                   </button>
                 )}
                 {booking.status === 'cancelled' && (
