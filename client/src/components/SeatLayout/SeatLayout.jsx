@@ -72,18 +72,18 @@ const SeatLayout = ({ event, user }) => {
         { id: "admirer", label: "Acoustic Admirer", color: "#10b981", icon: "🎧" }
       ],
       art: [
-        { id: "soul", label: "Creative Soul", color: "#6366f1", icon: "🎨" },
+        { id: "soul", label: "Creative Soul", color: "#db2777", icon: "🎨" },
         { id: "eyeball", label: "Critical Eyeball", color: "#6366f1", icon: "🧐" },
         { id: "browser", label: "Social Browser", color: "#f97316", icon: "🍷" }
       ],
       sports: [
-        { id: "fan", label: "Die-Hard Fan", color: "#1e3a8a", icon: "📣" },
+        { id: "fan", label: "Die-Hard Fan", color: "#f43f5e", icon: "📣" },
         { id: "analyst", label: "Tactical Analyst", color: "#06b6d4", icon: "📋" },
         { id: "lover", label: "Atmosphere Lover", color: "#8b5cf6", icon: "🏟️" }
       ],
       food: [
         { id: "geek", label: "Gourmet Geek", color: "#fb923c", icon: "👨‍🍳" },
-        { id: "social", label: "Social Eater", color: "#4f46e5", icon: "🥂" },
+        { id: "social", label: "Social Eater", color: "#ec4899", icon: "🥂" },
         { id: "taster", label: "Curious Taster", color: "#84cc16", icon: "👅" }
       ],
       rawstories: [
@@ -93,11 +93,11 @@ const SeatLayout = ({ event, user }) => {
       ],
       "theatre drama": [
         { id: "critic", label: "Front Row Critic", color: "#7c3aed", icon: "🎭" },
-        { id: "enthusiast", label: "Dramatic Enthusiast", color: "#4338ca", icon: "👏" },
+        { id: "enthusiast", label: "Dramatic Enthusiast", color: "#db2777", icon: "👏" },
         { id: "whisperer", label: "Stage Whisperer", color: "#059669", icon: "🤫" }
       ],
       default: [
-        { id: "dance", label: "Ready to Dance", color: "#0b0f5b", icon: "💃" },
+        { id: "dance", label: "Ready to Dance", color: "#db2777", icon: "💃" },
         { id: "quiet", label: "Quiet Observer", color: "#0d9488", icon: "👓" },
         { id: "networking", label: "Networking", color: "#ea580c", icon: "🤝" }
       ]
@@ -448,9 +448,10 @@ const SeatLayout = ({ event, user }) => {
           <span>{totalAmount === 0 ? "Free" : `₹${totalAmount}`}</span>
         </p>
 
-        {event.refundPolicy && (
+        {seatPrice > 0 && (
           <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
-            * <strong>Refund Policy:</strong> {event.refundPolicy}
+            * <strong>Refund Policy:</strong> {event.refundPolicy || "100% refund within 2h of booking. Thereafter, 90% refund (>48h) or 50% refund (24-48h). Non-refundable if <24h."}
+            {event.refundPolicy ? event.refundPolicy : "Thereafter, 90% refund (>48h) or 50% refund (24-48h). Non-refundable if <24h."}
           </div>
         )}
 

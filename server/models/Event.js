@@ -29,8 +29,8 @@ const eventSchema = new mongoose.Schema(
     organizerDetails: organizerSchema,
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected", "completed"],
-      default: "approved",
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
     },
     // 🆕 CANCELLATION TRACKING FIELDS
     cancellationReason: {
@@ -76,21 +76,6 @@ const eventSchema = new mongoose.Schema(
       },
     ],
     refundPolicy: {
-      type: String,
-      default: "",
-    },
-    refundTiers: [
-      {
-        hoursBefore: Number, // Hours before event
-        refundPercentage: Number, // Percentage to refund
-      },
-    ],
-    // 🆕 BROCHURE & INSTRUCTIONS
-    brochure: {
-      type: String,
-      default: "",
-    },
-    instructions: {
       type: String,
       default: "",
     },

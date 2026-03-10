@@ -102,7 +102,7 @@ const PaymentPage = () => {
           </div>
 
           <div className="security-badge">
-            <Shield size={20} color="var(--primary-blue)" />
+            <Shield size={20} color="#db2777" />
             <div>
               <strong>Bank-Grade Security</strong>
               <p style={{ margin: 0, opacity: 0.8 }}>End-to-end encrypted payments</p>

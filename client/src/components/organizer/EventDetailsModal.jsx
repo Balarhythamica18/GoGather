@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
-import {
-    X,
-    Users,
-    MapPin,
-    Calendar,
-    Clock,
-    ChevronRight,
-    Search,
+import { 
+    X, 
+    Users, 
+    MapPin, 
+    Calendar, 
+    Clock, 
+    ChevronRight, 
+    Search, 
     ExternalLink,
     PieChart,
     QrCode
@@ -37,9 +37,9 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
         if (event?._id) fetchAttendees();
     }, [event?._id]);
 
-    const filteredAttendees = attendees.filter(a =>
-        (a.userId?.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (a.userId?.email || "").toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredAttendees = attendees.filter(a => 
+        a.userId?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        a.userId?.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const totalSold = attendees.reduce((acc, curr) => acc + (curr.ticketCount || curr.seats?.length || 1), 0);
@@ -48,10 +48,10 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
     const formatCheckInTime = (checkInTime) => {
         if (!checkInTime) return "—";
         const date = new Date(checkInTime);
-        return date.toLocaleTimeString('en-US', {
-            hour: '2-digit',
+        return date.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
             minute: '2-digit',
-            hour12: true
+            hour12: true 
         });
     };
 
@@ -86,7 +86,7 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
                                     <span style={styles.statValue}>{event.capacity !== undefined ? event.capacity : "N/A"}</span>
                                 </div>
                                 <div style={styles.statBox}>
-                                    <span style={styles.statLabel}>Tickets shown</span>
+                                    <span style={styles.statLabel}>Tickets Sold</span>
                                     <span style={styles.statValue}>{totalSold}</span>
                                 </div>
                                 <div style={styles.statBox}>
@@ -102,7 +102,7 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
 
                         <div style={styles.infoCard}>
                             <h3 style={styles.sectionTitle}><MapPin size={18} /> Venue & Location</h3>
-                            <p style={styles.addressText}>{event.address || event.location}</p>
+                            <p style={styles.addressText}>{event.address}, {event.location}</p>
                             {event.mapLink && (
                                 <a href={event.mapLink} target="_blank" rel="noopener noreferrer" style={styles.link}>
                                     View on Google Maps <ExternalLink size={14} />
@@ -124,7 +124,7 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
                             </div>
                         )}
 
-                        <button
+                        <button 
                             style={styles.scannerBtn}
                             onClick={() => onOpenScanner(event)}
                         >
@@ -138,8 +138,8 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
                             <h3 style={styles.sectionTitle}><Users size={18} /> Attendees ({attendees.length})</h3>
                             <div style={styles.searchBox}>
                                 <Search size={16} color="#94a3b8" />
-                                <input
-                                    placeholder="Search attendees..."
+                                <input 
+                                    placeholder="Search attendees..." 
                                     style={styles.searchInput}
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -149,10 +149,7 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
 
                         <div style={styles.attendeeList}>
                             {loading ? (
-                                <div style={styles.loadingContainer}>
-                                    <div style={styles.spinner}></div>
-                                    <p style={styles.emptyText}>Loading attendees...</p>
-                                </div>
+                                <p style={styles.emptyText}>Loading attendees...</p>
                             ) : filteredAttendees.length > 0 ? (
                                 filteredAttendees.map((a, i) => (
                                     <div key={i} style={styles.attendeeItem}>
@@ -178,10 +175,7 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
                                     </div>
                                 ))
                             ) : (
-                                <div style={styles.emptyState}>
-                                    <Users size={48} color="#e2e8f0" style={{ marginBottom: '12px' }} />
-                                    <p style={styles.emptyText}>No attendees found matching your search.</p>
-                                </div>
+                                <p style={styles.emptyText}>No attendees found matching your search.</p>
                             )}
                         </div>
                     </div>
@@ -198,7 +192,7 @@ const styles = {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.4)',
+        backgroundColor: 'rgba(15, 23, 42, 0.8)',
         backdropFilter: 'blur(8px)',
         display: 'flex',
         justifyContent: 'center',
@@ -208,23 +202,22 @@ const styles = {
     },
     modal: {
         backgroundColor: '#fff',
-        borderRadius: '28px',
+        borderRadius: '24px',
         width: '100%',
         maxWidth: '1000px',
         maxHeight: '90vh',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
-        fontFamily: "'Outfit', sans-serif",
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
     },
     header: {
         padding: '24px 32px',
-        borderBottom: '1.5px solid #f1f5f9',
+        borderBottom: '1px solid #f1f5f9',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        background: '#fff',
+        background: 'linear-gradient(to right, #f8fafc, #fff)',
     },
     headerTitle: {
         display: 'flex',
@@ -232,33 +225,29 @@ const styles = {
         gap: '12px',
     },
     title: {
-        fontSize: '22px',
+        fontSize: '24px',
         fontWeight: '800',
-        color: '#0f172a',
+        color: '#1e293b',
         margin: 0,
-        letterSpacing: '-0.02em',
     },
     badge: {
-        padding: '6px 14px',
+        padding: '4px 12px',
         borderRadius: '20px',
         backgroundColor: '#f1f5f9',
         color: '#64748b',
-        fontSize: '11px',
-        fontWeight: '800',
+        fontSize: '12px',
+        fontWeight: '600',
         textTransform: 'uppercase',
-        letterSpacing: '0.05em',
     },
     closeBtn: {
-        background: '#f8fafc',
+        background: 'none',
         border: 'none',
         color: '#94a3b8',
         cursor: 'pointer',
         padding: '8px',
-        borderRadius: '12px',
+        borderRadius: '50%',
         transition: 'all 0.2s',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        ':hover': { backgroundColor: '#f1f5f9', color: '#1e293b' }
     },
     content: {
         padding: '32px',
@@ -273,66 +262,61 @@ const styles = {
         gap: '24px',
     },
     infoCard: {
-        backgroundColor: '#fff',
-        borderRadius: '20px',
-        padding: '24px',
-        border: '1.5px solid #f1f5f9',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.02)',
+        backgroundColor: '#f8fafc',
+        borderRadius: '16px',
+        padding: '20px',
+        border: '1px solid #e2e8f0',
     },
     sectionTitle: {
-        fontSize: '15px',
-        fontWeight: '800',
-        color: '#0f172a',
+        fontSize: '16px',
+        fontWeight: '700',
+        color: '#1e293b',
         margin: '0 0 16px 0',
         display: 'flex',
         alignItems: 'center',
-        gap: '10px',
+        gap: '8px',
     },
     statsGrid: {
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: '16px',
+        gap: '12px',
         marginBottom: '20px',
     },
     statBox: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '6px',
+        gap: '4px',
     },
     statLabel: {
         fontSize: '10px',
         textTransform: 'uppercase',
         color: '#94a3b8',
-        fontWeight: '800',
-        letterSpacing: '0.08em',
+        fontWeight: '600',
     },
     statValue: {
-        fontSize: '22px',
-        fontWeight: '900',
+        fontSize: '20px',
+        fontWeight: '800',
         color: '#0b0f5b',
-        letterSpacing: '-0.02em',
     },
     progressContainer: {
-        height: '10px',
-        backgroundColor: '#f1f5f9',
-        borderRadius: '50px',
+        height: '8px',
+        backgroundColor: '#e2e8f0',
+        borderRadius: '4px',
         overflow: 'hidden',
-        marginBottom: '10px',
+        marginBottom: '8px',
     },
     progressBar: {
         height: '100%',
-        background: 'linear-gradient(90deg, #10b981 0%, #34d399 100%)',
-        borderRadius: '50px',
+        backgroundColor: '#10b981',
+        borderRadius: '4px',
     },
     progressText: {
-        fontSize: '13px',
-        fontWeight: '600',
+        fontSize: '12px',
         color: '#64748b',
         margin: 0,
     },
     addressText: {
         fontSize: '14px',
-        fontWeight: '600',
         color: '#475569',
         margin: '0 0 12px 0',
         lineHeight: '1.5',
@@ -340,103 +324,101 @@ const styles = {
     link: {
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '6px',
+        gap: '4px',
         color: '#0b0f5b',
-        fontSize: '13px',
-        fontWeight: '800',
+        fontSize: '14px',
+        fontWeight: '600',
         textDecoration: 'none',
-        transition: 'all 0.2s',
     },
     sessionList: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '10px',
+        gap: '12px',
     },
     sessionItem: {
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
-        padding: '10px',
-        borderRadius: '12px',
-        backgroundColor: '#f8fafc',
     },
     sessionTime: {
-        fontSize: '11px',
-        fontWeight: '800',
+        fontSize: '12px',
+        fontWeight: '700',
         color: '#0b0f5b',
         backgroundColor: '#e0e7ff',
-        padding: '4px 10px',
-        borderRadius: '8px',
-        minWidth: '95px',
+        padding: '2px 8px',
+        borderRadius: '6px',
+        minWidth: '90px',
         textAlign: 'center',
     },
     sessionName: {
-        fontSize: '13px',
-        fontWeight: '700',
+        fontSize: '14px',
         color: '#475569',
     },
     scannerBtn: {
         width: '100%',
         padding: '16px',
-        borderRadius: '16px',
+        borderRadius: '12px',
         border: 'none',
-        background: 'linear-gradient(135deg, #0b0f5b 0%, #161b7e 100%)',
+        backgroundColor: '#0b0f5b',
         color: '#fff',
-        fontSize: '15px',
-        fontWeight: '800',
+        fontSize: '16px',
+        fontWeight: '700',
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '12px',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        boxShadow: '0 10px 25px -5px rgba(11, 15, 91, 0.3)',
+        transition: 'all 0.2s',
+        boxShadow: '0 10px 15px -3px rgba(11, 15, 91, 0.2)',
     },
     rightCol: {
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: '#fff',
-        borderRadius: '20px',
-        border: '1.5px solid #f1f5f9',
+        borderRadius: '16px',
+        border: '1px solid #e2e8f0',
         overflow: 'hidden',
     },
     attendeeHeader: {
-        padding: '24px',
-        borderBottom: '1.5px solid #f1f5f9',
+        padding: '20px',
+        borderBottom: '1px solid #f1f5f9',
         display: 'flex',
-        flexDirection: 'column',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
         gap: '16px',
     },
     searchBox: {
         display: 'flex',
         alignItems: 'center',
-        gap: '10px',
+        gap: '8px',
         backgroundColor: '#f8fafc',
-        padding: '12px 16px',
-        borderRadius: '12px',
-        border: '1.5px solid #e2e8f0',
+        padding: '8px 16px',
+        borderRadius: '10px',
+        border: '1px solid #e2e8f0',
+        flex: 1,
+        minWidth: '200px',
     },
     searchInput: {
         border: 'none',
         background: 'none',
         fontSize: '14px',
-        fontWeight: '600',
         outline: 'none',
         width: '100%',
         color: '#1e293b',
-        fontFamily: 'inherit',
     },
     attendeeList: {
-        maxHeight: '450px',
+        maxHeight: '400px',
         overflowY: 'auto',
     },
     attendeeItem: {
-        padding: '16px 24px',
+        padding: '16px 20px',
         borderBottom: '1px solid #f1f5f9',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         transition: 'background-color 0.2s',
+        ':hover': { backgroundColor: '#f8fafc' }
     },
     attendeeInfo: {
         display: 'flex',
@@ -445,28 +427,27 @@ const styles = {
     },
     attendeeName: {
         fontSize: '15px',
-        fontWeight: '800',
-        color: '#0f172a',
+        fontWeight: '600',
+        color: '#1e293b',
     },
     attendeeEmail: {
         fontSize: '13px',
-        fontWeight: '600',
         color: '#64748b',
     },
     bookingStatus: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-end',
-        gap: '6px',
+        gap: '4px',
     },
     ticketCount: {
         fontSize: '13px',
-        fontWeight: '800',
+        fontWeight: '600',
         color: '#0b0f5b',
     },
     checkInTime: {
         fontSize: '11px',
-        fontWeight: '800',
+        fontWeight: '600',
         color: '#059669',
         backgroundColor: '#dcfce7',
         padding: '2px 8px',
@@ -474,52 +455,27 @@ const styles = {
     },
     checkedInBadge: {
         fontSize: '10px',
-        fontWeight: '800',
-        color: '#fff',
-        backgroundColor: '#10b981',
-        padding: '4px 10px',
-        borderRadius: '50px',
+        fontWeight: '700',
+        color: '#059669',
+        backgroundColor: '#dcfce7',
+        padding: '2px 8px',
+        borderRadius: '10px',
         textTransform: 'uppercase',
-        letterSpacing: '0.05em',
     },
     pendingBadge: {
         fontSize: '10px',
-        fontWeight: '800',
+        fontWeight: '700',
         color: '#d97706',
         backgroundColor: '#fef3c7',
-        padding: '4px 10px',
-        borderRadius: '50px',
+        padding: '2px 8px',
+        borderRadius: '10px',
         textTransform: 'uppercase',
-        letterSpacing: '0.05em',
     },
     emptyText: {
+        padding: '40px',
         textAlign: 'center',
         color: '#94a3b8',
         fontSize: '14px',
-        fontWeight: '600',
-        margin: 0,
-    },
-    loadingContainer: {
-        padding: '60px 0',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '16px',
-    },
-    emptyState: {
-        padding: '60px 0',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        textAlign: 'center',
-    },
-    spinner: {
-        width: '32px',
-        height: '32px',
-        border: '3px solid #f1f5f9',
-        borderTopColor: '#0b0f5b',
-        borderRadius: '50%',
-        animation: 'spin 1s linear infinite',
     }
 };
 

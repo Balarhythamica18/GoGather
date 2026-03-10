@@ -3,6 +3,7 @@ import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { getImageUrl } from "../../utils/imageUtils";
 import { useNavigate, useParams } from "react-router-dom";
+import { addressOptions, getAddressesByLocation } from "../../data/addressOptions";
 import {
     ArrowLeft,
     Save,
@@ -42,19 +43,12 @@ const AddEvent = () => {
         capacity: "",
         sessions: [], // [{ title, startTime, endTime }]
         refundPolicy: "",
-        refundTiers: [], // [{ hoursBefore, refundPercentage }]
-        instructions: "",
-        brochure: "",
     });
 
     const [sessionInput, setSessionInput] = useState({ title: "", startTime: "", endTime: "" });
-    const [tierInput, setTierInput] = useState({ hoursBefore: "", refundPercentage: "" });
-    const [highlightInput, setHighlightInput] = useState("");
 
     const [image, setImage] = useState(null);
-    const [brochure, setBrochure] = useState(null);
     const [preview, setPreview] = useState(null);
-    const [brochureName, setBrochureName] = useState("");
     const [loading, setLoading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [modalType, setModalType] = useState("create"); // "create" or "update"
@@ -88,18 +82,12 @@ const AddEvent = () => {
                         organizerEmail: ev.organizerDetails?.contactEmail || "",
                         organizerPhone: ev.organizerDetails?.contactPhone || "",
                         mapLink: ev.mapLink || "",
-                        availableSeats: ev.availableSeats || 0,
-                        capacity: ev.capacity || 0,
+                        capacity: ev.capacity || "",
                         sessions: ev.sessions || [],
                         refundPolicy: ev.refundPolicy || "",
-                        refundTiers: ev.refundTiers || [],
-                        instructions: ev.instructions || "",
-                        brochure: ev.brochure || "",
                     });
                     setImage(null);
-                    setBrochure(null);
                     if (ev.image) setPreview(getImageUrl(ev.image));
-                    if (ev.brochure) setBrochureName("Existing Brochure");
                 } catch (err) {
                     console.error("Error loading event for edit:", err);
                 }
@@ -141,12 +129,8 @@ const AddEvent = () => {
         }
     };
 
-    const handleBrochureChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setBrochure(file);
-            setBrochureName(file.name);
-        }
+    const handleHighlightsChange = (e) => {
+        setForm((f) => ({ ...f, keyHighlights: e.target.value.split(",").map(h => h.trim()) }));
     };
 
     const handleSubmit = async (e) => {
@@ -168,27 +152,21 @@ const AddEvent = () => {
         const finalCategory = form.category === "Other" ? form.customCategory : form.category;
 
         Object.keys(form).forEach((key) => {
-            if (key === "keyHighlights" || key === "customCategory" || key === "image" || key === "sessions" || key === "refundTiers") return;
+            if (key === "keyHighlights" || key === "customCategory" || key === "image" || key === "sessions") return;
             formData.append(key, form[key]);
         });
 
         formData.set("category", finalCategory);
         (form.keyHighlights || []).forEach((highlight) => formData.append("keyHighlights", highlight));
-
-        // Add as JSON strings
+        
+        // Add sessions as JSON string
         formData.append("sessions", JSON.stringify(form.sessions));
-        formData.append("refundTiers", JSON.stringify(form.refundTiers));
 
         if (image) {
             formData.append("image", image);
         } else if (form.image) {
+            // Keep existing image if no new one selected
             formData.set("image", form.image);
-        }
-
-        if (brochure) {
-            formData.append("brochure", brochure);
-        } else if (form.brochure) {
-            formData.set("brochure", form.brochure);
         }
 
         // Form validation
@@ -361,67 +339,7 @@ const AddEvent = () => {
                                         onChange={handleChange}
                                         style={styles.textareaCompact}
                                         value={form.description}
-                                        required
                                     />
-                                </div>
-
-                                <div style={styles.inputGroup}>
-                                    <label style={styles.label}>About Event (Detailed)</label>
-                                    <textarea
-                                        name="aboutEvent"
-                                        placeholder="Full details about the event, what to expect, etc..."
-                                        onChange={handleChange}
-                                        style={styles.textareaCompact}
-                                        value={form.aboutEvent}
-                                        rows={5}
-                                    />
-                                </div>
-
-                                <div style={styles.inputGroup}>
-                                    <label style={styles.label}>Key Highlights</label>
-                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                        <input
-                                            placeholder="e.g. VIP Seating, Free Parking..."
-                                            style={styles.input}
-                                            value={highlightInput}
-                                            onChange={(e) => setHighlightInput(e.target.value)}
-                                            onKeyPress={(e) => {
-                                                if (e.key === 'Enter') {
-                                                    e.preventDefault();
-                                                    if (highlightInput.trim()) {
-                                                        setForm({ ...form, keyHighlights: [...form.keyHighlights, highlightInput.trim()] });
-                                                        setHighlightInput("");
-                                                    }
-                                                }
-                                            }}
-                                        />
-                                        <button
-                                            type="button"
-                                            style={styles.addSessionBtn}
-                                            onClick={() => {
-                                                if (highlightInput.trim()) {
-                                                    setForm({ ...form, keyHighlights: [...form.keyHighlights, highlightInput.trim()] });
-                                                    setHighlightInput("");
-                                                }
-                                            }}
-                                        >
-                                            Add
-                                        </button>
-                                    </div>
-                                    {form.keyHighlights.length > 0 && (
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
-                                            {form.keyHighlights.map((h, idx) => (
-                                                <div key={idx} style={styles.highlightTag}>
-                                                    {h}
-                                                    <Trash2
-                                                        size={12}
-                                                        style={{ cursor: 'pointer', marginLeft: '6px' }}
-                                                        onClick={() => setForm({ ...form, keyHighlights: form.keyHighlights.filter((_, i) => i !== idx) })}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
                                 </div>
                             </div>
 
@@ -460,7 +378,16 @@ const AddEvent = () => {
                                     </div>
                                     <div style={styles.inputGroup}>
                                         <label style={styles.label}>Specific Venue/Address</label>
-                                        <input name="address" placeholder="Venue Address" onChange={handleChange} required style={styles.input} value={form.address} />
+                                        {form.location && getAddressesByLocation(form.location).length > 0 ? (
+                                            <select name="address" onChange={handleChange} required style={styles.selectStandalone} value={form.address}>
+                                                <option value="">Select Venue</option>
+                                                {getAddressesByLocation(form.location).map((addr, idx) => (
+                                                    <option key={idx} value={addr}>{addr}</option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <input name="address" placeholder="Venue Address" onChange={handleChange} required style={styles.input} value={form.address} />
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -469,7 +396,7 @@ const AddEvent = () => {
                                 <h3 style={styles.cardTitle}>Professional Details</h3>
                                 <div style={styles.grid2} className="add-event-grid-2">
                                     <div style={styles.inputGroup}>
-                                        <label style={styles.label}>Ticket Capacity <span style={{ color: '#ef4444' }}>*</span></label>
+                                        <label style={styles.label}>Ticket Capacity <span style={{color: '#ef4444'}}>*</span></label>
                                         <input
                                             type="number"
                                             name="capacity"
@@ -528,7 +455,7 @@ const AddEvent = () => {
                                             Add
                                         </button>
                                     </div>
-
+                                    
                                     {form.sessions.length > 0 && (
                                         <div style={styles.sessionList}>
                                             {form.sessions.map((s, idx) => (
@@ -548,92 +475,16 @@ const AddEvent = () => {
                                 </div>
 
                                 <div style={styles.inputGroup}>
-                                    <label style={styles.label}>Refund Policy (Text Description)</label>
+                                    <label style={styles.label}>Refund Policy</label>
                                     <textarea
                                         name="refundPolicy"
-                                        placeholder="e.g. Before 48 hours '50% Refund', Before 24 hours 25% Refund..."
+                                        placeholder="e.g. Full refund up to 48 hours before event, 50% refund within 24 hours, no refund on event day..."
                                         onChange={handleChange}
                                         style={styles.textareaCompact}
                                         value={form.refundPolicy}
-                                        rows={2}
-                                    />
-                                    <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>Briefly describe your policy for display to attendees.</p>
-                                </div>
-
-                                <div style={styles.inputGroup}>
-                                    <label style={styles.label}>Special Instructions for Attendees</label>
-                                    <textarea
-                                        name="instructions"
-                                        placeholder="e.g. Please bring valid ID, arrive 30 mins early..."
-                                        onChange={handleChange}
-                                        style={styles.textareaCompact}
-                                        value={form.instructions}
                                         rows={3}
                                     />
-                                </div>
-
-                                <div style={styles.inputGroup}>
-                                    <label style={styles.label}>Applied Refund Tiers (System Logic)</label>
-                                    <div style={styles.tierGrid}>
-                                        <div style={styles.tierInputWrapper}>
-                                            <span style={styles.tierLabel}>Before (hours)</span>
-                                            <input
-                                                type="number"
-                                                placeholder="48"
-                                                style={styles.input}
-                                                value={tierInput.hoursBefore}
-                                                onChange={(e) => setTierInput({ ...tierInput, hoursBefore: e.target.value })}
-                                            />
-                                        </div>
-                                        <div style={styles.tierInputWrapper}>
-                                            <span style={styles.tierLabel}>Refund %</span>
-                                            <input
-                                                type="number"
-                                                placeholder="50"
-                                                style={styles.input}
-                                                value={tierInput.refundPercentage}
-                                                onChange={(e) => setTierInput({ ...tierInput, refundPercentage: e.target.value })}
-                                            />
-                                        </div>
-                                        <button
-                                            type="button"
-                                            style={styles.addTierBtn}
-                                            onClick={() => {
-                                                if (tierInput.hoursBefore !== "" && tierInput.refundPercentage !== "") {
-                                                    setForm({
-                                                        ...form, refundTiers: [...form.refundTiers, {
-                                                            hoursBefore: parseInt(tierInput.hoursBefore),
-                                                            refundPercentage: parseInt(tierInput.refundPercentage)
-                                                        }].sort((a, b) => b.hoursBefore - a.hoursBefore)
-                                                    });
-                                                    setTierInput({ hoursBefore: "", refundPercentage: "" });
-                                                }
-                                            }}
-                                        >
-                                            Add Tier
-                                        </button>
-                                    </div>
-
-                                    {form.refundTiers.length > 0 && (
-                                        <div style={styles.tierList}>
-                                            {form.refundTiers.map((t, idx) => (
-                                                <div key={idx} style={styles.tierItem}>
-                                                    <span><strong>{t.hoursBefore}h+</strong> before event → <strong>{t.refundPercentage}%</strong> Refund</span>
-                                                    <button
-                                                        type="button"
-                                                        style={styles.removeSessionBtn}
-                                                        onClick={() => setForm({ ...form, refundTiers: form.refundTiers.filter((_, i) => i !== idx) })}
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                    <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '8px' }}>
-                                        <Info size={12} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
-                                        System uses these tiers to automatically calculate refunds. Example: 48h before = 50% refund.
-                                    </p>
+                                    <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>Specify your refund terms for this event. This will be displayed to attendees.</p>
                                 </div>
                             </div>
                         </div>
@@ -672,32 +523,6 @@ const AddEvent = () => {
                                     </label>
                                 </div>
                                 <p style={styles.helpText}>Recommended: 1200 x 600px, max 5MB</p>
-
-                                <div style={{ marginTop: '24px' }}>
-                                    <label style={styles.label}>Event Brochure (Optional)</label>
-                                    <div style={styles.brochureUpload}>
-                                        <input
-                                            type="file"
-                                            accept=".pdf,image/*"
-                                            id="event-brochure"
-                                            onChange={handleBrochureChange}
-                                            style={{ display: 'none' }}
-                                        />
-                                        <label htmlFor="event-brochure" style={styles.brochureBtn}>
-                                            <Info size={16} />
-                                            {brochureName || "Upload PDF/Image Brochure"}
-                                        </label>
-                                        {brochureName && (
-                                            <button
-                                                type="button"
-                                                style={styles.removeBrochure}
-                                                onClick={() => { setBrochure(null); setBrochureName(""); }}
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
                             </div>
 
                             <div style={styles.card}>
@@ -907,44 +732,6 @@ const styles = {
         gap: "8px",
         marginTop: "12px",
     },
-    highlightTag: {
-        backgroundColor: "#f1f5f9",
-        color: "#475569",
-        padding: "6px 12px",
-        borderRadius: "20px",
-        fontSize: "13px",
-        display: "flex",
-        alignItems: "center",
-        border: "1px solid #e2e8f0",
-    },
-    brochureUpload: {
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        marginTop: "8px",
-    },
-    brochureBtn: {
-        flex: 1,
-        padding: "10px 16px",
-        borderRadius: "8px",
-        border: "1px dashed #cbd5e1",
-        backgroundColor: "#f8fafc",
-        color: "#64748b",
-        fontSize: "14px",
-        cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-        transition: "all 0.2s",
-    },
-    removeBrochure: {
-        padding: "10px",
-        borderRadius: "8px",
-        border: "none",
-        backgroundColor: "#fee2e2",
-        color: "#ef4444",
-        cursor: "pointer",
-    },
     sessionItem: {
         display: "flex",
         justifyContent: "space-between",
@@ -953,51 +740,6 @@ const styles = {
         backgroundColor: "#f8fafc",
         borderRadius: "8px",
         fontSize: "14px",
-    },
-    tierGrid: {
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr 100px",
-        gap: "12px",
-        alignItems: "end",
-        marginBottom: "12px",
-    },
-    tierInputWrapper: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "4px",
-    },
-    tierLabel: {
-        fontSize: "11px",
-        color: "#94a3b8",
-        fontWeight: "600",
-        textTransform: "uppercase",
-    },
-    addTierBtn: {
-        padding: "12px",
-        borderRadius: "10px",
-        border: "none",
-        backgroundColor: "#0b0f5b",
-        color: "#fff",
-        fontWeight: "600",
-        cursor: "pointer",
-        fontSize: "13px",
-    },
-    tierList: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "8px",
-        marginTop: "12px",
-    },
-    tierItem: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "12px 16px",
-        backgroundColor: "#f0f9ff",
-        borderLeft: "4px solid #0ea5e9",
-        borderRadius: "8px",
-        fontSize: "14px",
-        color: "#0369a1",
     },
     removeSessionBtn: {
         background: "none",
@@ -1204,14 +946,13 @@ const styles = {
         padding: '14px',
         borderRadius: '12px',
         border: 'none',
-        backgroundColor: '#0b0f5b',
+        backgroundColor: '#ff007a',
         color: '#fff',
         fontSize: '16px',
         fontWeight: '700',
         cursor: 'pointer',
         transition: 'all 0.2s ease',
-        background: "linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%)",
-        boxShadow: '0 10px 15px -3px rgba(11, 15, 91, 0.3)',
+        boxShadow: '0 10px 15px -3px rgba(255, 0, 122, 0.3)',
     },
 };
 
