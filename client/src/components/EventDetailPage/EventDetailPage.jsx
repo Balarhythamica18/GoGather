@@ -273,7 +273,14 @@ const EventDetailPage = () => {
                 <MapPin size={22} strokeWidth={1.5} />
                 <div className="info-text-container">
                   <p className="info-label">Venue</p>
-                  <p className="info-value">{event.address || event.location}</p>
+                  <p className="info-value">
+                    {event.address || event.location}
+                    {event.mapLink && (
+                      <a href={event.mapLink} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', marginLeft: '8px', color: '#2563eb', fontSize: '13px', textDecoration: 'none', fontWeight: 500 }}>
+                        <ExternalLink size={12} style={{ marginRight: '4px' }}/> View Map
+                      </a>
+                    )}
+                  </p>
                 </div>
               </div>
 

@@ -147,20 +147,38 @@ router.post("/verify-payment", async (req, res) => {
 
     const event = booking.eventId;
     
+    // Formatting date as DD-MM-YYYY
+    let fullDate = event?.date;
+    if (event?.month) {
+      const parts = event.month.split("-");
+      if (parts.length === 2 && event.date) {
+        fullDate = `${String(event.date).padStart(2, '0')}-${parts[1]}-${parts[0]}`;
+      }
+    }
+    
+    // Extract base64 without prefix for nodemailer attachment
+    const base64Data = qrCodeBase64.replace(/^data:image\/\w+;base64,/, "");
+
     try {
       await sendEmail({
         to: userEmail,
         subject: `Your Ticket for ${event?.title || "Event"} 🎫`,
+        attachments: [{
+          filename: 'ticket-qrcode.png',
+          content: base64Data,
+          encoding: 'base64',
+          cid: 'qrcode-img'
+        }],
         html: `
           <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background-color: #ffffff;">
-            <div style="background: linear-gradient(135deg, #db2777 0%, #be185d 100%); padding: 40px 20px; text-align: center; color: white;">
-              <h1 style="margin: 0; font-size: 28px; letter-spacing: 1px;">GoGather</h1>
-              <p style="margin: 10px 0 0; opacity: 0.9;">Your entry pass is confirmed!</p>
+            <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); padding: 40px 20px; text-align: center; color: white;">
+              <h1 style="margin: 0; font-size: 28px; letter-spacing: 1px; font-weight: 800;">GoGather</h1>
+              <p style="margin: 10px 0 0; opacity: 0.9; font-weight: 500;">Your entry pass is confirmed!</p>
             </div>
             
             <div style="padding: 30px;">
               <div style="margin-bottom: 30px; text-align: center;">
-                <img src="${qrCodeBase64}" alt="QR Entry Pass" style="width: 200px; height: 200px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 12px;"/>
+                <img src="cid:qrcode-img" alt="QR Entry Pass" style="width: 200px; height: 200px; border: 1px solid #e2e8f0; padding: 10px; border-radius: 12px;"/>
                 <p style="color: #64748b; font-size: 12px; margin-top: 10px;">Show this QR at the venue for entry</p>
               </div>
 
@@ -168,8 +186,10 @@ router.post("/verify-payment", async (req, res) => {
                 <h3 style="margin: 0 0 15px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Booking Details</h3>
                 <table style="width: 100%; border-collapse: collapse;">
                   <tr><td style="padding: 8px 0; color: #64748b;">Event:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${event?.title}</td></tr>
-                  <tr><td style="padding: 8px 0; color: #64748b;">Date & Time:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${event?.date} at ${event?.time}</td></tr>
-                  <tr><td style="padding: 8px 0; color: #64748b;">Location:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${event?.location}</td></tr>
+                  <tr><td style="padding: 8px 0; color: #64748b;">Date & Time:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${fullDate} at ${event?.time}</td></tr>
+                  <tr><td style="padding: 8px 0; color: #64748b; vertical-align: top;">Location:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${event?.location}
+                  ${event?.mapLink ? `<br><a href="${event.mapLink}" style="color: #2563eb; font-size: 12px; text-decoration: none; margin-top: 4px; display: inline-block; font-weight: 600;">📍 View Live Location</a>` : ''}
+                  </td></tr>
                   <tr><td style="padding: 8px 0; color: #64748b;">Seats:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">${booking.seats?.join(", ") || booking.ticketCount + " Tickets"}</td></tr>
                   <tr><td style="padding: 8px 0; color: #64748b;">Amount:</td><td style="padding: 8px 0; text-align: right; font-weight: 600; color: #1e293b;">₹${booking.amount}</td></tr>
                   <tr><td style="padding: 8px 0; color: #64748b;">Booking ID:</td><td style="padding: 8px 0; text-align: right; font-family: monospace; color: #64748b;">#${booking._id.toString().slice(-8).toUpperCase()}</td></tr>
@@ -330,9 +350,9 @@ router.post("/cancel", authMiddleware, async (req, res) => {
           subject: `Booking Cancelled: ${event?.title || "Event"} 🎟️`,
           html: `
             <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-              <div style="background-color: #f1f5f9; padding: 25px; text-align: center;">
-                <h2 style="color: #475569; margin: 0;">Booking Cancelled</h2>
-                <p style="color: #64748b; margin-top: 5px;">Event entry has been removed from your history</p>
+              <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); padding: 25px; text-align: center;">
+                <h2 style="color: #ffffff; margin: 0; font-weight: 700;">Booking Cancelled</h2>
+                <p style="color: #cbd5e1; margin-top: 5px; font-weight: 500;">Event entry has been removed from your history</p>
               </div>
               <div style="padding: 25px;">
                 <p>Hello,</p>
@@ -373,9 +393,9 @@ router.post("/cancel", authMiddleware, async (req, res) => {
           subject: `Booking Cancelled: ${event?.title || "Event"} 🎟️`,
           html: `
             <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-              <div style="background-color: #f1f5f9; padding: 25px; text-align: center;">
-                <h2 style="color: #475569; margin: 0;">Booking Cancelled</h2>
-                <p style="color: #64748b; margin-top: 5px;">Your refund has been initiated</p>
+              <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); padding: 25px; text-align: center;">
+                <h2 style="color: #ffffff; margin: 0; font-weight: 700;">Booking Cancelled</h2>
+                <p style="color: #cbd5e1; margin-top: 5px; font-weight: 500;">Your refund has been initiated</p>
               </div>
               <div style="padding: 25px;">
                 <p>Hello,</p>
