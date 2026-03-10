@@ -270,6 +270,22 @@ const MyBookings = () => {
                 </span>
               </div>
 
+              <div className="card-qr-preview no-print">
+                <div className="qr-mini-box">
+                  <QRCodeSVG
+                    value={JSON.stringify({
+                      bookingId: booking._id,
+                      eventName: booking.event?.title,
+                      seats: booking.seats?.length ? booking.seats.join(", ") : `${booking.ticketCount} Tickets`
+                    })}
+                    size={64}
+                    bgColor={"#ffffff"}
+                    fgColor={"#1e293b"}
+                    level={"M"}
+                  />
+                </div>
+              </div>
+
               <div className="card-details">
                 <span className="card-category">
                   {booking.event?.category}
@@ -356,11 +372,10 @@ const MyBookings = () => {
                     </>
                   ) : (
                     <>
-                      <div className="status-header">
-                        <CheckCircle2 size={20} color="#10b981" />
-                        <span style={{ color: '#10b981', fontWeight: 700 }}>Confirmed</span>
+                      <div className="status-header confirmed">
+                        <CheckCircle2 size={18} />
+                        <span>Confirmed</span>
                       </div>
-                      <p className="status-note">Your booking is secured. You can view your ticket for entry.</p>
                     </>
                   )}
                 </div>

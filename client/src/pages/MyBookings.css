@@ -146,6 +146,19 @@
     font-weight: 700;
 }
 
+/* ===================== CARD QR PREVIEW ===================== */
+.card-qr-preview {
+    padding: 0 16px;
+}
+
+.qr-mini-box {
+    background: #ffffff;
+    padding: 8px;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
 /* ===================== STATUS INFO BOX ===================== */
 .card-status-info {
     padding: 0 32px;
@@ -165,6 +178,20 @@
     gap: 10px;
     font-size: 15px;
     font-weight: 700;
+}
+
+.status-header.confirmed {
+    color: #10b981;
+    font-size: 14px;
+    padding: 0;
+    gap: 6px;
+}
+
+.status-container.confirmed {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
 }
 
 .status-note {
@@ -270,9 +297,9 @@
 
 .ticket-modal {
     background: #ffffff;
-    border-radius: 32px;
+    border-radius: 24px;
     width: 100%;
-    max-width: 480px;
+    max-width: 440px;
     overflow: hidden;
     box-shadow: 0 40px 100px rgba(0, 0, 0, 0.25);
     animation: modalSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -292,7 +319,7 @@
 
 .modal-header {
     background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
-    padding: 32px;
+    padding: 20px 24px;
     position: relative;
     text-align: center;
     color: #ffffff;
@@ -341,12 +368,12 @@
 }
 
 .modal-body {
-    padding: 32px;
+    padding: 24px;
     text-align: center;
 }
 
 .modal-footer {
-    padding: 0 32px 32px;
+    padding: 0 24px 24px;
     display: flex;
     justify-content: center;
 }
@@ -367,11 +394,16 @@
 /* ===================== RESPONSIVE ARCHITECTURE ===================== */
 @media (max-width: 1100px) {
     .premium-booking-card {
-        grid-template-columns: auto 1fr 1fr;
+        grid-template-columns: auto 1fr auto auto;
         grid-template-areas:
-            "img info actions"
-            "img status actions";
+            "img info qr actions"
+            "img status qr actions";
         gap: 20px;
+    }
+
+    .card-qr-preview {
+        grid-area: qr;
+        padding: 0;
     }
 
     .card-status-info {
@@ -394,11 +426,11 @@
 
 @media (max-width: 950px) {
     .premium-booking-card {
-        grid-template-columns: 180px 1fr;
+        grid-template-columns: 180px 1fr auto;
         grid-template-areas:
-            "img info"
-            "img status"
-            "actions actions";
+            "img info qr"
+            "img status qr"
+            "actions actions actions";
         padding: 20px;
     }
 
@@ -440,6 +472,15 @@
         display: flex;
         flex-direction: column;
         gap: 16px;
+        position: relative;
+    }
+
+    .card-qr-preview {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 10;
+        transform: scale(0.9);
     }
 
     .card-image-section {
