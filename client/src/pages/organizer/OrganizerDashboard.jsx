@@ -38,12 +38,12 @@ import "./OrganizerDashboard.css";
 const OrganizerDashboard = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
-  const [stats, setStats] = useState({ 
-    totalEvents: 0, 
-    approvedEvents: 0, 
-    pendingEvents: 0, 
-    totalBookings: 0, 
-    totalRevenue: 0 
+  const [stats, setStats] = useState({
+    totalEvents: 0,
+    approvedEvents: 0,
+    pendingEvents: 0,
+    totalBookings: 0,
+    totalRevenue: 0
   });
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
@@ -55,6 +55,7 @@ const OrganizerDashboard = () => {
   const [eventToDelete, setEventToDelete] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all"); // 'all', 'upcoming', 'closed', 'pending'
   const [activeTab, setActiveTab] = useState("events"); // 'events' or 'settings'
 
   // Settings State
@@ -166,7 +167,17 @@ const OrganizerDashboard = () => {
   const filteredEvents = events.filter(event => {
     const titleMatch = (event.title || "").toLowerCase().includes(searchTerm.toLowerCase());
     const locationMatch = (event.location || "").toLowerCase().includes(searchTerm.toLowerCase());
-    return titleMatch || locationMatch;
+
+    let statusMatch = true;
+    if (filterStatus === 'upcoming') {
+      statusMatch = event.status === 'approved';
+    } else if (filterStatus === 'closed') {
+      statusMatch = event.status === 'completed';
+    } else if (filterStatus === 'pending') {
+      statusMatch = event.status === 'pending';
+    }
+
+    return (titleMatch || locationMatch) && statusMatch;
   });
 
   const handleUpdateProfile = async (e) => {
@@ -307,7 +318,18 @@ const OrganizerDashboard = () => {
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
-                  <button className="icon-btn"><Filter size={18} /></button>
+                  <div className="status-filter-group">
+                    <select
+                      className="filter-select"
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
+                    >
+                      <option value="all">All Events</option>
+                      <option value="upcoming">Upcoming</option>
+                      <option value="closed">Closed</option>
+                      <option value="pending">Pending</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -317,22 +339,25 @@ const OrganizerDashboard = () => {
                 </div>
               ) : filteredEvents.length === 0 ? (
                 <div style={{ padding: '80px', textAlign: 'center' }}>
-                   <div style={{ fontSize: '48px', marginBottom: '16px' }}>📅</div>
-                   <h3>No events found</h3>
-                   <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Time to create something amazing!</p>
-                   <button className="btn-primary" style={{ margin: '0 auto' }} onClick={() => navigate("/add-event")}>
-                     Create First Event
-                   </button>
+                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>📅</div>
+                  <h3>No events found</h3>
+                  <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Time to create something amazing!</p>
+                  <button className="btn-primary" style={{ margin: '0 auto' }} onClick={() => navigate("/add-event")}>
+                    Create First Event
+                  </button>
                 </div>
               ) : (
                 <>
-                  {/* Active Events */}
+                  {/* Events Section */}
                   <div className="event-group">
                     <h3 className="group-title" style={{ fontSize: '1.2rem', margin: '20px 0', borderLeft: '4px solid var(--primary)', paddingLeft: '12px' }}>
-                      Active Events ({filteredEvents.filter(e => e.status !== 'completed').length})
+                      {filterStatus === 'all' ? `Active Events (${filteredEvents.filter(e => e.status !== 'completed').length})` :
+                        filterStatus === 'closed' ? `Closed Events (${filteredEvents.length})` :
+                          filterStatus === 'upcoming' ? `Upcoming Events (${filteredEvents.length})` :
+                            filterStatus === 'pending' ? `Pending Approval (${filteredEvents.length})` : 'Events'}
                     </h3>
                     <div className="event-grid">
-                      {filteredEvents.filter(e => e.status !== 'completed').map((event) => (
+                      {(filterStatus === 'all' ? filteredEvents.filter(e => e.status !== 'completed') : filteredEvents).map((event) => (
                         <div
                           key={event._id}
                           className="event-card premium-hover"
@@ -340,10 +365,20 @@ const OrganizerDashboard = () => {
                         >
                           <div className="card-image-box">
                             <img src={getImageUrl(event.image)} alt={event.title} />
-                            
+
+                            {event.status === 'completed' && (
+                              <div className="status-badge-overlay" style={{
+                                position: 'absolute', top: '12px', left: '12px', background: '#64748b', color: '#fff',
+                                padding: '4px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase',
+                                zIndex: 10
+                              }}>
+                                Event Closed
+                              </div>
+                            )}
+
                             <div className="date-badge-overlay">
                               <span className="month">
-                                {event.month?.includes("-") 
+                                {event.month?.includes("-")
                                   ? new Date(event.month).toLocaleString('en-US', { month: 'short' }).toUpperCase()
                                   : event.month?.slice(0, 3).toUpperCase()}
                               </span>
@@ -359,7 +394,7 @@ const OrganizerDashboard = () => {
                               <div className="info-item">
                                 <Calendar size={16} />
                                 <span>
-                                  {event.date} {event.month?.includes("-") 
+                                  {event.date} {event.month?.includes("-")
                                     ? new Date(event.month).toLocaleString('en-US', { month: 'long' })
                                     : event.month}
                                 </span>
@@ -389,16 +424,16 @@ const OrganizerDashboard = () => {
                   </div>
 
                   {/* Past Events */}
-                  {filteredEvents.some(e => e.status === 'completed') && (
+                  {filterStatus === 'all' && filteredEvents.some(e => e.status === 'completed') && (
                     <div className="event-group" style={{ marginTop: '48px', opacity: 0.85 }}>
                       <h3 className="group-title" style={{ fontSize: '1.2rem', margin: '20px 0', borderLeft: '4px solid #64748b', paddingLeft: '12px', color: '#64748b' }}>
                         Past Events ({filteredEvents.filter(e => e.status === 'completed').length})
                       </h3>
                       <div className="event-grid">
                         {filteredEvents.filter(e => e.status === 'completed').map((event) => (
-                          <div 
-                            key={event._id} 
-                            className="event-card completed-event" 
+                          <div
+                            key={event._id}
+                            className="event-card completed-event"
                             style={{ filter: 'grayscale(0.4)', background: '#f8fafc' }}
                             onClick={() => handleEventAction(event)}
                           >
@@ -408,7 +443,7 @@ const OrganizerDashboard = () => {
                                 position: 'absolute', top: '12px', left: '12px', background: '#64748b', color: '#fff',
                                 padding: '4px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase'
                               }}>
-                                Completed
+                                Event Closed
                               </div>
                             </div>
                             <div className="card-content">
@@ -459,7 +494,7 @@ const OrganizerDashboard = () => {
                             className="premium-input"
                             placeholder="Enter business name"
                             value={settingsForm.businessName}
-                            onChange={(e) => setSettingsForm({...settingsForm, businessName: e.target.value})}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, businessName: e.target.value })}
                           />
                         </div>
                       </div>
@@ -472,7 +507,7 @@ const OrganizerDashboard = () => {
                             className="premium-input"
                             placeholder="https://example.com"
                             value={settingsForm.businessWebsite}
-                            onChange={(e) => setSettingsForm({...settingsForm, businessWebsite: e.target.value})}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, businessWebsite: e.target.value })}
                           />
                         </div>
                       </div>
@@ -488,7 +523,7 @@ const OrganizerDashboard = () => {
                             className="premium-input"
                             placeholder="e.g. Event Agency"
                             value={settingsForm.businessType}
-                            onChange={(e) => setSettingsForm({...settingsForm, businessType: e.target.value})}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, businessType: e.target.value })}
                           />
                         </div>
                       </div>
@@ -501,7 +536,7 @@ const OrganizerDashboard = () => {
                             className="premium-input"
                             placeholder="City, Country"
                             value={settingsForm.location}
-                            onChange={(e) => setSettingsForm({...settingsForm, location: e.target.value})}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, location: e.target.value })}
                           />
                         </div>
                       </div>
@@ -515,7 +550,7 @@ const OrganizerDashboard = () => {
                           className="premium-input"
                           placeholder="Tell us about your organization..."
                           value={settingsForm.businessDescription}
-                          onChange={(e) => setSettingsForm({...settingsForm, businessDescription: e.target.value})}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, businessDescription: e.target.value })}
                           style={{ minHeight: '100px', paddingLeft: '48px', paddingTop: '14px' }}
                         />
                       </div>
@@ -545,7 +580,7 @@ const OrganizerDashboard = () => {
                             type="text"
                             className="premium-input"
                             value={settingsForm.name}
-                            onChange={(e) => setSettingsForm({...settingsForm, name: e.target.value})}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, name: e.target.value })}
                           />
                         </div>
                       </div>
@@ -557,7 +592,7 @@ const OrganizerDashboard = () => {
                             type="tel"
                             className="premium-input"
                             value={settingsForm.phone}
-                            onChange={(e) => setSettingsForm({...settingsForm, phone: e.target.value})}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, phone: e.target.value })}
                           />
                         </div>
                       </div>
@@ -570,7 +605,7 @@ const OrganizerDashboard = () => {
                           type="email"
                           className="premium-input"
                           value={settingsForm.email}
-                          onChange={(e) => setSettingsForm({...settingsForm, email: e.target.value})}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, email: e.target.value })}
                         />
                       </div>
                     </div>
@@ -600,7 +635,7 @@ const OrganizerDashboard = () => {
                           className="premium-input"
                           placeholder="••••••••"
                           value={settingsForm.currentPassword}
-                          onChange={(e) => setSettingsForm({...settingsForm, currentPassword: e.target.value})}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, currentPassword: e.target.value })}
                         />
                         <button type="button" className="pw-toggle" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
                           {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -616,7 +651,7 @@ const OrganizerDashboard = () => {
                           className="premium-input"
                           placeholder="Min. 8 characters"
                           value={settingsForm.newPassword}
-                          onChange={(e) => setSettingsForm({...settingsForm, newPassword: e.target.value})}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, newPassword: e.target.value })}
                         />
                         <button type="button" className="pw-toggle" onClick={() => setShowNewPassword(!showNewPassword)}>
                           {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -632,7 +667,7 @@ const OrganizerDashboard = () => {
                           className="premium-input"
                           placeholder="Repeat new password"
                           value={settingsForm.confirmPassword}
-                          onChange={(e) => setSettingsForm({...settingsForm, confirmPassword: e.target.value})}
+                          onChange={(e) => setSettingsForm({ ...settingsForm, confirmPassword: e.target.value })}
                         />
                         <button type="button" className="pw-toggle" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                           {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -665,34 +700,34 @@ const OrganizerDashboard = () => {
       {showConfirmation && (
         <div className="modal-overlay">
           <div className="modal-content">
-             <div className="modal-icon-box">
-                <Trash2 color="var(--accent)" size={32} />
-             </div>
-             <h2 className="modal-title">Delete Event?</h2>
-             <p className="modal-text">This will permanently remove <strong>{eventToDelete?.title}</strong>. This action cannot be undone.</p>
-             <div className="modal-actions">
-               <button className="btn-cancel" onClick={() => { setShowConfirmation(false); setEventToDelete(null); }}>Cancel</button>
-               <button className="btn-delete" onClick={confirmDelete}>Delete Now</button>
-             </div>
+            <div className="modal-icon-box">
+              <Trash2 color="var(--accent)" size={32} />
+            </div>
+            <h2 className="modal-title">Delete Event?</h2>
+            <p className="modal-text">This will permanently remove <strong>{eventToDelete?.title}</strong>. This action cannot be undone.</p>
+            <div className="modal-actions">
+              <button className="btn-cancel" onClick={() => { setShowConfirmation(false); setEventToDelete(null); }}>Cancel</button>
+              <button className="btn-delete" onClick={confirmDelete}>Delete Now</button>
+            </div>
           </div>
         </div>
       )}
 
-            {/* Modals */}
-            {showDetails && selectedEvent && (
-                <EventDetailsModal
-                    event={selectedEvent}
-                    onClose={() => setShowDetails(false)}
-                    onOpenScanner={handleOpenScanner}
-                />
-            )}
+      {/* Modals */}
+      {showDetails && selectedEvent && (
+        <EventDetailsModal
+          event={selectedEvent}
+          onClose={() => setShowDetails(false)}
+          onOpenScanner={handleOpenScanner}
+        />
+      )}
 
-            {showScanner && selectedEvent && (
-                <QRScannerModal
-                    event={selectedEvent}
-                    onClose={() => setShowScanner(false)}
-                />
-            )}
+      {showScanner && selectedEvent && (
+        <QRScannerModal
+          event={selectedEvent}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
     </div>
   );
 };
