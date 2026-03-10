@@ -503,3 +503,109 @@
         border: none;
     }
 }
+
+/* ===================== PRINT ARCHITECTURE ===================== */
+@media print {
+
+    /* Hide everything by default */
+    body * {
+        visibility: hidden !important;
+    }
+
+    /* Specifically hide UI elements across the app */
+    .navbar-container,
+    .footer,
+    .no-print,
+    .close-modal,
+    .my-bookings-container h2,
+    .bookings-grid,
+    .modal-header .close-modal,
+    .print-ticket-btn {
+        display: none !important;
+    }
+
+    /* Show only the ticket modal and its children */
+    .ticket-modal-overlay {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        display: block !important;
+        visibility: visible !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        z-index: 10000 !important;
+    }
+
+    .ticket-modal {
+        visibility: visible !important;
+        position: relative !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        max-width: 550px !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: none !important;
+        animation: none !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        display: block !important;
+    }
+
+    .ticket-modal * {
+        visibility: visible !important;
+    }
+
+    .modal-header {
+        background: #0b0f5b !important;
+        color: #ffffff !important;
+        padding: 24px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        text-align: center !important;
+    }
+
+    .modal-header h3 {
+        color: #ffffff !important;
+        margin-top: 10px !important;
+    }
+
+    .modal-body {
+        padding: 24px !important;
+    }
+
+    .ticket-qr-section {
+        margin-bottom: 20px !important;
+    }
+
+    /* Force background colors for elements inside */
+    .ticket-details-box {
+        background: #f8fafc !important;
+        border: 1px dashed #cbd5e1 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        padding: 20px !important;
+        border-radius: 12px !important;
+    }
+
+    .security-badge {
+        background: #f0fdf4 !important;
+        border: 1px solid #dcfce7 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        padding: 8px 16px !important;
+        border-radius: 100px !important;
+        color: #10b981 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    /* Reset page margins */
+    @page {
+        margin: 0.5cm;
+        size: auto;
+    }
+}

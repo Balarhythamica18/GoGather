@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Calendar, MapPin, Ticket, X, QrCode, ShieldCheck, CheckCircle2, AlertTriangle, Star } from "lucide-react";
+import { Calendar, MapPin, Ticket, X, QrCode, ShieldCheck, CheckCircle2, AlertTriangle, Star, Printer } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { getImageUrl } from "../utils/imageUtils";
 import { API_BASE_URL } from "../config";
@@ -16,6 +16,10 @@ const MyBookings = () => {
 
   const [isCancellingId, setIsCancellingId] = useState(null);
   const [ratingData, setRatingData] = useState({ bookingId: null, rating: 0, submitted: false, showStarsOnly: false });
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   useEffect(() => {
     if (ratingData.submitted && !ratingData.showStarsOnly) {
@@ -591,7 +595,30 @@ const MyBookings = () => {
                   </div>
                 </div>
               </div>
-              <div className="modal-footer">
+              <div className="modal-footer no-print">
+                <button
+                  className="print-ticket-btn"
+                  onClick={handlePrint}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '10px 20px',
+                    background: 'linear-gradient(135deg, #0b0f5b 0%, #0a0d4a 100%)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontWeight: '700',
+                    fontSize: '0.9rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(11, 15, 91, 0.2)',
+                    transition: 'all 0.2s',
+                    marginBottom: '16px'
+                  }}
+                >
+                  <Printer size={18} />
+                  Download / Print Ticket
+                </button>
                 <div className="security-badge">
                   <ShieldCheck size={16} />
                   <span>Verified Booking</span>
