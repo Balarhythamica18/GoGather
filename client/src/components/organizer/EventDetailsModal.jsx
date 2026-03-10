@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
-import { 
-    X, 
-    Users, 
-    MapPin, 
-    Calendar, 
-    Clock, 
-    ChevronRight, 
-    Search, 
+import {
+    X,
+    Users,
+    MapPin,
+    Calendar,
+    Clock,
+    ChevronRight,
+    Search,
     ExternalLink,
     PieChart,
     QrCode
@@ -37,7 +37,7 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
         if (event?._id) fetchAttendees();
     }, [event?._id]);
 
-    const filteredAttendees = attendees.filter(a => 
+    const filteredAttendees = attendees.filter(a =>
         a.userId?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         a.userId?.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -48,10 +48,10 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
     const formatCheckInTime = (checkInTime) => {
         if (!checkInTime) return "—";
         const date = new Date(checkInTime);
-        return date.toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
+        return date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
             minute: '2-digit',
-            hour12: true 
+            hour12: true
         });
     };
 
@@ -124,7 +124,7 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
                             </div>
                         )}
 
-                        <button 
+                        <button
                             style={styles.scannerBtn}
                             onClick={() => onOpenScanner(event)}
                         >
@@ -138,8 +138,8 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
                             <h3 style={styles.sectionTitle}><Users size={18} /> Attendees ({attendees.length})</h3>
                             <div style={styles.searchBox}>
                                 <Search size={16} color="#94a3b8" />
-                                <input 
-                                    placeholder="Search attendees..." 
+                                <input
+                                    placeholder="Search attendees..."
                                     style={styles.searchInput}
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -307,7 +307,7 @@ const styles = {
     },
     progressBar: {
         height: '100%',
-        backgroundColor: '#10b981',
+        backgroundColor: '#0b0f5b',
         borderRadius: '4px',
     },
     progressText: {
@@ -448,16 +448,16 @@ const styles = {
     checkInTime: {
         fontSize: '11px',
         fontWeight: '600',
-        color: '#059669',
-        backgroundColor: '#dcfce7',
+        color: '#0b0f5b',
+        backgroundColor: '#f1f5f9',
         padding: '2px 8px',
         borderRadius: '6px',
     },
     checkedInBadge: {
         fontSize: '10px',
         fontWeight: '700',
-        color: '#059669',
-        backgroundColor: '#dcfce7',
+        color: '#0b0f5b',
+        backgroundColor: '#f1f5f9',
         padding: '2px 8px',
         borderRadius: '10px',
         textTransform: 'uppercase',
