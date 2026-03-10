@@ -3,7 +3,7 @@ import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { getImageUrl } from "../../utils/imageUtils";
 import { useNavigate, useParams } from "react-router-dom";
-import { addressOptions, getAddressesByLocation } from "../../data/addressOptions";
+
 import {
     ArrowLeft,
     Save,
@@ -461,16 +461,7 @@ const AddEvent = () => {
                                     </div>
                                     <div style={styles.inputGroup}>
                                         <label style={styles.label}>Specific Venue/Address</label>
-                                        {form.location && getAddressesByLocation(form.location).length > 0 ? (
-                                            <select name="address" onChange={handleChange} required style={styles.selectStandalone} value={form.address}>
-                                                <option value="">Select Venue</option>
-                                                {getAddressesByLocation(form.location).map((addr, idx) => (
-                                                    <option key={idx} value={addr}>{addr}</option>
-                                                ))}
-                                            </select>
-                                        ) : (
-                                            <input name="address" placeholder="Venue Address" onChange={handleChange} required style={styles.input} value={form.address} />
-                                        )}
+                                        <input name="address" placeholder="Venue Address" onChange={handleChange} required style={styles.input} value={form.address} />
                                     </div>
                                 </div>
                             </div>
