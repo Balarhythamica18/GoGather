@@ -22,7 +22,7 @@
   --font-heading: 'Outfit', sans-serif;
   --font-body: 'Outfit', sans-serif;
 
-  --radius-md: 12px;
+  --radius-md: var(--btn-border-radius);
   --radius-lg: var(--border-radius);
   --radius-xl: 32px;
 
@@ -404,7 +404,7 @@ textarea.premium-input-field {
 .btn-publish-massive {
   width: 100%;
   padding: 20px;
-  border-radius: var(--border-radius);
+  border-radius: var(--btn-border-radius);
   border: none;
   background: var(--primary-gradient);
   color: white;

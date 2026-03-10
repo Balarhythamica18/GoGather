@@ -52,6 +52,7 @@ const ComedyShow = () => {
 
   // ✅ Filter only comedy category, exclude upcoming events
   const comedyShows = events.filter((event) => {
+    if (event.status === "completed") return false;
     if (event.category?.toLowerCase() !== "comedy") return false;
     if (event.declaration) return false;
 

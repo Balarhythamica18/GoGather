@@ -18,6 +18,8 @@ const UpcomingEvents = () => {
         const res = await axios.get(`${API_BASE_URL}/api/events`);
 
         const upcomingFiltered = res.data.filter((event) => {
+          // Ensure event is not completed
+          if (event.status === "completed") return false;
           if (event.declaration) return true;
 
           if (event.month && event.date) {

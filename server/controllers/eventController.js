@@ -258,7 +258,7 @@ export const getAllEvents = async (req, res) => {
     // Relaxed filter: show both approved and pending events in production for now
     // Only return approved/pending events for public view (exclude specifically rejected)
     const events = await Event.find({
-      status: "approved",
+      status: { $in: ["approved", "completed"] },
       isDeleted: { $ne: true }
     }).sort({ createdAt: -1 });
 

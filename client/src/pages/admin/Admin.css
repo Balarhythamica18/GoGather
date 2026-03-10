@@ -113,7 +113,7 @@
 .delete-btn {
     width: 36px;
     height: 36px;
-    border-radius: 10px;
+    border-radius: var(--btn-border-radius);
     border: 1px solid #fee2e2;
     background: #fff;
     color: #ef4444;
@@ -162,7 +162,7 @@
 .admin-modal-icon.warning {
     width: 48px;
     height: 48px;
-    border-radius: 14px;
+    border-radius: var(--btn-border-radius);
     background: #fef2f2;
     color: #ef4444;
     display: flex;
@@ -184,7 +184,7 @@
 
 .modal-btn {
     padding: 10px 20px;
-    border-radius: 12px;
+    border-radius: var(--btn-border-radius);
     font-weight: 600;
     font-size: 15px;
     cursor: pointer;

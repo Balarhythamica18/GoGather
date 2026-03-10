@@ -297,7 +297,7 @@
     border: none;
     width: 44px;
     height: 44px;
-    border-radius: 12px;
+    border-radius: var(--btn-border-radius);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -545,7 +545,7 @@
     background: #1a1c1e;
     color: white;
     border: none;
-    border-radius: 10px;
+    border-radius: var(--btn-border-radius);
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
@@ -648,7 +648,7 @@
     background: #0b0f5b;
     color: white;
     border: none;
-    border-radius: 12px;
+    border-radius: var(--btn-border-radius);
     font-weight: 700;
     font-size: 14px;
     cursor: pointer;

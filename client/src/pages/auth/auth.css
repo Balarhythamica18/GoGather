@@ -136,7 +136,7 @@
   background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--btn-border-radius);
   font-weight: 700;
   font-size: 16px;
   cursor: pointer;
@@ -209,7 +209,7 @@
   background: #ecfdf5;
   color: #059669;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--btn-border-radius);
   margin-bottom: 20px;
   text-align: center;
   font-size: 14px;
@@ -221,7 +221,7 @@
   background: #fff1f2;
   color: #e11d48;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--btn-border-radius);
   margin-bottom: 20px;
   text-align: center;
   font-size: 14px;

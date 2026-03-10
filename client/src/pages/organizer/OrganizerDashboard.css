@@ -30,7 +30,7 @@
   --border: #e2e8f0;
   --border-light: #f1f5f9;
   --radius-sm: 8px;
-  --radius-md: 12px;
+  --radius-md: var(--btn-border-radius);
   --radius-lg: var(--border-radius);
   --radius-xl: 32px;
 
@@ -129,7 +129,7 @@
   font-size: 15px;
   font-weight: 700;
   color: var(--text-muted);
-  border-radius: 12px;
+  border-radius: var(--btn-border-radius);
   cursor: pointer;
   transition: var(--transition);
   position: relative;
@@ -520,7 +520,7 @@
 .icon-btn {
   width: 34px;
   height: 34px;
-  border-radius: 8px;
+  border-radius: var(--btn-border-radius);
   border: 1.5px solid var(--border);
   background: white;
   display: flex;
@@ -705,7 +705,7 @@
 .premium-input {
   width: 100%;
   padding: 14px 16px 14px 48px;
-  border-radius: 12px;
+  border-radius: var(--btn-border-radius);
   border: 1.5px solid var(--border);
   background: var(--bg-main);
   font-family: var(--font-body);
@@ -810,7 +810,7 @@ textarea.premium-input {
 .btn-cancel {
   flex: 1;
   padding: 14px;
-  border-radius: 12px;
+  border-radius: var(--btn-border-radius);
   border: 1.5px solid var(--border);
   background: white;
   font-weight: 700;
@@ -826,7 +826,7 @@ textarea.premium-input {
 .btn-delete {
   flex: 1;
   padding: 14px;
-  border-radius: 12px;
+  border-radius: var(--btn-border-radius);
   border: none;
   background: var(--accent);
   color: white;
@@ -854,7 +854,7 @@ textarea.premium-input {
   background: var(--primary-gradient);
   color: white;
   padding: 14px 28px;
-  border-radius: 14px;
+  border-radius: var(--btn-border-radius);
   font-weight: 800;
   font-size: 15px;
   border: none;

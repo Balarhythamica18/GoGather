@@ -48,47 +48,19 @@ const ConfirmationPage = () => {
               <label>Status</label>
               <span className="status-confirmed">Confirmed</span>
             </div>
-            {booking.eventTitle && (
-              <div className="info-row">
-                <label>Event</label>
-                <span>{booking.eventTitle}</span>
-              </div>
-            )}
-            {booking.ticketCount && (
-              <div className="info-row">
-                <label>Tickets</label>
-                <span>{booking.ticketCount} Person(s)</span>
-              </div>
-            )}
           </div>
 
-          <div className="qr-section">
-            <p className="qr-label">Digital Entry Ticket</p>
-            <div className="qr-container">
-              <img src={booking.qrCodeUrl || booking.qrCode || "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=GoGather_Verified"} alt="Entry Pass QR" />
-              <div className="corner corner-tl"></div>
-              <div className="corner corner-tr"></div>
-              <div className="corner corner-bl"></div>
-              <div className="corner corner-br"></div>
-            </div>
-          </div>
+
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', marginTop: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
           <Link to="/my-bookings" className="action-btn primary-btn">
             <Ticket size={18} />
             My Tickets
           </Link>
-          <button onClick={() => window.print()} className="action-btn secondary-btn">
-            <Download size={18} />
-            Save as PDF
-          </button>
         </div>
 
-        <div className="email-note">
-          <Mail size={14} />
-          Copy of ticket sent to your email
-        </div>
+
       </div>
     </div>
   );

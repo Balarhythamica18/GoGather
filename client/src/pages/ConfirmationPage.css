@@ -16,10 +16,10 @@
 .confirmation-card {
     background: #ffffff;
     width: 100%;
-    max-width: 580px;
+    max-width: 500px;
     border-radius: 32px;
     box-shadow: 0 40px 80px -20px rgba(11, 15, 91, 0.08);
-    padding: 4rem 3rem;
+    padding: 2.5rem 2rem;
     text-align: center;
     border: 1px solid rgba(11, 15, 91, 0.03);
     animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1);
@@ -46,7 +46,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 0 auto 2.5rem;
+    margin: 0 auto 1.5rem;
     box-shadow: 0 20px 40px -10px rgba(22, 163, 74, 0.2);
     animation: popBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -74,7 +74,7 @@
 .confirmation-card .subtitle {
     color: #64748b;
     font-size: 1.1rem;
-    margin-bottom: 3.5rem;
+    margin-bottom: 2rem;
     line-height: 1.6;
     font-weight: 500;
 }
@@ -82,9 +82,9 @@
 .printable-ticket {
     background: #f8fafc;
     border-radius: 24px;
-    padding: 2.5rem;
-    border: 1px solid #e2e8f0;
-    margin-bottom: 3rem;
+    padding: 1.5rem;
+    border: 1px solid #edf2f7;
+    margin-bottom: 1.5rem;
     transition: transform 0.3s;
 }
 
@@ -101,7 +101,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     font-size: 0.95rem;
     gap: 12px;
 }
@@ -134,68 +134,7 @@
     display: inline-block;
 }
 
-.qr-section {
-    padding: 2rem;
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-}
 
-.qr-label {
-    font-weight: 800;
-    font-size: 0.8rem;
-    margin-bottom: 1.5rem;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-}
-
-.qr-container {
-    display: inline-block;
-    position: relative;
-    padding: 12px;
-}
-
-.qr-section img {
-    width: 160px;
-    height: 160px;
-    display: block;
-}
-
-.corner {
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    border: 3px solid #0b0f5b;
-}
-
-.corner-tl {
-    top: 0;
-    left: 0;
-    border-right: none;
-    border-bottom: none;
-}
-
-.corner-tr {
-    top: 0;
-    right: 0;
-    border-left: none;
-    border-bottom: none;
-}
-
-.corner-bl {
-    bottom: 0;
-    left: 0;
-    border-right: none;
-    border-top: none;
-}
-
-.corner-br {
-    bottom: 0;
-    right: 0;
-    border-left: none;
-    border-top: none;
-}
 
 .action-btn {
     display: flex;
@@ -238,16 +177,7 @@
     transform: translateY(-2px);
 }
 
-.email-note {
-    margin-top: 3rem;
-    font-size: 0.85rem;
-    color: #94a3b8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-weight: 600;
-}
+
 
 @media print {
     body * {

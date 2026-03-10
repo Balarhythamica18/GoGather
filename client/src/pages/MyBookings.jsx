@@ -270,21 +270,7 @@ const MyBookings = () => {
                 </span>
               </div>
 
-              <div className="card-qr-preview no-print">
-                <div className="qr-mini-box">
-                  <QRCodeSVG
-                    value={JSON.stringify({
-                      bookingId: booking._id,
-                      eventName: booking.event?.title,
-                      seats: booking.seats?.length ? booking.seats.join(", ") : `${booking.ticketCount} Tickets`
-                    })}
-                    size={64}
-                    bgColor={"#ffffff"}
-                    fgColor={"#1e293b"}
-                    level={"M"}
-                  />
-                </div>
-              </div>
+
 
               <div className="card-details">
                 <span className="card-category">

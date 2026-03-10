@@ -38,7 +38,7 @@ router.get("/my-bookings", authMiddleware, async (req, res) => {
   try {
     const bookings = await Booking.find({
       userId: req.user.id
-    }).populate("eventId");
+    }).populate("eventId").sort({ createdAt: -1 });
 
     // Transform to match front-end expectations if necessary
     const formattedBookings = bookings.map(b => ({

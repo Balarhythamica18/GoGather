@@ -305,14 +305,14 @@
   gap: 14px;
   background: #f8fafc;
   padding: 6px 12px;
-  border-radius: 10px;
+  border-radius: var(--btn-border-radius);
   border: 1px solid #f1f5f9;
 }
 
 .counter-controls button {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: var(--btn-border-radius);
   border: none;
   background: #0b0f5b;
   color: white;
@@ -363,7 +363,7 @@
   background: linear-gradient(180deg, #0b0f5b 0%, #080b43 100%);
   color: #fff;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--btn-border-radius);
   font-size: 15px;
   font-weight: 800;
   cursor: pointer;
