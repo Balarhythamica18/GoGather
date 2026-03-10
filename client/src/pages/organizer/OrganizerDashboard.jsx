@@ -299,7 +299,7 @@ const OrganizerDashboard = () => {
             {/* Stats Grid */}
             <div className="stats-grid">
               <StatCard title="Total Events" value={stats.totalEvents || 0} icon={Calendar} color="var(--primary)" />
-              <StatCard title="Approved" value={stats.approvedEvents || 0} icon={CheckCircle} color="var(--success)" />
+              <StatCard title="Approved" value={stats.approvedEvents || 0} icon={CheckCircle} color="var(--primary)" />
               <StatCard title="Bookings" value={stats.totalBookings || 0} icon={Users} color="var(--secondary)" />
               <StatCard title="Revenue" value={`₹${(stats.totalRevenue || 0).toLocaleString()}`} icon={DollarSign} color="var(--primary)" />
             </div>

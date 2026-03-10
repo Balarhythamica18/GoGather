@@ -112,7 +112,7 @@ const QRScannerModal = ({ event, onClose }) => {
                             ) : scanResult.success ? (
                                 <div style={styles.successState}>
                                     <div style={styles.iconWrapperSuccess}>
-                                        <CheckCircle size={80} color="#10b981" />
+                                        <CheckCircle size={80} color="#0b0f5b" />
                                     </div>
                                     <h3 style={styles.resultTitle}>{scanResult.message}</h3>
                                     <div style={styles.detailsCard}>
@@ -358,7 +358,7 @@ const styles = {
         padding: '18px',
         borderRadius: '18px',
         border: 'none',
-        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+        background: 'linear-gradient(135deg, #0b0f5b 0%, #0a0d4a 100%)',
         color: '#fff',
         fontSize: '16px',
         fontWeight: '800',

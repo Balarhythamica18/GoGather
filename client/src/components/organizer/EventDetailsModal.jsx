@@ -163,7 +163,8 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
                                             </span>
                                             {a.isUsed && (
                                                 <span style={styles.checkInTime}>
-                                                    🕐 {formatCheckInTime(a.checkInTime)}
+                                                    <Clock size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                                                    {formatCheckInTime(a.checkInTime)}
                                                 </span>
                                             )}
                                             {a.isUsed ? (
