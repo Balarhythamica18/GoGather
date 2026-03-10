@@ -1,28 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
 .confirmation-container {
-    min-height: calc(100vh - 80px);
-    background: radial-gradient(circle at top right, #f0f9ff 0%, #f8fafc 100%);
+    min-height: 100vh;
+    background: #f8fafc;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 6rem 2rem;
+    padding: 4rem 2rem;
     font-family: 'Outfit', sans-serif;
+    background-image:
+        radial-gradient(at 0% 0%, rgba(11, 15, 91, 0.03) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(219, 39, 119, 0.03) 0px, transparent 50%);
 }
 
 .confirmation-card {
     background: #ffffff;
     width: 100%;
-    max-width: 550px;
-    border-radius: var(--border-radius);
+    max-width: 580px;
+    border-radius: 32px;
     box-shadow: 0 40px 80px -20px rgba(11, 15, 91, 0.08);
-    padding: 3.5rem 2.5rem;
+    padding: 4rem 3rem;
     text-align: center;
-    border: 1px solid rgba(11, 15, 91, 0.05);
-    animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(11, 15, 91, 0.03);
+    animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes slideUp {
+@keyframes slideUpFade {
     from {
-        transform: translateY(40px);
+        transform: translateY(30px);
         opacity: 0;
     }
 
@@ -33,144 +38,135 @@
 }
 
 .success-icon {
-    width: 90px;
-    height: 90px;
+    width: 100px;
+    height: 100px;
     background: #f0fdf4;
-    color: #10b981;
+    color: #16a34a;
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 0 auto 2rem auto;
-    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.1);
-    animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    margin: 0 auto 2.5rem;
+    box-shadow: 0 20px 40px -10px rgba(22, 163, 74, 0.2);
+    animation: popBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-@keyframes scaleIn {
-    from {
+@keyframes popBounce {
+    0% {
         transform: scale(0);
+        rotate: -15deg;
     }
 
-    to {
+    100% {
         transform: scale(1);
+        rotate: 0deg;
     }
 }
 
 .confirmation-card h2 {
-    font-size: 2.2rem;
-    font-weight: 800;
-    color: #0b0f5b;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #0f172a;
     margin-bottom: 0.75rem;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.04em;
 }
 
 .confirmation-card .subtitle {
     color: #64748b;
-    font-size: 1.05rem;
-    margin-bottom: 3rem;
-    line-height: 1.5;
+    font-size: 1.1rem;
+    margin-bottom: 3.5rem;
+    line-height: 1.6;
+    font-weight: 500;
 }
 
 .printable-ticket {
-    background: #ffffff;
-    border-radius: var(--border-radius);
-    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 24px;
+    padding: 2.5rem;
     border: 1px solid #e2e8f0;
-    margin-bottom: 2rem;
-    transition: all 0.3s ease;
+    margin-bottom: 3rem;
+    transition: transform 0.3s;
 }
 
 .printable-ticket:hover {
-    box-shadow: 0 20px 40px -10px rgba(11, 15, 91, 0.05);
+    transform: translateY(-4px);
 }
 
 .ticket-info {
-    background: #f8fafc;
-    border-radius: var(--border-radius);
-    padding: 2.5rem;
-    border: 2px dashed #cbd5e1;
     text-align: left;
-    position: relative;
-    overflow: hidden;
+    margin-bottom: 2rem;
 }
 
 .info-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 1.25rem;
+    align-items: center;
+    margin-bottom: 1rem;
     font-size: 0.95rem;
-    align-items: flex-start;
-    gap: 20px;
-}
-
-.info-row:last-child {
-    margin-bottom: 0;
-    padding-top: 1.25rem;
-    border-top: 1px dashed #e2e8f0;
+    gap: 12px;
 }
 
 .info-row label {
     color: #94a3b8;
-    font-weight: 700;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.7rem;
-    flex-shrink: 0;
-    width: 100px;
-    text-align: left;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+    white-space: nowrap;
 }
 
 .info-row span {
     color: #1e293b;
     font-weight: 700;
     text-align: right;
-    word-break: break-word;
-    flex: 1;
 }
 
 .status-confirmed {
-    color: #10b981 !important;
+    color: #16a34a !important;
     background: #f0fdf4;
-    padding: 6px 16px;
+    padding: 4px 12px;
     border-radius: 100px;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    border: 1px solid rgba(22, 163, 74, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     display: inline-block;
-    border: 1px solid rgba(16, 185, 129, 0.1);
 }
 
 .qr-section {
-    margin-top: 2rem;
-    text-align: center;
+    padding: 2rem;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
 }
 
 .qr-label {
-    font-weight: 700;
-    font-size: 0.9rem;
+    font-weight: 800;
+    font-size: 0.8rem;
     margin-bottom: 1.5rem;
-    color: #64748b;
+    color: #94a3b8;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.15em;
 }
 
 .qr-container {
     display: inline-block;
     position: relative;
-    padding: 20px;
-    background: white;
+    padding: 12px;
 }
 
 .qr-section img {
-    width: 180px;
-    height: 180px;
+    width: 160px;
+    height: 160px;
     display: block;
 }
 
-/* Decorative corners */
 .corner {
     position: absolute;
-    width: 20px;
-    height: 20px;
-    border: 2px solid #0b0f5b;
+    width: 16px;
+    height: 16px;
+    border: 3px solid #0b0f5b;
 }
 
 .corner-tl {
@@ -205,14 +201,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
     flex: 1;
-    padding: 1rem;
-    border-radius: var(--border-radius);
-    font-weight: 700;
+    padding: 1.15rem;
+    border-radius: 16px;
+    font-weight: 800;
     font-size: 1rem;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s;
     text-decoration: none;
 }
 
@@ -220,80 +216,69 @@
     background: #0b0f5b;
     color: white;
     border: none;
-    box-shadow: 0 4px 12px rgba(11, 15, 91, 0.2);
+    box-shadow: 0 15px 30px -10px rgba(11, 15, 91, 0.3);
 }
 
 .primary-btn:hover {
-    background: #0d1275;
+    background: #080a3a;
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(11, 15, 91, 0.3);
+    box-shadow: 0 20px 40px -12px rgba(11, 15, 91, 0.4);
 }
 
 .secondary-btn {
-    background: #f1f5f9;
+    background: #ffffff;
     color: #475569;
-    border: 1px solid #e2e8f0;
+    border: 2px solid #e2e8f0;
 }
 
 .secondary-btn:hover {
-    background: #e2e8f0;
-    color: #1e293b;
+    background: #f8fafc;
+    border-color: #0b0f5b;
+    color: #0b0f5b;
     transform: translateY(-2px);
 }
 
 .email-note {
-    margin-top: 2.5rem;
+    margin-top: 3rem;
     font-size: 0.85rem;
     color: #94a3b8;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    font-weight: 500;
+    gap: 10px;
+    font-weight: 600;
 }
 
-/* PRINT STYLES - Focused but inclusive of the main card */
 @media print {
     body * {
         visibility: hidden;
     }
 
-    .confirmation-card,
-    .confirmation-card * {
+    #printable-ticket,
+    #printable-ticket * {
         visibility: visible;
     }
 
-    .confirmation-card {
+    #printable-ticket {
         position: absolute;
         left: 0;
         top: 0;
         width: 100%;
         margin: 0;
         padding: 2rem;
-        border: none;
+        border-radius: 0;
         box-shadow: none;
-    }
-
-    .action-btn {
-        display: none !important;
-    }
-
-    .confirmation-container {
-        background: white !important;
-        padding: 0 !important;
+        border: 2px solid #eee;
     }
 }
 
-@media (max-width: 600px) {
-    .confirmation-container {
-        padding: 1rem;
-    }
-
+@media (max-width: 640px) {
     .confirmation-card {
-        padding: 2.5rem 1.5rem;
+        padding: 3rem 1.5rem;
+        border-radius: 0;
     }
 
-    .ticket-info {
+    .printable-ticket {
         padding: 1.5rem;
     }
 }

@@ -1,8 +1,72 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { CreditCard, Smartphone, Landmark, ShieldCheck, ArrowRight, Shield, CheckCircle2 } from "lucide-react";
+import {
+  CreditCard,
+  Smartphone,
+  Landmark,
+  ShieldCheck,
+  ArrowRight,
+  Shield,
+  CheckCircle2,
+  Fingerprint,
+  Lock,
+  ChevronLeft,
+  User,
+  AlertCircle,
+  HelpCircle,
+  Check
+} from "lucide-react";
 import { API_BASE_URL } from "../config";
 import "./PaymentPage.css";
+
+const GPayModal = ({ isOpen, onClose, onConfirm, amount }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="gpay-overlay">
+      <div className="gpay-modal animate-pop-in">
+        <div className="gpay-header">
+          <img src="/download.png" alt="GPay" className="gpay-logo-img" />
+          <button onClick={onClose} className="close-gpay">&times;</button>
+        </div>
+
+        <div className="gpay-content">
+          <div className="gpay-amount-box">
+            <span className="pay-to">Paying GoGather Tickets</span>
+            <div className="gpay-total">
+              <span className="cur">₹</span>
+              <span className="num">{amount}</span>
+            </div>
+          </div>
+
+          <div className="gpay-selector">
+            <div className="bank-pill">
+              <div className="bank-avatar">H</div>
+              <div className="bank-text">
+                <p className="bank-name">HDFC Bank •••• 1234</p>
+                <p className="type">Savings Account</p>
+              </div>
+              <div className="bank-check"><Check size={14} /></div>
+            </div>
+          </div>
+
+          <div className="gpay-auth-section">
+            <div className="finger-box">
+              <Fingerprint size={48} className="finger-icon" />
+              <div className="pulse-ring"></div>
+            </div>
+            <p>Verify with fingerprint to complete</p>
+          </div>
+        </div>
+
+        <div className="gpay-footer">
+          <button className="gpay-proceed-btn" onClick={onConfirm}>
+            Proceed to Pay
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const PaymentPage = () => {
   const location = useLocation();
@@ -10,6 +74,11 @@ const PaymentPage = () => {
   const [activeTab, setActiveTab] = useState("card");
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState(0);
+  const [isGPayOpen, setIsGPayOpen] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Card State
+  const [cardData, setCardData] = useState({ number: "", expiry: "", cvc: "", name: "" });
 
   const stored = JSON.parse(localStorage.getItem("bookingData") || "null");
   const bookingData = location.state?.bookingData || stored;
@@ -22,204 +91,340 @@ const PaymentPage = () => {
 
   if (!bookingData) return null;
 
-  const steps = ["Initiating secure session...", "Authorizing transaction...", "Finalizing booking details..."];
+  const steps = [
+    "Establishing secure session...",
+    "Validating secure portal...",
+    "Finalizing ticket generation..."
+  ];
 
-  const handlePayment = async (e) => {
-    e.preventDefault();
+  const formatCardNumber = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const matches = v.match(/\d{4,16}/g);
+    const match = matches && matches[0] || '';
+    const parts = [];
+
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+
+    if (parts.length) {
+      return parts.join(' ');
+    } else {
+      return v;
+    }
+  };
+
+  const handleCardInput = (e) => {
+    const { name, value } = e.target;
+    if (name === 'number') {
+      setCardData({ ...cardData, [name]: formatCardNumber(value) });
+    } else if (name === 'expiry') {
+      let v = value.replace(/\//g, '').replace(/[^0-9]/gi, '');
+      if (v.length >= 2) v = v.slice(0, 2) + ' / ' + v.slice(2, 4);
+      setCardData({ ...cardData, [name]: v });
+    } else {
+      setCardData({ ...cardData, [name]: value });
+    }
+  };
+
+  const finalizePayment = async (method) => {
     setIsProcessing(true);
+    setIsGPayOpen(false);
 
-    // Simulation of steps
     for (let i = 0; i < steps.length; i++) {
       setProcessingStep(i);
       await new Promise(r => setTimeout(r, 1200));
     }
 
     try {
-      // Simulate API verification
       const verifyRes = await fetch(`${API_BASE_URL}/api/bookings/verify-payment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          bookingId: bookingData.bookingId, // REAL ID from database
+          bookingId: bookingData.bookingId,
           paymentId: "PAY_SIM_" + Math.random().toString(36).substr(2, 9),
           userEmail: bookingData.userEmail,
+          paymentMethod: method
         }),
       });
       const verifyData = await verifyRes.json();
+
+      setShowSuccess(true);
+      await new Promise(r => setTimeout(r, 2000));
+
       localStorage.removeItem("bookingData");
       navigate("/confirmation", { state: { booking: verifyData, isSimulated: true } });
     } catch (err) {
       console.error(err);
       setIsProcessing(false);
-      alert("Payment simulation failed. In a real app, this would be a real transaction.");
+      alert("Payment failed. Please try again.");
     }
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    finalizePayment("card");
+  };
+
   return (
-    <div className="payment-container">
+    <div className="payment-root">
+      {/* FULL SCREEN OVERLAY - MOVED TO TOP OF ROOT */}
       {isProcessing && (
-        <div className="processing-overlay">
-          <div className="spinner"></div>
-          <h3>{steps[processingStep]}</h3>
-          <p>Please do not refresh or close this window.</p>
+        <div className="proc-overlay animate-fade-in">
+          {!showSuccess ? (
+            <div className="proc-content animate-pop-in">
+              <div className="premium-loader">
+                <div className="l-ring"></div>
+                <div className="l-ring"></div>
+                <div className="l-ring"></div>
+                <div className="l-center"><Lock size={40} strokeWidth={1.5} /></div>
+              </div>
+              <h3 className="proc-title">{steps[processingStep]}</h3>
+              <p className="proc-sub">Encryption active. Do not refresh this page.</p>
+            </div>
+          ) : (
+            <div className="success-overlay animate-pop-in">
+              <div className="success-vessel">
+                <div className="draw-circle">
+                  <Check size={80} strokeWidth={4} />
+                </div>
+              </div>
+              <h2 className="success-title">Payment Verified</h2>
+              <p className="success-sub">Redirecting to your digital tickets...</p>
+            </div>
+          )}
         </div>
       )}
 
-      <div className="payment-card">
-        <div className="payment-summary">
-          <div className="brand-badge">
-            <ShieldCheck size={28} />
-            GoGather Secure
-          </div>
+      <GPayModal
+        isOpen={isGPayOpen}
+        onClose={() => setIsGPayOpen(false)}
+        onConfirm={() => finalizePayment("gpay")}
+        amount={bookingData.amount}
+      />
 
-          <div className="summary-header">
-            <h2>Amount Due</h2>
-            <div className="amount">
-              <span className="currency">₹</span>
-              {bookingData.amount}
+      <div className="p-container">
+        <main className="p-main-section">
+          <div className="p-top-bar">
+            <button className="back-btn" onClick={() => navigate(-1)}>
+              <ChevronLeft size={20} />
+              <span>Back</span>
+            </button>
+            <div className="secure-tag">
+              <Shield size={14} />
+              Secure Checkout
             </div>
           </div>
 
-          <div className="booking-details">
-            <div className="detail-item">
-              <label>Event</label>
-              <p>{bookingData.eventName || "Event Premium Ticket"}</p>
-            </div>
-            <div className="detail-item">
-              <label>Seats</label>
-              <p>{bookingData.seats?.join(", ") || `${bookingData.ticketCount} Tickets`}</p>
-            </div>
-            <div className="detail-item">
-              <label>Category</label>
-              <p>Premium Experience</p>
-            </div>
-            {bookingData.refundPolicy && (
-              <div className="detail-item">
-                <label>Refund Policy</label>
-                <p style={{ fontSize: '0.8rem', lineHeight: '1.3', color: '#64748b' }}>{bookingData.refundPolicy}</p>
-              </div>
-            )}
-          </div>
+          <h1 className="p-title">Payment Method</h1>
+          <p className="p-subtitle">Select your preferred way to complete the booking</p>
 
-          <div className="security-badge">
-            <Shield size={20} color="#db2777" />
-            <div>
-              <strong>Bank-Grade Security</strong>
-              <p style={{ margin: 0, opacity: 0.8 }}>End-to-end encrypted payments</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="payment-methods">
-          <h1>Payment Method</h1>
-          <p>Choose your preferred way to pay securely.</p>
-
-          <div className="tabs-container">
+          <div className="p-tabs">
             <button
-              className={`tab-btn ${activeTab === "card" ? "active" : ""}`}
-              onClick={() => setActiveTab("card")}
+              className={`p-tab-item ${activeTab === 'card' ? 'active' : ''}`}
+              onClick={() => setActiveTab('card')}
             >
-              <CreditCard size={20} />
-              Card
+              <div className="tab-icon"><CreditCard size={20} /></div>
+              <span className="tab-label">Card</span>
             </button>
             <button
-              className={`tab-btn ${activeTab === "upi" ? "active" : ""}`}
-              onClick={() => setActiveTab("upi")}
+              className={`p-tab-item ${activeTab === 'upi' ? 'active' : ''}`}
+              onClick={() => setActiveTab('upi')}
             >
-              <Smartphone size={20} />
-              UPI
+              <div className="tab-icon"><Smartphone size={20} /></div>
+              <span className="tab-label">UPI</span>
             </button>
             <button
-              className={`tab-btn ${activeTab === "net" ? "active" : ""}`}
-              onClick={() => setActiveTab("net")}
+              className={`p-tab-item ${activeTab === 'net' ? 'active' : ''}`}
+              onClick={() => setActiveTab('net')}
             >
-              <Landmark size={20} />
-              Net Banking
+              <div className="tab-icon"><Landmark size={20} /></div>
+              <span className="tab-label">Net Banking</span>
             </button>
           </div>
 
-          <form onSubmit={handlePayment} className="payment-form">
-            {activeTab === "card" && (
-              <>
-                <div className="input-group">
+          <div className="p-form-vessel">
+            {activeTab === 'card' && (
+              <form onSubmit={handleSubmit} className="p-checkout-form">
+                <div className="p-input-box">
                   <label>Cardholder Name</label>
-                  <input type="text" placeholder="John Doe" required />
-                </div>
-                <div className="input-group">
-                  <label>Card Number</label>
-                  <div style={{ position: 'relative' }}>
+                  <div className="p-field">
+                    <User size={18} className="field-icon" />
                     <input
                       type="text"
+                      name="name"
+                      placeholder="Enter name on card"
+                      value={cardData.name}
+                      onChange={handleCardInput}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="p-input-box">
+                  <label>Card Number</label>
+                  <div className="p-field">
+                    <CreditCard size={18} className="field-icon" />
+                    <input
+                      type="text"
+                      name="number"
                       placeholder="XXXX XXXX XXXX XXXX"
                       maxLength="19"
+                      value={cardData.number}
+                      onChange={handleCardInput}
                       required
-                      style={{ width: '100%' }}
                     />
-                    <CreditCard size={18} style={{ position: 'absolute', right: '12px', top: '14px', color: '#94a3b8' }} />
                   </div>
                 </div>
-                <div className="form-row">
-                  <div className="input-group">
+
+                <div className="p-field-row">
+                  <div className="p-input-box">
                     <label>Expiry Date</label>
-                    <input type="text" placeholder="MM / YY" maxLength="5" required />
+                    <div className="p-field no-icon">
+                      <input
+                        type="text"
+                        name="expiry"
+                        placeholder="MM / YY"
+                        maxLength="7"
+                        value={cardData.expiry}
+                        onChange={handleCardInput}
+                        required
+                      />
+                    </div>
                   </div>
-                  <div className="input-group">
+                  <div className="p-input-box">
                     <label>CVV</label>
-                    <input type="password" placeholder="***" maxLength="3" required />
+                    <div className="p-field">
+                      <Lock size={18} className="field-icon" />
+                      <input
+                        type="password"
+                        name="cvc"
+                        placeholder="•••"
+                        maxLength="3"
+                        value={cardData.cvc}
+                        onChange={handleCardInput}
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
-              </>
+
+                <button type="submit" className="p-submit-btn">
+                  <span>Pay ₹{bookingData.amount}</span>
+                  <ArrowRight size={20} className='arr' />
+                </button>
+              </form>
             )}
 
-            {activeTab === "upi" && (
-              <>
-                <div className="input-group">
-                  <label>Enter UPI ID</label>
-                  <input type="text" placeholder="username@bank" required />
-                </div>
-                <div style={{ textAlign: 'center', margin: '1rem 0', color: '#94a3b8' }}>OR SELECT APP</div>
-                <div className="upi-grid">
-                  <div className="upi-app">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/Google_Pay_GPay_Logo.svg" alt="GPay" />
-                    <span>GPay</span>
-                  </div>
-                  <div className="upi-app">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/PhonePe_Logo.svg" alt="PhonePe" />
-                    <span>PhonePe</span>
-                  </div>
-                  <div className="upi-app">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" />
-                    <span>Paytm</span>
+            {activeTab === 'upi' && (
+              <div className="upi-vessel">
+                <div className="vpa-box">
+                  <label>Pay with UPI VPA</label>
+                  <div className="vpa-field">
+                    <Smartphone size={18} className="v-icon" />
+                    <input type="text" placeholder="yourname@upi" />
+                    <button className="vpa-btn">Pay Now</button>
                   </div>
                 </div>
-              </>
-            )}
 
-            {activeTab === "net" && (
-              <div className="input-group">
-                <label>Select Your Bank</label>
-                <select required>
-                  <option value="">Choose a bank...</option>
-                  <option value="hdfc">HDFC Bank</option>
-                  <option value="icici">ICICI Bank</option>
-                  <option value="sbi">State Bank of India</option>
-                  <option value="axis">Axis Bank</option>
-                  <option value="kotak">Kotak Mahindra Bank</option>
-                </select>
+                <div className="sep">
+                  <div className="line"></div>
+                  <span>OR QUICK PAY</span>
+                  <div className="line"></div>
+                </div>
+
+                <div className="upi-grid-view">
+                  <div className="upi-cell" onClick={() => setIsGPayOpen(true)}>
+                    <div className="upi-logo-box">
+                      <img src="/download.png" alt="GPay" />
+                    </div>
+                    <div className="upi-name">Google Pay</div>
+                    <HelpCircle size={14} className="h-icon" />
+                  </div>
+                  <div className="upi-cell" onClick={() => finalizePayment("phonepe")}>
+                    <div className="upi-logo-box">
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/PhonePe_Logo.svg" alt="PhonePe" />
+                    </div>
+                    <div className="upi-name">PhonePe</div>
+                  </div>
+                  <div className="upi-cell" onClick={() => finalizePayment("paytm")}>
+                    <div className="upi-logo-box">
+                      <img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg" alt="Paytm" />
+                    </div>
+                    <div className="upi-name">Paytm</div>
+                  </div>
+                </div>
               </div>
             )}
 
-            <button type="submit" className="pay-button">
-              Pay ₹{bookingData.amount}
-              <ArrowRight size={20} />
-            </button>
-          </form>
-
-          <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#94a3b8', fontSize: '0.8rem' }}>
-            <CheckCircle2 size={14} />
-            Your transaction is 100% safe and secure
+            {activeTab === 'net' && (
+              <div className="nb-vessel">
+                <label>Popular Banks</label>
+                <div className="nb-grid">
+                  {[
+                    { name: 'HDFC', icon: 'H', color: '#1a73e8' },
+                    { name: 'ICICI', icon: 'I', color: '#f58220' },
+                    { name: 'SBI', icon: 'S', color: '#003366' },
+                    { name: 'Axis', icon: 'A', color: '#9d0a44' },
+                    { name: 'Kotak', icon: 'K', color: '#ec1c24' },
+                    { name: 'Yes', icon: 'Y', color: '#005a9c' }
+                  ].map(bank => (
+                    <div key={bank.name} className="nb-card" onClick={() => finalizePayment("netbanking")}>
+                      <div className="nb-avatar" style={{ backgroundColor: bank.color }}>{bank.icon}</div>
+                      <span>{bank.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+
+          <div className="p-security-badges">
+            <div className="s-badge">
+              <ShieldCheck size={16} />
+              <span>100% Encrypted</span>
+            </div>
+            <div className="s-badge">
+              <ShieldCheck size={16} />
+              <span>PCI DSS Compliant</span>
+            </div>
+          </div>
+        </main>
+
+        <aside className="p-sidebar">
+          <div className="p-order-card">
+            <div className="p-order-header">
+              <div className="g-logo">GoGather</div>
+              <div className="p-order-id">Order Ref: {bookingData.bookingId?.slice(-6).toUpperCase()}</div>
+            </div>
+
+            <div className="p-amount-vessel">
+              <label>Total to Pay</label>
+              <h1>₹{bookingData.amount}</h1>
+            </div>
+
+            <div className="p-divider"></div>
+
+            <div className="p-event-card">
+              <h4 className="p-event-title">{bookingData.eventName}</h4>
+              <div className="p-event-details">
+                <div className="p-row">
+                  <span>Quantity:</span>
+                  <strong>{bookingData.seats?.length || bookingData.ticketCount} Units</strong>
+                </div>
+                <div className="p-row">
+                  <span>Seats:</span>
+                  <strong className="seat-list">{bookingData.seats?.join(", ") || "General Admission"}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-notice">
+              <AlertCircle size={16} />
+              <p>Your tickets are reserved for 10:00 minutes. Please complete payment within this window.</p>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   );

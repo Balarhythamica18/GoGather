@@ -63,7 +63,7 @@ router.post("/create-payment", async (req, res) => {
 
     const requestedTickets = seats?.length || ticketCount || 1;
     let available = event.availableSeats;
-    
+
     // 🆕 Fix for legacy/uninitialized events: 
     // If availableSeats is 0 or undefined, but capacity is set, 
     // and we haven't checked confirmed bookings yet, let's treat it as uninitialized.
@@ -71,7 +71,7 @@ router.post("/create-payment", async (req, res) => {
       const confirmedBookings = await Booking.find({ eventId, status: "confirmed" });
       const totalBooked = confirmedBookings.reduce((sum, b) => sum + (b.seats?.length || b.ticketCount || 1), 0);
       available = event.capacity - totalBooked;
-      
+
       // Update the event record for future consistency
       event.availableSeats = available;
       await event.save();
@@ -110,7 +110,7 @@ router.post("/create-payment", async (req, res) => {
 
 // 3️⃣ Verify payment, generate QR code, and email professional ticket
 router.post("/verify-payment", async (req, res) => {
-  const { bookingId, paymentId, userEmail } = req.body;
+  const { bookingId, paymentId, userEmail, paymentMethod } = req.body;
 
   try {
     if (!bookingId || bookingId.length !== 24) {
@@ -120,6 +120,7 @@ router.post("/verify-payment", async (req, res) => {
     if (!booking) return res.status(404).json({ error: "Booking not found" });
 
     booking.paymentId = paymentId;
+    booking.paymentMethod = paymentMethod || "simulated";
     booking.status = "confirmed";
 
     // Generate professional QR data
@@ -145,7 +146,7 @@ router.post("/verify-payment", async (req, res) => {
     }
 
     const event = booking.eventId;
-    
+
     try {
       await sendEmail({
         to: userEmail,
@@ -215,12 +216,12 @@ router.get("/attendees/:eventId", authMiddleware, async (req, res) => {
       return res.status(403).json({ error: "Unauthorized access to attendee list" });
     }
 
-    const bookings = await Booking.find({ 
-      eventId, 
-      status: "confirmed" 
+    const bookings = await Booking.find({
+      eventId,
+      status: "confirmed"
     })
-    .populate("userId", "name email phone")
-    .sort({ createdAt: -1 });
+      .populate("userId", "name email phone")
+      .sort({ createdAt: -1 });
 
     res.json(bookings);
   } catch (error) {
@@ -270,9 +271,9 @@ router.patch("/verify-entry", async (req, res) => {
           const oneHourInMs = 60 * 60 * 1000;
 
           if (diffInMs > oneHourInMs) {
-            return res.status(400).json({ 
-              error: "Entry Not Started! ⏳", 
-              message: "Scanning opens 1 hour before the event starts." 
+            return res.status(400).json({
+              error: "Entry Not Started! ⏳",
+              message: "Scanning opens 1 hour before the event starts."
             });
           }
         }
