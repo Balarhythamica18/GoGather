@@ -94,76 +94,97 @@ export const sendEmail = async (options, blocking = true) => {
                 console.log(`[EMAIL SUCCESS (BREVO)] Sent to ${options.to}. MessageID: ${info.messageId}`);
                 return info;
             } else {
+                // Background execution with proper fallback chain
                 brevoTransporter.sendMail(mailOptions)
                     .then(info => console.log(`[EMAIL SUCCESS (BREVO-BG)] Sent to ${options.to}. MessageID: ${info.messageId}`))
-                    .catch(error => console.error(`[EMAIL ERROR (BREVO-BG)] Failed to send to ${options.to}:`, error.message));
+                    .catch(error => {
+                        console.error(`[EMAIL ERROR (BREVO-BG)] Failed to send to ${options.to}:`, error.message);
+                        console.log("[EMAIL INFO] Brevo background failed. Initiating fallback chain...");
+                        
+                        // Execute fallback manually in background
+                        executeFallbackMethods(mailOptions, false, options.to)
+                            .catch(fallbackErr => console.error("[EMAIL FATAL BG] All fallback methods failed:", fallbackErr.message));
+                    });
                 return;
             }
         } catch (error) {
             console.error(`[EMAIL ERROR (BREVO)] Failed to send to ${options.to}:`, error.message);
-            if (!resendApiKey && !emailPass) throw error;
-            console.log("[EMAIL INFO] Attempting fallback methods...");
-        }
-    }
-
-    // 2. Try Resend API (Secondary)
-    if (resendApiKey) {
-        const sendViaApi = async () => {
-            try {
-                const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-                const response = await axios.post('https://api.resend.com/emails', {
-                    from: fromEmail,
-                    to: mailOptions.to,
-                    subject: mailOptions.subject,
-                    html: mailOptions.html,
-                    reply_to: mailOptions.replyTo || mailOptions.reply_to
-                }, {
-                    headers: {
-                        'Authorization': `Bearer ${resendApiKey}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                console.log(`[EMAIL SUCCESS (RESEND-API)] Sent to ${options.to}. ID: ${response.data.id}`);
-                return response.data;
-            } catch (error) {
-                const errorMsg = error.response?.data?.message || error.message;
-                console.error(`[EMAIL ERROR (RESEND-API)] Failed to send to ${options.to}:`, errorMsg);
-                if (!emailPass) {
-                    if (blocking) throw new Error(`Email delivery failed: ${errorMsg}`);
-                }
-            }
-        };
-
-        if (blocking) {
-            const result = await sendViaApi();
-            if (result) return result;
-        } else {
-            sendViaApi();
-            return;
-        }
-    }
-
-    // 3. Try Gmail SMTP (Fallback)
-    if (emailPass) {
-        try {
-            if (blocking) {
-                const info = await transporter.sendMail(mailOptions);
-                console.log(`[EMAIL SUCCESS (SMTP-FALLBACK)] Sent to ${options.to}. MessageID: ${info.messageId}`);
-                return info;
+            // If we don't have ANY fallback methods, throw the error
+            if (!resendApiKey && !emailPass) {
+                console.error("[EMAIL FATAL] No fallback methods available. Failing.");
+                if (blocking) throw error;
             } else {
-                transporter.sendMail(mailOptions)
-                    .then(info => console.log(`[EMAIL SUCCESS (SMTP-BG)] Sent to ${options.to}. MessageID: ${info.messageId}`))
-                    .catch(error => console.error(`[EMAIL ERROR (SMTP-BG)] Failed to send to ${options.to}:`, error.message));
+                console.log("[EMAIL INFO] Brevo failed (possibly unactivated). Attempting fallback methods...");
+                // The outer function will naturally continue down to the fallback methods block below
+            }
+        }
+    }
+    
+    // Fallback methods grouped into a helper so background tasks can call them too
+    const executeFallbackMethods = async (mailOptions, blockingFlag, recipient) => {
+        // 2. Try Resend API (Secondary)
+        if (resendApiKey) {
+            const sendViaApi = async () => {
+                try {
+                    const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+                    const response = await axios.post('https://api.resend.com/emails', {
+                        from: fromEmail,
+                        to: mailOptions.to,
+                        subject: mailOptions.subject,
+                        html: mailOptions.html,
+                        reply_to: mailOptions.replyTo || mailOptions.reply_to
+                    }, {
+                        headers: {
+                            'Authorization': `Bearer ${resendApiKey}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    console.log(`[EMAIL SUCCESS (RESEND-API)] Sent to ${recipient}. ID: ${response.data.id}`);
+                    return response.data;
+                } catch (error) {
+                    const errorMsg = error.response?.data?.message || error.message;
+                    console.error(`[EMAIL ERROR (RESEND-API)] Failed to send to ${recipient}:`, errorMsg);
+                    if (!emailPass) {
+                        if (blockingFlag) throw new Error(`Email delivery failed: ${errorMsg}`);
+                    }
+                }
+            };
+
+            if (blockingFlag) {
+                const result = await sendViaApi();
+                if (result) return result;
+            } else {
+                sendViaApi();
                 return;
             }
-        } catch (error) {
-            console.error(`[EMAIL ERROR (SMTP-FALLBACK)] Failed to send to ${options.to}:`, error.message);
-            if (blocking) throw error;
         }
-    } else {
-        console.error("[EMAIL ERROR] No delivery method configured or all methods failed.");
-        if (blocking) throw new Error("Email configuration missing or invalid");
-    }
+
+        // 3. Try Gmail SMTP (Fallback)
+        if (emailPass) {
+            try {
+                if (blockingFlag) {
+                    const info = await transporter.sendMail(mailOptions);
+                    console.log(`[EMAIL SUCCESS (SMTP-FALLBACK)] Sent to ${recipient}. MessageID: ${info.messageId}`);
+                    return info;
+                } else {
+                    transporter.sendMail(mailOptions)
+                        .then(info => console.log(`[EMAIL SUCCESS (SMTP-BG)] Sent to ${recipient}. MessageID: ${info.messageId}`))
+                        .catch(error => console.error(`[EMAIL ERROR (SMTP-BG)] Failed to send to ${recipient}:`, error.message));
+                    return;
+                }
+            } catch (error) {
+                console.error(`[EMAIL ERROR (SMTP-FALLBACK)] Failed to send to ${recipient}:`, error.message);
+                if (blockingFlag) throw error;
+            }
+        } else {
+            console.error("[EMAIL ERROR] No delivery method configured or all methods failed.");
+            if (blockingFlag) throw new Error("Email configuration missing or invalid");
+        }
+    };
+
+    // Execute fallback normally for blocking calls that failed Brevo synchronously
+    return await executeFallbackMethods(mailOptions, blocking, options.to);
+
 };
 
 export default { sendEmail };
