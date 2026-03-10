@@ -9,9 +9,40 @@
     will-change: background-position;
 }
 
+/* Lighting Effect Shimmer */
+.skeleton-lighting {
+    background: linear-gradient(90deg,
+            #f1f5f9 25%,
+            #e2e8f0 40%,
+            #ffffff 50%,
+            #e2e8f0 60%,
+            #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: lighting-shimmer 1s infinite linear;
+}
+
+@keyframes lighting-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
     .skeleton-loader {
         background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+    }
+
+    .skeleton-lighting {
+        background: linear-gradient(90deg,
+                #0f172a 25%,
+                #1e293b 40%,
+                #334155 50%,
+                #1e293b 60%,
+                #0f172a 75%);
     }
 }

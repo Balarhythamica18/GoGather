@@ -4,6 +4,7 @@ import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { getImageUrl } from "../../utils/imageUtils";
 import "./EventDetailPage.css";
+import { Helmet } from "react-helmet-async";
 import { useFavorites } from "../../context/FavoritesContext";
 import { Heart, Calendar, Clock, MapPin, Tag, Navigation, Building, Map, Info, FileText, CheckCircle2, LogIn } from "lucide-react";
 import RecommendedEvents from "./RecommendedEvents";
@@ -96,6 +97,24 @@ const EventDetailPage = () => {
 
   return (
     <>
+      <Helmet>
+        <title>{event.title} | GoGather</title>
+        <meta name="description" content={event.description || `Join us for ${event.title} on ${event.date} ${event.month} at ${event.location}.`} />
+
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:title" content={`${event.title} | GoGather`} />
+        <meta property="og:description" content={event.description || `Join us for ${event.title} on ${event.date} ${event.month} at ${event.location}.`} />
+        <meta property="og:image" content={getImageUrl(event.image)} />
+
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={window.location.href} />
+        <meta property="twitter:title" content={`${event.title} | GoGather`} />
+        <meta property="twitter:description" content={event.description || `Join us for ${event.title} on ${event.date} ${event.month} at ${event.location}.`} />
+        <meta property="twitter:image" content={getImageUrl(event.image)} />
+      </Helmet>
       <div className="edp-wrapper">
         <div className="edp-left">
           <div className="edp-image-box">

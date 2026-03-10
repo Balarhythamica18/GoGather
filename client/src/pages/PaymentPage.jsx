@@ -339,7 +339,6 @@ const PaymentPage = () => {
                       <img src="/download.png" alt="GPay" />
                     </div>
                     <div className="upi-name">Google Pay</div>
-                    <HelpCircle size={14} className="h-icon" />
                   </div>
                   <div className="upi-cell" onClick={() => finalizePayment("phonepe")}>
                     <div className="upi-logo-box">

@@ -295,10 +295,10 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  padding: 24px;
-  border-radius: var(--border-radius);
-  box-shadow: 0 40px 100px -20px rgba(15, 23, 42, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  padding: 28px;
+  border-radius: 24px;
+  box-shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.08);
+  border: 1px solid #f1f5f9;
   display: flex;
   flex-direction: column;
 }
@@ -335,9 +335,8 @@
 
 .info-row:hover {
   background: #ffffff;
-  border-color: #e2e8f0;
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);
-  transform: translateX(4px);
+  border-color: #3b82f640;
+  box-shadow: 0 8px 20px -6px rgba(15, 23, 42, 0.04);
 }
 
 .info-row .section-icon {
@@ -442,9 +441,9 @@
 }
 
 .edp-book-btn:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 30px -10px rgba(11, 15, 91, 0.6);
-  background: linear-gradient(135deg, #1e3a8a 0%, #0b0f5b 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -10px rgba(11, 15, 91, 0.4);
+  filter: brightness(1.1);
 }
 
 .edp-fav-btn,
@@ -466,10 +465,9 @@
 .edp-fav-btn:hover,
 .edp-share-btn:hover {
   background: #f8fafc;
-  border-color: #0b0f5b;
+  border-color: #0b0f5b50;
   color: #0b0f5b;
-  transform: translateY(-4px);
-  box-shadow: 0 12px 20px -8px rgba(15, 23, 42, 0.1);
+  transform: translateY(-2px);
 }
 
 .edp-fav-btn.active {
