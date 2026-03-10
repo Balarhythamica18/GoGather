@@ -43,6 +43,8 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
     );
 
     const totalSold = attendees.reduce((acc, curr) => acc + (curr.ticketCount || curr.seats?.length || 1), 0);
+    const totalCheckedIn = attendees.reduce((acc, curr) => acc + (curr.isUsed ? (curr.ticketCount || curr.seats?.length || 1) : 0), 0);
+    const totalPending = totalSold - totalCheckedIn;
     const fillPercentage = event.capacity ? Math.round((totalSold / event.capacity) * 100) : 0;
 
     const formatCheckInTime = (checkInTime) => {
@@ -90,8 +92,8 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
                                     <span style={styles.statValue}>{totalSold}</span>
                                 </div>
                                 <div style={styles.statBox}>
-                                    <span style={styles.statLabel}>Remaining</span>
-                                    <span style={styles.statValue}>{event.capacity ? Math.max(0, event.capacity - totalSold) : (event.capacity === 0 ? 0 : "∞")}</span>
+                                    <span style={styles.statLabel}>Pending</span>
+                                    <span style={{ ...styles.statValue, color: '#ef4444' }}>{totalPending}</span>
                                 </div>
                             </div>
                             <div style={styles.progressContainer}>
