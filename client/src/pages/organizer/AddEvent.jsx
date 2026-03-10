@@ -90,6 +90,7 @@ const AddEvent = () => {
                         organizerPhone: ev.organizerDetails?.contactPhone || "",
                         mapLink: ev.mapLink || "",
                         availableSeats: ev.availableSeats || 0,
+                        capacity: ev.capacity || "",
                         sessions: ev.sessions || [],
                         refundPolicy: ev.refundPolicy || "",
                         refundTiers: ev.refundTiers || [],
