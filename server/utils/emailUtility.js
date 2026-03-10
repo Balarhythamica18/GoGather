@@ -94,55 +94,9 @@ export const sendEmail = async (options, blocking = true) => {
         ...options
     };
 
-    // 1. Try ProMailer (For Render deployment)
-    if (proMailerUrl && proMailerApiKey && proMailerSmtpId) {
-        try {
-            if (blocking) {
-                const response = await axios.post(proMailerUrl, {
-                    smtpId: proMailerSmtpId,
-                    to: mailOptions.to,
-                    subject: mailOptions.subject,
-                    html: mailOptions.html,
-                    from: mailOptions.from
-                }, {
-                    headers: {
-                        'Authorization': `Bearer ${proMailerApiKey}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                console.log(`[EMAIL SUCCESS (PROMAILER)] Sent to ${options.to}`);
-                return response.data;
-            } else {
-                // Background execution
-                axios.post(proMailerUrl, {
-                    smtpId: proMailerSmtpId,
-                    to: mailOptions.to,
-                    subject: mailOptions.subject,
-                    html: mailOptions.html,
-                    from: mailOptions.from
-                }, {
-                    headers: {
-                        'Authorization': `Bearer ${proMailerApiKey}`,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => console.log(`[EMAIL SUCCESS (PROMAILER-BG)] Sent to ${options.to}`))
-                .catch(error => {
-                    console.error(`[EMAIL ERROR (PROMAILER-BG)] Failed to send to ${options.to}:`, error.message);
-                    console.log("[EMAIL INFO] ProMailer background failed. Initiating fallback chain...");
-
-                    // Execute fallback manually in background
-                    executeFallbackMethods(mailOptions, false, options.to)
-                        .catch(fallbackErr => console.error("[EMAIL FATAL BG] All fallback methods failed:", fallbackErr.message));
-                });
-                return;
-            }
-        } catch (error) {
-            console.error(`[EMAIL ERROR (PROMAILER)] Failed to send to ${options.to}:`, error.message);
-            // Continue to fallback methods
-        }
-    }
-
+    // Note: ProMailer attempted but unreliable with SMTP connections
+    // Fallback chain will handle all email delivery
+    
     // Fallback methods grouped into a helper so background tasks can call them too
     const executeFallbackMethods = async (mailOptions, blockingFlag, recipient) => {
         // 2. Try Resend API (Secondary)
