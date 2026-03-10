@@ -513,7 +513,8 @@ router.post("/cancel", authMiddleware, async (req, res) => {
       console.error("Cancellation Warning: User email not found. Skipping email send but completing cancellation.");
     } else {
       try {
-        await sendEmail({
+        // 🚀 NON-BLOCKING: Send email in the background to respond faster to the user
+        sendEmail({
           to: userEmail,
           subject: `Booking Cancelled: ${event?.title || "Event"} 🎟️`,
           html: `
@@ -542,10 +543,10 @@ router.post("/cancel", authMiddleware, async (req, res) => {
               </div>
             </div>
           `,
-        });
-        console.log(`Cancellation email sent to ${userEmail} for booking ${bookingId}`);
+        }, false); // Set blocking to false
+        console.log(`Cancellation email initiated in background for ${userEmail} (booking ${bookingId})`);
       } catch (emailErr) {
-        console.error("Cancellation email error:", emailErr);
+        console.error("Cancellation email initialization error:", emailErr);
         // We do not throw here, we just log the failure.
       }
     }
