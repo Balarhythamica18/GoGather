@@ -47,10 +47,45 @@ body {
 
 :root {
   --navbar-height: 70px;
-  --primary-gradient: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
-  --primary-hover-gradient: linear-gradient(180deg, #161b7e 0%, #0b0f5b 100%);
+  --primary-gradient: linear-gradient(135deg, #0b0f5b 0%, #1e3a8a 100%);
+  --primary-hover-gradient: linear-gradient(135deg, #1e3a8a 0%, #0b0f5b 100%);
   --primary-blue: #0b0f5b;
-  --accent-pink: #ec4899; /* Keeping for reference if needed, but will phase out */
+  --accent-pink: #ec4899;
+  --border-radius: 24px;
+  --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+  --card-shadow-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+}
+
+/* Global Utility for Professional Cards */
+.premium-card {
+  background: #ffffff;
+  border-radius: var(--border-radius);
+  border: 1px solid #f1f5f9;
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* Flash Card Skeleton Animation */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-flash {
+  background: linear-gradient(90deg, #f1f5f9 25%, #f8fafc 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite linear;
+  border-radius: var(--border-radius);
 }
 
 /* Push content below fixed navbar */

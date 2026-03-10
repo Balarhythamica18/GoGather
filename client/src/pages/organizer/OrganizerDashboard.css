@@ -31,7 +31,7 @@
   --border-light: #f1f5f9;
   --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 20px;
+  --radius-lg: var(--border-radius);
   --radius-xl: 32px;
 
   /* Premium Shadows */
@@ -117,7 +117,7 @@
   padding: 6px;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--border-radius);
   box-shadow: var(--shadow-sm);
   position: relative;
 }
@@ -265,10 +265,17 @@
   font-weight: 800;
 }
 
-.stat-card-trend.positive { color: var(--success); }
-.stat-card-trend.negative { color: var(--accent); }
+.stat-card-trend.positive {
+  color: var(--success);
+}
 
-.trend-arrow { font-size: 10px; }
+.stat-card-trend.negative {
+  color: var(--accent);
+}
+
+.trend-arrow {
+  font-size: 10px;
+}
 
 .stat-card-icon-box {
   width: 52px;
@@ -402,9 +409,17 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.status-badge-overlay.approved { background: rgba(16, 185, 129, 0.9); }
-.status-badge-overlay.pending { background: rgba(245, 158, 11, 0.9); }
-.status-badge-overlay.rejected { background: rgba(239, 68, 68, 0.9); }
+.status-badge-overlay.approved {
+  background: rgba(16, 185, 129, 0.9);
+}
+
+.status-badge-overlay.pending {
+  background: rgba(245, 158, 11, 0.9);
+}
+
+.status-badge-overlay.rejected {
+  background: rgba(239, 68, 68, 0.9);
+}
 
 .date-badge-overlay {
   position: absolute;
@@ -544,7 +559,7 @@
 .card-image-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(0deg, rgba(0,0,0,0.2) 0%, transparent 60%);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.2) 0%, transparent 60%);
   pointer-events: none;
 }
 
@@ -557,8 +572,15 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .settings-grid {
@@ -625,8 +647,15 @@
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateX(10px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .settings-msg.success {
@@ -713,7 +742,7 @@
   transition: var(--transition);
 }
 
-.premium-input:focus + .field-icon,
+.premium-input:focus+.field-icon,
 .input-with-icon:focus-within .field-icon {
   color: var(--primary);
 }
@@ -742,8 +771,13 @@ textarea.premium-input {
 }
 
 @keyframes modalEnter {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-content {
@@ -798,7 +832,9 @@ textarea.premium-input {
   transition: var(--transition);
 }
 
-.btn-cancel:hover { background: var(--bg-soft); }
+.btn-cancel:hover {
+  background: var(--bg-soft);
+}
 
 .btn-delete {
   flex: 1;
@@ -876,7 +912,9 @@ textarea.premium-input {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state {

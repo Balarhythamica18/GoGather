@@ -12,7 +12,7 @@
     background: #ffffff;
     width: 100%;
     max-width: 550px;
-    border-radius: 32px;
+    border-radius: var(--border-radius);
     box-shadow: 0 40px 80px -20px rgba(11, 15, 91, 0.08);
     padding: 3.5rem 2.5rem;
     text-align: center;
@@ -73,7 +73,7 @@
 
 .printable-ticket {
     background: #ffffff;
-    border-radius: 24px;
+    border-radius: var(--border-radius);
     padding: 1.5rem;
     border: 1px solid #e2e8f0;
     margin-bottom: 2rem;
@@ -86,7 +86,7 @@
 
 .ticket-info {
     background: #f8fafc;
-    border-radius: 20px;
+    border-radius: var(--border-radius);
     padding: 2.5rem;
     border: 2px dashed #cbd5e1;
     text-align: left;
@@ -173,10 +173,33 @@
     border: 2px solid #0b0f5b;
 }
 
-.corner-tl { top: 0; left: 0; border-right: none; border-bottom: none; }
-.corner-tr { top: 0; right: 0; border-left: none; border-bottom: none; }
-.corner-bl { bottom: 0; left: 0; border-right: none; border-top: none; }
-.corner-br { bottom: 0; right: 0; border-left: none; border-top: none; }
+.corner-tl {
+    top: 0;
+    left: 0;
+    border-right: none;
+    border-bottom: none;
+}
+
+.corner-tr {
+    top: 0;
+    right: 0;
+    border-left: none;
+    border-bottom: none;
+}
+
+.corner-bl {
+    bottom: 0;
+    left: 0;
+    border-right: none;
+    border-top: none;
+}
+
+.corner-br {
+    bottom: 0;
+    right: 0;
+    border-left: none;
+    border-top: none;
+}
 
 .action-btn {
     display: flex;
@@ -185,7 +208,7 @@
     gap: 10px;
     flex: 1;
     padding: 1rem;
-    border-radius: 16px;
+    border-radius: var(--border-radius);
     font-weight: 700;
     font-size: 1rem;
     cursor: pointer;
@@ -235,7 +258,8 @@
         visibility: hidden;
     }
 
-    .confirmation-card, .confirmation-card * {
+    .confirmation-card,
+    .confirmation-card * {
         visibility: visible;
     }
 
@@ -272,4 +296,4 @@
     .ticket-info {
         padding: 1.5rem;
     }
-}
+}

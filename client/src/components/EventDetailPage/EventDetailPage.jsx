@@ -5,7 +5,7 @@ import { API_BASE_URL } from "../../config";
 import { getImageUrl } from "../../utils/imageUtils";
 import "./EventDetailPage.css";
 import { useFavorites } from "../../context/FavoritesContext";
-import { Heart } from "lucide-react";
+import { Heart, Calendar, Clock, MapPin, Tag, Navigation, Building, Map, Info, FileText, CheckCircle2 } from "lucide-react";
 import RecommendedEvents from "./RecommendedEvents";
 import Skeleton from "../ui/Skeleton";
 
@@ -32,36 +32,41 @@ const EventDetailPage = () => {
   }, [id]);
 
   if (!event) return (
-    <div className="edp-wrapper" style={{ minHeight: '80vh' }}>
+    <div className="edp-wrapper">
       <div className="edp-left">
         <div className="edp-image-box">
-          <Skeleton height="400px" borderRadius="20px" />
-        </div>
-        <div className="edp-section" style={{ marginTop: '30px' }}>
-          <Skeleton width="40%" height="32px" style={{ marginBottom: '20px' }} />
-          <Skeleton width="100%" height="20px" style={{ marginBottom: '10px' }} />
-          <Skeleton width="100%" height="20px" style={{ marginBottom: '10px' }} />
-          <Skeleton width="80%" height="20px" />
+          <div className="skeleton-block" style={{ height: '420px', width: '100%' }}></div>
         </div>
         <div className="edp-section">
-          <Skeleton width="40%" height="32px" style={{ marginBottom: '20px' }} />
-          <Skeleton width="60%" height="20px" style={{ marginBottom: '10px' }} />
-          <Skeleton width="50%" height="20px" />
+          <h2><div className="skeleton-title"></div></h2>
+          <div className="skeleton-text"></div>
+          <div className="skeleton-text"></div>
+          <div className="skeleton-text short"></div>
+        </div>
+        <div className="edp-section">
+          <h2><div className="skeleton-title"></div></h2>
+          <div className="edp-highlights-grid">
+            {[1, 2, 3, 4].map(i => <div key={i} className="skeleton-tag"></div>)}
+          </div>
         </div>
       </div>
       <div className="edp-right">
-        <div className="edp-sticky-box" style={{ background: '#fff', padding: '30px', borderRadius: '24px', border: '1px solid #f1f5f9' }}>
-          <Skeleton width="80%" height="40px" style={{ marginBottom: '30px' }} />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '30px' }}>
-            <Skeleton width="60%" height="24px" />
-            <Skeleton width="70%" height="24px" />
-            <Skeleton width="50%" height="24px" />
-            <Skeleton width="65%" height="24px" />
+        <div className="edp-sticky-box">
+          <div className="skeleton-main-title"></div>
+          <div className="edp-info">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="info-row">
+                <div className="skeleton-icon-box"></div>
+                <div className="info-text-container">
+                  <div className="skeleton-label"></div>
+                  <div className="skeleton-value"></div>
+                </div>
+              </div>
+            ))}
           </div>
-          <Skeleton width="40%" height="32px" style={{ marginBottom: '20px', marginTop: '30px' }} />
-          <div style={{ display: 'flex', gap: '15px', marginTop: '40px' }}>
-            <Skeleton width="80%" height="56px" borderRadius="16px" style={{ flex: 1 }} />
-            <Skeleton width="56px" height="56px" borderRadius="16px" />
+          <div className="edp-actions-row">
+            <div className="skeleton-btn main-btn"></div>
+            <div className="skeleton-btn icon-btn"></div>
           </div>
         </div>
       </div>
@@ -110,25 +115,63 @@ const EventDetailPage = () => {
           {event.keyHighlights && event.keyHighlights.length > 0 && (
             <div className="edp-section">
               <h2>Key Highlights</h2>
-              <ul className="edp-highlights">
+              <div className="edp-highlights-grid">
                 {event.keyHighlights.map((item, i) => (
-                  <li key={i}>{item}</li>
+                  <span className="edp-highlight-tag" key={i}>
+                    <CheckCircle2 size={16} className="text-blue-500" />
+                    {item}
+                  </span>
                 ))}
-              </ul>
+              </div>
+            </div>
+          )}
+
+          {event.sessions && event.sessions.length > 0 && (
+            <div className="edp-section">
+              <h2>Event Sessions</h2>
+              <div className="edp-sessions-list">
+                {event.sessions.map((session, i) => (
+                  <div key={i} className="edp-session-card">
+                    <div className="session-time">
+                      <span>{formatTime(session.startTime)}</span>
+                      <div className="time-divider"></div>
+                      <span>{formatTime(session.endTime)}</span>
+                    </div>
+                    <div className="session-info">
+                      <h3>{session.title}</h3>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {event.instructions && (
+            <div className="edp-section instructions-section">
+              <h2><Info size={24} className="section-icon" /> Important Instructions</h2>
+              <div className="edp-instructions-box">
+                <p>{event.instructions}</p>
+              </div>
             </div>
           )}
 
           {event.organizerDetails && (
             <div className="edp-section">
               <h2>Organizer</h2>
-              <p className="edp-org-name">{event.organizerDetails.name}</p>
-              <p>{event.organizerDetails.description}</p>
-              <p>
-                <strong>Email:</strong> {event.organizerDetails.contactEmail}
-              </p>
-              <p>
-                <strong>Phone:</strong> {event.organizerDetails.contactPhone}
-              </p>
+              <div className="edp-organizer-profile">
+                <div>
+                  <p className="edp-org-name">{event.organizerDetails.name}</p>
+                  <p className="org-desc">{event.organizerDetails.description}</p>
+                </div>
+                <div className="org-contact-grid">
+                  {event.organizerDetails.contactEmail && (
+                    <span className="contact-item">✉️ {event.organizerDetails.contactEmail}</span>
+                  )}
+                  {event.organizerDetails.contactPhone && (
+                    <span className="contact-item">📞 {event.organizerDetails.contactPhone}</span>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -145,37 +188,72 @@ const EventDetailPage = () => {
             <h1 className="edp-title">{event.title}</h1>
 
             <div className="edp-info">
-              <p>
-                <strong>Date:</strong> {event.date} {event.month}
-              </p>
+              <div className="info-row">
+                <Calendar className="section-icon" size={20} />
+                <div className="info-text-container">
+                  <span className="info-label">Date</span>
+                  <span className="info-value">{event.date} {event.month}</span>
+                </div>
+              </div>
+
               {event.time && (
-                <p>
-                  <strong>Time:</strong> {formatTime(event.time)}
-                </p>
+                <div className="info-row">
+                  <Clock className="section-icon" size={20} />
+                  <div className="info-text-container">
+                    <span className="info-label">Time</span>
+                    <span className="info-value">{formatTime(event.time)}</span>
+                  </div>
+                </div>
               )}
-              <p>
-                <strong>Location:</strong> {event.location}
-              </p>
+
+              <div className="info-row">
+                <Navigation className="section-icon" size={20} />
+                <div className="info-text-container">
+                  <span className="info-label">Location</span>
+                  <span className="info-value">{event.location}</span>
+                </div>
+              </div>
+
               {event.address && (
-                <p>
-                  <strong>Address:</strong> {event.address}
-                </p>
+                <div className="info-row">
+                  <Building className="section-icon" size={20} />
+                  <div className="info-text-container">
+                    <span className="info-label">Address</span>
+                    <span className="info-value">{event.address}</span>
+                  </div>
+                </div>
               )}
-              <p>
-                <strong>Category:</strong> {event.category}
-              </p>
+
+              {event.mapLink && (
+                <a href={event.mapLink} target="_blank" rel="noopener noreferrer" className="info-row" style={{ textDecoration: 'none' }}>
+                  <Map className="section-icon" size={20} />
+                  <div className="info-text-container">
+                    <span className="info-label">Google Maps</span>
+                    <span className="info-value" style={{ color: '#3b82f6', display: 'flex', alignItems: 'center', gap: '4px' }}>View Direction &rarr;</span>
+                  </div>
+                </a>
+              )}
+
+              <div className="info-row">
+                <Tag className="section-icon" size={20} />
+                <div className="info-text-container">
+                  <span className="info-label">Category</span>
+                  <span className="info-value">{event.category}</span>
+                </div>
+              </div>
 
               {isUpcoming ? (
                 <span className="edp-upcoming-badge">Upcoming</span>
               ) : (
-                <div className="edp-price">
-                  <strong>Price:</strong>
-                  <span className="edp-price-value">
-                    {typeof event.price === 'string' && event.price.toLowerCase() === 'free'
-                      ? " Free"
-                      : ` Rs.${event.price}`}
-                  </span>
-
+                <div className="price-ticket-section">
+                  <div className="edp-price-container">
+                    <span className="info-label">Price</span>
+                    <span className="edp-price-value">
+                      {typeof event.price === 'string' && event.price.toLowerCase() === 'free'
+                        ? "Free"
+                        : `₹${event.price}`}
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
@@ -216,11 +294,25 @@ const EventDetailPage = () => {
               </div>
             )}
 
-            {event.declaration && (
-              <p className="edp-declaration">{event.declaration}</p>
+            {event.brochure && (
+              <div style={{ marginTop: '4px' }}>
+                <a
+                  href={getImageUrl(event.brochure)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="edp-brochure-link"
+                >
+                  <FileText size={18} />
+                  Download Complete Brochure
+                </a>
+              </div>
             )}
+
             {event.declaration && (
-              <p className="edp-declaration">{event.declaration}</p>
+              <p className="edp-declaration-box">
+                <Info size={18} />
+                <p>{event.declaration}</p>
+              </p>
             )}
           </div>
         </div>
