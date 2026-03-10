@@ -36,38 +36,38 @@ const EventDetailPage = () => {
     <div className="edp-wrapper">
       <div className="edp-left">
         <div className="edp-image-box">
-          <div className="skeleton-block" style={{ height: '420px', width: '100%' }}></div>
+          <Skeleton height="420px" width="100%" />
         </div>
         <div className="edp-section">
-          <h2><div className="skeleton-title"></div></h2>
-          <div className="skeleton-text"></div>
-          <div className="skeleton-text"></div>
-          <div className="skeleton-text short"></div>
+          <h2><Skeleton width="140px" height="24px" /></h2>
+          <Skeleton height="14px" width="100%" style={{ marginBottom: '10px' }} />
+          <Skeleton height="14px" width="100%" style={{ marginBottom: '10px' }} />
+          <Skeleton height="14px" width="60%" />
         </div>
         <div className="edp-section">
-          <h2><div className="skeleton-title"></div></h2>
+          <h2><Skeleton width="140px" height="24px" /></h2>
           <div className="edp-highlights-grid">
-            {[1, 2, 3, 4].map(i => <div key={i} className="skeleton-tag"></div>)}
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} height="36px" width="110px" borderRadius="100px" />)}
           </div>
         </div>
       </div>
       <div className="edp-right">
         <div className="edp-sticky-box">
-          <div className="skeleton-main-title"></div>
+          <Skeleton height="32px" width="85%" style={{ marginBottom: '24px' }} />
           <div className="edp-info">
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="info-row">
-                <div className="skeleton-icon-box"></div>
+                <Skeleton height="44px" width="44px" borderRadius="12px" />
                 <div className="info-text-container">
-                  <div className="skeleton-label"></div>
-                  <div className="skeleton-value"></div>
+                  <Skeleton height="10px" width="40px" style={{ marginBottom: '6px' }} />
+                  <Skeleton height="16px" width="120px" />
                 </div>
               </div>
             ))}
           </div>
           <div className="edp-actions-row">
-            <div className="skeleton-btn main-btn"></div>
-            <div className="skeleton-btn icon-btn"></div>
+            <Skeleton height="56px" style={{ flex: 1 }} borderRadius="14px" />
+            <Skeleton height="56px" width="56px" borderRadius="14px" />
           </div>
         </div>
       </div>

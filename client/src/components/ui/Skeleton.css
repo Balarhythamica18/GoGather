@@ -3,7 +3,7 @@
     background: linear-gradient(90deg, #f1f5f9 25%, #f8fafc 50%, #f1f5f9 75%);
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s infinite linear;
-    border-radius: var(--border-radius);
+    border-radius: 12px;
     position: relative;
     overflow: hidden;
     will-change: background-position;
@@ -13,6 +13,5 @@
 @media (prefers-color-scheme: dark) {
     .skeleton-loader {
         background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
-        background-size: 200% 100%;
     }
 }
