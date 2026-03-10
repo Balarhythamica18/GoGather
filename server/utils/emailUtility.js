@@ -21,6 +21,7 @@ const brevoApiKey = process.env.BREVO_API_KEY;
 // ProMailer Config (For Render deployment)
 const proMailerUrl = process.env.PROMAILER_API_URL;
 const proMailerApiKey = process.env.PROMAILER_API_KEY;
+const proMailerSmtpId = process.env.PROMAILER_SMTP_ID;
 
 // Brevo SMTP Config (Fallback if API fails)
 const brevoHost = process.env.BREVO_SMTP_HOST || "smtp-relay.brevo.com";
@@ -94,10 +95,11 @@ export const sendEmail = async (options, blocking = true) => {
     };
 
     // 1. Try ProMailer (For Render deployment)
-    if (proMailerUrl && proMailerApiKey) {
+    if (proMailerUrl && proMailerApiKey && proMailerSmtpId) {
         try {
             if (blocking) {
                 const response = await axios.post(proMailerUrl, {
+                    smtpId: proMailerSmtpId,
                     to: mailOptions.to,
                     subject: mailOptions.subject,
                     html: mailOptions.html,
@@ -113,6 +115,7 @@ export const sendEmail = async (options, blocking = true) => {
             } else {
                 // Background execution
                 axios.post(proMailerUrl, {
+                    smtpId: proMailerSmtpId,
                     to: mailOptions.to,
                     subject: mailOptions.subject,
                     html: mailOptions.html,
