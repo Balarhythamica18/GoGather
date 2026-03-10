@@ -81,6 +81,40 @@ router.post("/create-payment", async (req, res) => {
       return res.status(400).json({ error: `Not enough seats available. Only ${available} left.` });
     }
 
+    // 🆕 15-Minute Booking Window Logic
+    if (event.time && event.month && event.date) {
+      try {
+        let foundMonth = -1;
+        let foundDay = -1;
+        let foundYear = 2026;
+
+        if (event.month.includes("-")) {
+          const [y, m] = event.month.split("-");
+          foundYear = parseInt(y);
+          foundMonth = parseInt(m) - 1;
+        }
+        const dayMatch = event.date.toString().match(/\d+/);
+        if (dayMatch) foundDay = parseInt(dayMatch[0]);
+
+        if (foundMonth !== -1 && foundDay !== -1) {
+          // Construct start time as IST (+05:30)
+          const mStr = String(foundMonth + 1).padStart(2, '0');
+          const dStr = String(foundDay).padStart(2, '0');
+          const [hours, minutes] = event.time.split(":");
+          const eventStartTime = new Date(`${foundYear}-${mStr}-${dStr}T${hours}:${minutes}:00+05:30`);
+
+          const now = new Date();
+          const windowEndTime = new Date(eventStartTime.getTime() + 15 * 60 * 1000);
+
+          if (now > windowEndTime) {
+            return res.status(400).json({ error: "Booking window closed! (15 mins from start time exceeded)" });
+          }
+        }
+      } catch (err) {
+        console.error("Booking Window Check Error:", err);
+      }
+    }
+
     const finalAmount = amount;
     const discountApplied = false;
 

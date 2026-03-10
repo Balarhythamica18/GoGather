@@ -16,6 +16,7 @@ const eventSchema = new mongoose.Schema(
     month: String,
     date: String,
     time: String,
+    endTime: String,
     title: String,
     description: String,
     image: String,

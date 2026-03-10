@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Calendar, MapPin, Ticket, X, QrCode, ShieldCheck, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Calendar, MapPin, Ticket, X, QrCode, ShieldCheck, CheckCircle2, AlertTriangle, Star } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { getImageUrl } from "../utils/imageUtils";
 import { API_BASE_URL } from "../config";
@@ -15,6 +15,16 @@ const MyBookings = () => {
   const [resultModal, setResultModal] = useState({ show: false, type: "success", title: "", message: "", data: null });
 
   const [isCancellingId, setIsCancellingId] = useState(null);
+  const [ratingData, setRatingData] = useState({ bookingId: null, rating: 0, submitted: false, showStarsOnly: false });
+
+  useEffect(() => {
+    if (ratingData.submitted && !ratingData.showStarsOnly) {
+      const timer = setTimeout(() => {
+        setRatingData(prev => ({ ...prev, showStarsOnly: true }));
+      }, 60000);
+      return () => clearTimeout(timer);
+    }
+  }, [ratingData.submitted, ratingData.showStarsOnly]);
 
   useEffect(() => {
     fetchBookings();
@@ -215,10 +225,44 @@ const MyBookings = () => {
                   <img src={getImageUrl(booking.event?.image)} alt={booking.event?.title} />
                 )}
                 <span className={`status-badge ${booking.status} ${booking.isUsed ? 'used' : ''} ${booking.event?.status === 'completed' ? 'completed' : ''}`}>
-                  {booking.cancelledBy === "organizer" ? 'Organizer Cancelled' :
-                    (booking.status === 'cancelled' ? 'Cancelled' :
-                      (booking.event?.status === 'completed' ? 'Event Ended' :
-                        (booking.isUsed ? 'Already Used' : 'Upcoming')))}
+                  {(() => {
+                    const event = booking.event;
+                    const monthMap = {
+                      'january': 0, 'february': 1, 'march': 2, 'april': 3, 'may': 4, 'june': 5,
+                      'july': 6, 'august': 7, 'september': 8, 'october': 9, 'november': 10, 'december': 11,
+                      'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3, 'may': 4, 'jun': 5, 'jul': 6, 'aug': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dec': 11
+                    };
+                    let isEnded = event?.status === 'completed';
+                    if (!isEnded && event?.time && event?.month && event?.date) {
+                      try {
+                        let foundMonth = -1;
+                        let foundDay = -1;
+                        let foundYear = 2026;
+                        if (event.month.includes("-")) {
+                          const [y, m] = event.month.split("-");
+                          foundYear = parseInt(y);
+                          foundMonth = parseInt(m) - 1;
+                        } else {
+                          foundMonth = monthMap[event.month.toLowerCase().trim()] ?? -1;
+                        }
+                        const dayMatch = event.date.toString().match(/\d+/);
+                        if (dayMatch) foundDay = parseInt(dayMatch[0]);
+                        if (foundMonth !== -1 && foundDay !== -1) {
+                          const mStr = String(foundMonth + 1).padStart(2, '0');
+                          const dStr = String(foundDay).padStart(2, '0');
+                          const [eH, eM] = (event.endTime || "23:59").split(":");
+                          const end = new Date(`${foundYear}-${mStr}-${dStr}T${eH}:${eM}:00+05:30`);
+                          if (new Date() >= end) isEnded = true;
+                        }
+                      } catch (e) { }
+                    }
+
+                    if (booking.cancelledBy === "organizer") return 'Organizer Cancelled';
+                    if (booking.status === 'cancelled') return 'Cancelled';
+                    if (isEnded) return 'Event Ended';
+                    if (booking.isUsed) return 'Already Used';
+                    return 'Upcoming';
+                  })()}
                 </span>
               </div>
 
@@ -321,47 +365,142 @@ const MyBookings = () => {
               <div className="card-actions">
                 <div className="price-tag">₹{booking.amount || booking.event?.price}</div>
 
-                <button
-                  className="view-ticket-btn"
-                  onClick={() => setSelectedTicket(booking)}
-                  disabled={booking.status === 'cancelled' || booking.event?.status === 'completed'}
-                >
-                  <QrCode size={18} />
-                  {booking.status === 'cancelled' ? 'Cancelled' : (booking.event?.status === 'completed' ? 'Event Ended' : 'View Ticket')}
-                </button>
-                {booking.status !== 'cancelled' && booking.event?.status === 'completed' && (
-                  <button
-                    className="rate-experience-btn"
-                    style={{
-                      marginTop: '8px',
-                      width: '100%',
-                      padding: '10px',
-                      borderRadius: '10px',
-                      border: '1px solid #e2e8f0',
-                      background: '#fff',
-                      color: 'var(--primary-blue)',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      fontSize: '0.85rem'
-                    }}
-                  >
-                    🚀 Rate Experience
-                  </button>
-                )}
-                {booking.status !== 'cancelled' && !booking.isUsed && booking.event?.status !== 'completed' && (
-                  <button
-                    className="cancel-ticket-btn"
-                    onClick={() => handleCancel(booking._id)}
-                    disabled={isCancellingId === booking._id}
-                  >
-                    <X size={16} />
-                    {isCancellingId === booking._id ? 'Cancelling...' : 'Cancel Ticket'}
-                  </button>
-                )}
+                {(() => {
+                  const event = booking.event;
+                  const monthMap = {
+                    'january': 0, 'february': 1, 'march': 2, 'april': 3, 'may': 4, 'june': 5,
+                    'july': 6, 'august': 7, 'september': 8, 'october': 9, 'november': 10, 'december': 11,
+                    'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3, 'may': 4, 'jun': 5, 'jul': 6, 'aug': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dec': 11
+                  };
+
+                  let isEnded = event?.status === 'completed';
+                  if (!isEnded && event?.time && event?.month && event?.date) {
+                    try {
+                      let foundMonth = -1;
+                      let foundDay = -1;
+                      let foundYear = 2026;
+
+                      if (event.month.includes("-")) {
+                        const [y, m] = event.month.split("-");
+                        foundYear = parseInt(y);
+                        foundMonth = parseInt(m) - 1;
+                      } else {
+                        foundMonth = monthMap[event.month.toLowerCase().trim()] ?? -1;
+                      }
+
+                      const dayMatch = event.date.toString().match(/\d+/);
+                      if (dayMatch) foundDay = parseInt(dayMatch[0]);
+
+                      if (foundMonth !== -1 && foundDay !== -1) {
+                        const mStr = String(foundMonth + 1).padStart(2, '0');
+                        const dStr = String(foundDay).padStart(2, '0');
+                        const [eH, eM] = (event.endTime || "23:59").split(":");
+                        const end = new Date(`${foundYear}-${mStr}-${dStr}T${eH}:${eM}:00+05:30`);
+
+                        if (new Date() >= end) isEnded = true;
+                      }
+                    } catch (e) { }
+                  }
+
+                  const ticketDisabled = booking.status === 'cancelled' || isEnded;
+                  const ticketLabel = booking.status === 'cancelled' ? 'Cancelled' : (isEnded ? 'Event Ended' : 'View Ticket');
+
+                  return (
+                    <>
+                      <button
+                        className="view-ticket-btn"
+                        onClick={() => setSelectedTicket(booking)}
+                        disabled={ticketDisabled}
+                      >
+                        <QrCode size={18} />
+                        {ticketLabel}
+                      </button>
+
+                      {booking.status !== 'cancelled' && isEnded && (
+                        <div style={{ marginTop: '12px', padding: '12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                          {ratingData.bookingId === booking._id && ratingData.submitted ? (
+                            ratingData.showStarsOnly ? (
+                              <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
+                                {[1, 2, 3, 4, 5].map((s) => (
+                                  <Star
+                                    key={s}
+                                    size={18}
+                                    style={{
+                                      fill: s <= ratingData.rating ? '#eab308' : 'none',
+                                      color: s <= ratingData.rating ? '#eab308' : '#cbd5e1'
+                                    }}
+                                  />
+                                ))}
+                                <span style={{ marginLeft: '8px', fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Your rating</span>
+                              </div>
+                            ) : (
+                              <div style={{ textAlign: 'center', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: '600' }}>
+                                <CheckCircle2 size={20} />
+                                Thanks for the feedback!
+                              </div>
+                            )
+                          ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                              <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '500' }}>Rate your experience</span>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                {[1, 2, 3, 4, 5].map((s) => (
+                                  <Star
+                                    key={s}
+                                    size={24}
+                                    style={{
+                                      cursor: 'pointer',
+                                      fill: s <= (ratingData.bookingId === booking._id ? ratingData.rating : 0) ? '#eab308' : 'none',
+                                      color: s <= (ratingData.bookingId === booking._id ? ratingData.rating : 0) ? '#eab308' : '#cbd5e1',
+                                      transition: 'all 0.2s'
+                                    }}
+                                    onClick={() => {
+                                      setRatingData({ bookingId: booking._id, rating: s, submitted: false, showStarsOnly: false });
+                                    }}
+                                    onMouseEnter={() => {
+                                      if (ratingData.bookingId !== booking._id || !ratingData.submitted) {
+                                        setRatingData(prev => ({ ...prev, bookingId: booking._id, rating: s }));
+                                      }
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                              {(ratingData.bookingId === booking._id && ratingData.rating > 0) && (
+                                <button
+                                  onClick={() => {
+                                    setRatingData(prev => ({ ...prev, submitted: true, showStarsOnly: false }));
+                                  }}
+                                  style={{
+                                    marginTop: '4px',
+                                    background: 'var(--primary-blue)',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '4px 12px',
+                                    borderRadius: '6px',
+                                    fontSize: '12px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  Submit Rating
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {booking.status !== 'cancelled' && !booking.isUsed && !isEnded && (
+                        <button
+                          className="cancel-ticket-btn"
+                          onClick={() => handleCancel(booking._id)}
+                          disabled={isCancellingId === booking._id}
+                        >
+                          <X size={16} />
+                          {isCancellingId === booking._id ? 'Cancelling...' : 'Cancel Ticket'}
+                        </button>
+                      )}
+                    </>
+                  );
+                })()}
                 {booking.status === 'cancelled' && (
                   <button
                     className="delete-ticket-btn"
@@ -394,141 +533,147 @@ const MyBookings = () => {
       </div>
 
       {/* Ticket Modal */}
-      {selectedTicket && (
-        <div className="ticket-modal-overlay" onClick={() => setSelectedTicket(null)}>
-          <div className="ticket-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Your Ticket</h3>
-              <button className="close-modal" onClick={() => setSelectedTicket(null)}><X size={20} /></button>
-            </div>
-            <div className="modal-body">
-              <div className="ticket-qr-section">
-                <div className="qr-placeholder" style={{ background: '#fff', padding: '16px', borderRadius: '12px', display: 'inline-block' }}>
-                  <QRCodeSVG
-                    value={JSON.stringify({
-                      bookingId: selectedTicket._id,
-                      eventName: selectedTicket.event?.title,
-                      eventDate: selectedTicket.event?.date,
-                      eventTime: selectedTicket.event?.time,
-                      location: selectedTicket.event?.location,
-                      seats: selectedTicket.seats?.length ? selectedTicket.seats.join(", ") : `${selectedTicket.ticketCount} Tickets`
-                    })}
-                    size={160}
-                    bgColor={"#ffffff"}
-                    fgColor={"#1e293b"}
-                    level={"Q"}
-                  />
-                </div>
-                <p className="ticket-id" style={{ marginTop: '16px', fontFamily: 'monospace', fontSize: '0.9rem', color: '#64748b' }}>
-                  Booking ID: {selectedTicket._id}
-                </p>
+      {
+        selectedTicket && (
+          <div className="ticket-modal-overlay" onClick={() => setSelectedTicket(null)}>
+            <div className="ticket-modal" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Your Ticket</h3>
+                <button className="close-modal" onClick={() => setSelectedTicket(null)}><X size={20} /></button>
               </div>
-              <div className="ticket-details-box" style={{ background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px dashed #cbd5e1', textAlign: 'left' }}>
-                <h4 style={{ fontSize: '1.2rem', color: '#0f172a', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
-                  {selectedTicket.event?.title}
-                </h4>
-                <div className="ticket-info-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div className="info-item">
-                    <span className="label" style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Date</span>
-                    <span className="value" style={{ fontWeight: 600, color: '#1e293b' }}>{selectedTicket.event?.date || 'N/A'}</span>
+              <div className="modal-body">
+                <div className="ticket-qr-section">
+                  <div className="qr-placeholder" style={{ background: '#fff', padding: '16px', borderRadius: '12px', display: 'inline-block' }}>
+                    <QRCodeSVG
+                      value={JSON.stringify({
+                        bookingId: selectedTicket._id,
+                        eventName: selectedTicket.event?.title,
+                        eventDate: selectedTicket.event?.date,
+                        eventTime: selectedTicket.event?.time,
+                        location: selectedTicket.event?.location,
+                        seats: selectedTicket.seats?.length ? selectedTicket.seats.join(", ") : `${selectedTicket.ticketCount} Tickets`
+                      })}
+                      size={160}
+                      bgColor={"#ffffff"}
+                      fgColor={"#1e293b"}
+                      level={"Q"}
+                    />
                   </div>
-                  <div className="info-item">
-                    <span className="label" style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Time</span>
-                    <span className="value" style={{ fontWeight: 600, color: '#1e293b' }}>{selectedTicket.event?.time || 'N/A'}</span>
-                  </div>
-                  <div className="info-item" style={{ gridColumn: '1 / -1' }}>
-                    <span className="label" style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Location</span>
-                    <span className="value" style={{ fontWeight: 600, color: '#1e293b' }}>{selectedTicket.event?.location || 'N/A'}</span>
-                  </div>
-                  <div className="info-item" style={{ gridColumn: '1 / -1' }}>
-                    <span className="label" style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Seats/Qty</span>
-                    <span className="value" style={{ fontWeight: 700, color: 'var(--primary-blue)', fontSize: '1.1rem' }}>
-                      {selectedTicket.seats?.length
-                        ? selectedTicket.seats.join(", ")
-                        : `${selectedTicket.ticketCount} Tickets`}
-                    </span>
+                  <p className="ticket-id" style={{ marginTop: '16px', fontFamily: 'monospace', fontSize: '0.9rem', color: '#64748b' }}>
+                    Booking ID: {selectedTicket._id}
+                  </p>
+                </div>
+                <div className="ticket-details-box" style={{ background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px dashed #cbd5e1', textAlign: 'left' }}>
+                  <h4 style={{ fontSize: '1.2rem', color: '#0f172a', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+                    {selectedTicket.event?.title}
+                  </h4>
+                  <div className="ticket-info-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="info-item">
+                      <span className="label" style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Date</span>
+                      <span className="value" style={{ fontWeight: 600, color: '#1e293b' }}>{selectedTicket.event?.date || 'N/A'}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="label" style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Time</span>
+                      <span className="value" style={{ fontWeight: 600, color: '#1e293b' }}>{selectedTicket.event?.time || 'N/A'}</span>
+                    </div>
+                    <div className="info-item" style={{ gridColumn: '1 / -1' }}>
+                      <span className="label" style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Location</span>
+                      <span className="value" style={{ fontWeight: 600, color: '#1e293b' }}>{selectedTicket.event?.location || 'N/A'}</span>
+                    </div>
+                    <div className="info-item" style={{ gridColumn: '1 / -1' }}>
+                      <span className="label" style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Seats/Qty</span>
+                      <span className="value" style={{ fontWeight: 700, color: 'var(--primary-blue)', fontSize: '1.1rem' }}>
+                        {selectedTicket.seats?.length
+                          ? selectedTicket.seats.join(", ")
+                          : `${selectedTicket.ticketCount} Tickets`}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="modal-footer">
-              <div className="security-badge">
-                <ShieldCheck size={16} />
-                <span>Verified Booking</span>
+              <div className="modal-footer">
+                <div className="security-badge">
+                  <ShieldCheck size={16} />
+                  <span>Verified Booking</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
       {/* Confirmation Modal */}
-      {confirmModal.show && (
-        <div className="ticket-modal-overlay" onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))}>
-          <div className="ticket-modal confirm-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header confirm">
-              <button className="close-modal" onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))}><X size={20} /></button>
-              <AlertTriangle size={48} color="#ffffff" />
-              <h3>{confirmModal.title}</h3>
-            </div>
-            <div className="modal-body">
-              <p style={{ color: '#64748b', lineHeight: '1.6', marginBottom: '24px' }}>{confirmModal.message}</p>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button
-                  className="modal-btn cancel"
-                  onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))}
-                  style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}
-                >
-                  Go Back
-                </button>
-                <button
-                  className="modal-btn confirm"
-                  onClick={confirmModal.onConfirm}
-                  style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)' }}
-                >
-                  Yes, Confirm
-                </button>
+      {
+        confirmModal.show && (
+          <div className="ticket-modal-overlay" onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))}>
+            <div className="ticket-modal confirm-modal" onClick={e => e.stopPropagation()}>
+              <div className="modal-header confirm">
+                <button className="close-modal" onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))}><X size={20} /></button>
+                <AlertTriangle size={48} color="#ffffff" />
+                <h3>{confirmModal.title}</h3>
+              </div>
+              <div className="modal-body">
+                <p style={{ color: '#64748b', lineHeight: '1.6', marginBottom: '24px' }}>{confirmModal.message}</p>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    className="modal-btn cancel"
+                    onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))}
+                    style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Go Back
+                  </button>
+                  <button
+                    className="modal-btn confirm"
+                    onClick={confirmModal.onConfirm}
+                    style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', background: '#ef4444', color: '#fff', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)' }}
+                  >
+                    Yes, Confirm
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Result Modal */}
-      {resultModal.show && (
-        <div className="ticket-modal-overlay" onClick={() => setResultModal(prev => ({ ...prev, show: false }))}>
-          <div className="ticket-modal result-modal" onClick={e => e.stopPropagation()}>
-            <div className={`modal-header ${resultModal.type}`}>
-              <button className="close-modal" onClick={() => setResultModal(prev => ({ ...prev, show: false }))}><X size={20} /></button>
-              {resultModal.type === "success" ? <CheckCircle2 size={40} /> : <X size={40} />}
-              <h3 style={{ margin: '12px 0 0' }}>{resultModal.title}</h3>
-            </div>
-            <div className="modal-body">
-              <p style={{ color: '#64748b', lineHeight: '1.6', marginBottom: resultModal.data ? '20px' : '0' }}>{resultModal.message}</p>
+      {
+        resultModal.show && (
+          <div className="ticket-modal-overlay" onClick={() => setResultModal(prev => ({ ...prev, show: false }))}>
+            <div className="ticket-modal result-modal" onClick={e => e.stopPropagation()}>
+              <div className={`modal-header ${resultModal.type}`}>
+                <button className="close-modal" onClick={() => setResultModal(prev => ({ ...prev, show: false }))}><X size={20} /></button>
+                {resultModal.type === "success" ? <CheckCircle2 size={40} /> : <X size={40} />}
+                <h3 style={{ margin: '12px 0 0' }}>{resultModal.title}</h3>
+              </div>
+              <div className="modal-body">
+                <p style={{ color: '#64748b', lineHeight: '1.6', marginBottom: resultModal.data ? '20px' : '0' }}>{resultModal.message}</p>
 
-              {resultModal.data && resultModal.data.policy && (
-                <div style={{ background: '#f0fdf4', padding: '16px', borderRadius: '16px', border: '1px solid #dcfce7', textAlign: 'left', marginBottom: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem' }}>
-                    <span style={{ color: '#166534', fontWeight: 600 }}>Policy</span>
-                    <span style={{ color: '#166534' }}>{resultModal.data.policy}</span>
+                {resultModal.data && resultModal.data.policy && (
+                  <div style={{ background: '#f0fdf4', padding: '16px', borderRadius: '16px', border: '1px solid #dcfce7', textAlign: 'left', marginBottom: '24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.85rem' }}>
+                      <span style={{ color: '#166534', fontWeight: 600 }}>Policy</span>
+                      <span style={{ color: '#166534' }}>{resultModal.data.policy}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem' }}>
+                      <span style={{ color: '#166534', fontWeight: 700 }}>Refund Amount</span>
+                      <span style={{ color: '#166534', fontWeight: 800 }}>₹{resultModal.data.amount}</span>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem' }}>
-                    <span style={{ color: '#166534', fontWeight: 700 }}>Refund Amount</span>
-                    <span style={{ color: '#166534', fontWeight: 800 }}>₹{resultModal.data.amount}</span>
-                  </div>
-                </div>
-              )}
+                )}
 
-              <button
-                className="modal-btn"
-                onClick={() => setResultModal(prev => ({ ...prev, show: false }))}
-                style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: '#1e293b', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
-              >
-                Close
-              </button>
+                <button
+                  className="modal-btn"
+                  onClick={() => setResultModal(prev => ({ ...prev, show: false }))}
+                  style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: '#1e293b', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };
 

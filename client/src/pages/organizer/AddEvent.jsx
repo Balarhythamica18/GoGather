@@ -27,6 +27,7 @@ const AddEvent = () => {
     const [form, setForm] = useState({
         date: "",
         time: "",
+        endTime: "",
         title: "",
         location: "",
         address: "",
@@ -75,6 +76,7 @@ const AddEvent = () => {
                     setForm({
                         date: isoDate,
                         time: ev.time || "",
+                        endTime: ev.endTime || "",
                         title: ev.title || "",
                         location: ev.location || "",
                         address: ev.address || "",
@@ -451,6 +453,14 @@ const AddEvent = () => {
                                             <input type="time" name="time" onChange={handleChange} required style={styles.inputIcon} value={form.time} />
                                         </div>
                                         <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>Select start time (24h format internally)</p>
+                                    </div>
+                                    <div style={styles.inputGroup}>
+                                        <label style={styles.label}>End Time</label>
+                                        <div style={styles.inputWithIcon}>
+                                            <Clock size={18} color="#94a3b8" style={styles.iconPos} />
+                                            <input type="time" name="endTime" onChange={handleChange} required style={styles.inputIcon} value={form.endTime} />
+                                        </div>
+                                        <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>Select end time</p>
                                     </div>
                                     <div style={styles.inputGroup}>
                                         <label style={styles.label}>City/Location</label>

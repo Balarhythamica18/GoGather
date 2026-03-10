@@ -77,7 +77,7 @@ const RecommendedEvents = ({ currentEventId, currentCategory }) => {
                 <p className="recommended-subtitle">You might also be interested in these events</p>
             </div>
 
-            <div className="rec-grid">
+            <div className="recommended-grid">
                 {loading
                     ? Array.from({ length: 4 }).map((_, index) => (
                         <div key={`skeleton-${index}`} className="rec-card" style={{ cursor: 'default' }}>

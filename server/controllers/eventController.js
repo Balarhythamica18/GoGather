@@ -70,6 +70,7 @@ export const createEvent = async (req, res) => {
         contactPhone: req.body.organizerPhone,
       },
       mapLink: req.body.mapLink || "",
+      endTime: req.body.endTime || "",
       capacity: parseInt(req.body.capacity) || 0,
       availableSeats: parseInt(req.body.capacity) || 0,
     };
@@ -183,15 +184,15 @@ export const getEventById = async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`[EVENT DEBUG] Fetching event with ID: ${id}`);
-    
+
     // Run cleanup to ensure we don't return an expired event
     await cleanupExpiredEvents();
 
     const event = await Event.findById(id);
     if (!event) {
       console.warn(`[EVENT DEBUG] Event NOT FOUND in DB for ID: ${id}`);
-      return res.status(404).json({ 
-        message: "Event not found", 
+      return res.status(404).json({
+        message: "Event not found",
         debugId: id,
         timestamp: new Date().toISOString()
       });
@@ -494,6 +495,8 @@ export const updateEvent = async (req, res) => {
       "declaration",
       "mapLink",
       "capacity",
+      "time",
+      "endTime",
       "refundPolicy",
       "instructions",
     ];
@@ -522,14 +525,14 @@ export const updateEvent = async (req, res) => {
     // Update capacity and availableSeats logic
     if (otherData.capacity !== undefined) {
       const newCapacity = parseInt(otherData.capacity) || 0;
-      
+
       // Calculate actual sold seats from confirmed bookings to ensure accuracy
-      const confirmedBookings = await Booking.find({ 
-        eventId: req.params.id, 
-        status: "confirmed" 
+      const confirmedBookings = await Booking.find({
+        eventId: req.params.id,
+        status: "confirmed"
       });
-      
-      const soldSeats = confirmedBookings.reduce((sum, b) => 
+
+      const soldSeats = confirmedBookings.reduce((sum, b) =>
         sum + (b.seats?.length || b.ticketCount || 1), 0);
 
       event.capacity = newCapacity;
@@ -640,7 +643,7 @@ export const debugEvents = async (req, res) => {
     const rawUri = process.env.MONGODB_URI || "";
     let mongodbHost = "Unknown";
     let dbName = "Unknown";
-    
+
     if (rawUri.includes("@")) {
       mongodbHost = rawUri.split('@')[1]?.split('/')[0] || "Unknown";
       const rest = rawUri.split('@')[1] || "";
