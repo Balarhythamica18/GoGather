@@ -368,9 +368,9 @@ const OrganizerDashboard = () => {
 
                             {event.status === 'completed' && (
                               <div className="status-badge-overlay" style={{
-                                position: 'absolute', top: '12px', left: '12px', background: '#64748b', color: '#fff',
-                                padding: '4px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase',
-                                zIndex: 10
+                                position: 'absolute', top: '12px', left: '12px', background: 'rgba(15, 23, 42, 0.85)', color: '#fff',
+                                padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase',
+                                zIndex: 10, backdropFilter: 'blur(4px)'
                               }}>
                                 Event Closed
                               </div>
@@ -392,7 +392,7 @@ const OrganizerDashboard = () => {
                             <h3 className="card-title">{event.title}</h3>
                             <div className="card-info">
                               <div className="info-item">
-                                <Calendar size={16} />
+                                <Calendar size={20} />
                                 <span>
                                   {event.date} {event.month?.includes("-")
                                     ? new Date(event.month).toLocaleString('en-US', { month: 'long' })
@@ -400,7 +400,7 @@ const OrganizerDashboard = () => {
                                 </span>
                               </div>
                               <div className="info-item">
-                                <MapPin size={16} />
+                                <MapPin size={20} />
                                 <span>{event.location}</span>
                               </div>
                             </div>
@@ -410,10 +410,10 @@ const OrganizerDashboard = () => {
                               </div>
                               <div className="action-btns">
                                 <button className="icon-btn" title="Edit Event" onClick={(e) => { e.stopPropagation(); navigate(`/add-event/${event._id}`); }}>
-                                  <Edit size={18} />
+                                  <Edit size={20} />
                                 </button>
                                 <button className="icon-btn delete" title="Delete Event" onClick={(e) => { e.stopPropagation(); setEventToDelete(event); setShowConfirmation(true); }}>
-                                  <Trash2 size={18} />
+                                  <Trash2 size={20} />
                                 </button>
                               </div>
                             </div>
@@ -434,29 +434,30 @@ const OrganizerDashboard = () => {
                           <div
                             key={event._id}
                             className="event-card completed-event"
-                            style={{ filter: 'grayscale(0.4)', background: '#f8fafc' }}
+                            style={{ filter: 'grayscale(0.2)', background: '#fff' }}
                             onClick={() => handleEventAction(event)}
                           >
                             <div className="card-image-box">
                               <img src={getImageUrl(event.image)} alt={event.title} />
                               <div className="status-badge-overlay" style={{
-                                position: 'absolute', top: '12px', left: '12px', background: '#64748b', color: '#fff',
-                                padding: '4px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase'
+                                position: 'absolute', top: '12px', left: '12px', background: 'rgba(15, 23, 42, 0.85)', color: '#fff',
+                                padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase',
+                                zIndex: 10, backdropFilter: 'blur(4px)'
                               }}>
                                 Event Closed
                               </div>
                             </div>
                             <div className="card-content">
-                              <h3 className="card-title" style={{ color: '#475569' }}>{event.title}</h3>
+                              <h3 className="card-title" style={{ color: '#1e293b' }}>{event.title}</h3>
                               <div className="card-info">
-                                <div className="info-item"><Calendar size={16} /><span>{event.date} {event.month}</span></div>
-                                <div className="info-item"><MapPin size={16} /><span>{event.location}</span></div>
+                                <div className="info-item"><Calendar size={20} /><span>{event.date} {event.month}</span></div>
+                                <div className="info-item"><MapPin size={20} /><span>{event.location}</span></div>
                               </div>
-                              <div className="card-footer-premium" style={{ borderTop: '1px dashed #e2e8f0' }}>
-                                <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748b' }}>Historical Record</span>
+                              <div className="card-footer-premium" style={{ borderTop: '1.5px solid #f1f5f9' }}>
+                                <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>CLOSED EVENT</span>
                                 <div className="action-btns">
-                                  <button className="icon-btn" title="View Stats" style={{ opacity: 0.5 }}>
-                                    <AlignLeft size={18} />
+                                  <button className="icon-btn" title="View Stats" style={{ opacity: 0.8 }}>
+                                    <AlignLeft size={20} />
                                   </button>
                                 </div>
                               </div>
