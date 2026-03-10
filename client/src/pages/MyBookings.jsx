@@ -47,17 +47,20 @@ const MyBookings = () => {
           const res = await axios.post(`${API_BASE_URL}/api/bookings/cancel`, { bookingId }, {
             headers: { Authorization: `Bearer ${token}` }
           });
-          setResultModal({
-            show: true,
-            type: "success",
-            title: "Booking Cancelled",
-            message: "Your booking has been cancelled successfully.",
-            data: {
-              policy: res.data.refundPolicy,
-              amount: res.data.refundAmount
-            }
-          });
-          fetchBookings();
+
+          if (res.data) {
+            setResultModal({
+              show: true,
+              type: "success",
+              title: "Cancellation Successful",
+              message: res.data.message || "Your booking has been cancelled and your refund has been processed.",
+              data: {
+                policy: res.data.refundPolicy || "Standard Policy",
+                amount: res.data.refundAmount || 0
+              }
+            });
+            fetchBookings();
+          }
         } catch (err) {
           console.error("Cancel error:", err);
           setResultModal({
@@ -153,20 +156,26 @@ const MyBookings = () => {
       <h2>My Adventures</h2>
       <div className="bookings-grid">
         {[1, 2, 3].map((_, index) => (
-          <div key={index} className="premium-booking-card" style={{ padding: '0', overflow: 'hidden' }}>
-            <Skeleton height="200px" borderRadius="0" />
-            <div style={{ padding: '20px' }}>
-              <Skeleton width="30%" height="20px" style={{ marginBottom: '10px' }} />
-              <Skeleton width="80%" height="28px" style={{ marginBottom: '20px' }} />
-              <Skeleton width="60%" height="16px" style={{ marginBottom: '10px' }} />
-              <Skeleton width="70%" height="16px" style={{ marginBottom: '10px' }} />
-              <div style={{ marginTop: '20px' }}>
-                <Skeleton width="100%" height="80px" borderRadius="12px" style={{ marginBottom: '15px' }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Skeleton width="30%" height="24px" />
-                  <Skeleton width="40%" height="40px" borderRadius="10px" />
-                </div>
+          <div key={index} className="premium-booking-card skeleton-card">
+            <div className="card-image-section">
+              <Skeleton height="100%" borderRadius="0" />
+            </div>
+            <div className="card-details">
+              <Skeleton width="40%" height="12px" style={{ marginBottom: '12px' }} />
+              <Skeleton width="85%" height="24px" style={{ marginBottom: '16px' }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Skeleton width="60%" height="14px" />
+                <Skeleton width="50%" height="14px" />
               </div>
+            </div>
+            <div className="card-status-info">
+              <div style={{ padding: '0 10px' }}>
+                <Skeleton width="100%" height="60px" borderRadius="12px" />
+              </div>
+            </div>
+            <div className="card-actions">
+              <Skeleton width="80px" height="32px" style={{ marginBottom: '12px' }} />
+              <Skeleton width="100%" height="48px" borderRadius="14px" />
             </div>
           </div>
         ))}
@@ -348,36 +357,9 @@ const MyBookings = () => {
                     className="cancel-ticket-btn"
                     onClick={() => handleCancel(booking._id)}
                     disabled={isCancellingId === booking._id}
-                    style={{
-                      marginTop: '8px',
-                      width: '100%',
-                      padding: '10px',
-                      borderRadius: '10px',
-                      border: '1px solid #fee2e2',
-                      background: '#fff',
-                      color: isCancellingId === booking._id ? '#9ca3af' : '#ef4444',
-                      fontWeight: 600,
-                      cursor: isCancellingId === booking._id ? 'not-allowed' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px',
-                      fontSize: '0.85rem',
-                      opacity: isCancellingId === booking._id ? 0.7 : 1
-                    }}
                   >
-                    {isCancellingId === booking._id ? (
-                      <>
-                        <div className="spinner" style={{ width: '16px', height: '16px', border: '2px solid #9ca3af', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                        Processing...
-                        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
-                      </>
-                    ) : (
-                      <>
-                        <X size={16} />
-                        Cancel Ticket
-                      </>
-                    )}
+                    <X size={16} />
+                    {isCancellingId === booking._id ? 'Cancelling...' : 'Cancel Ticket'}
                   </button>
                 )}
                 {booking.status === 'cancelled' && (

@@ -33,18 +33,18 @@ const SeatLayout = ({ event, user }) => {
   // 🆕 DYNAMIC SEAT GENERATION LOGIC
   const capacity = event?.capacity || 0;
   const isSeatBased = [
-    "rawstories", 
-    "theatredrama", 
-    "theatre drama", 
-    "comedy", 
-    "concert", 
+    "rawstories",
+    "theatredrama",
+    "theatre drama",
+    "comedy",
+    "concert",
     "sports"
   ].includes(event?.category?.toLowerCase());
 
   const seatsPerRow = 10;
   const totalSeats = isSeatBased ? capacity : 0;
   const rowCount = Math.ceil(totalSeats / seatsPerRow);
-  
+
   // Generate row labels (A, B, C... Z, AA, AB...)
   const getRowLabel = (index) => {
     let label = "";
@@ -121,6 +121,73 @@ const SeatLayout = ({ event, user }) => {
 
   const totalAmount = subtotal;
 
+  /* CHECK AUTH ON MOUNT */
+  useEffect(() => {
+    if (!currentUser?._id) {
+      showLoginToast();
+
+      // Auto-redirect after 5 seconds if still not logged in
+      const timer = setTimeout(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          navigate("/login");
+        }
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [currentUser, navigate]);
+
+  const showLoginToast = () => {
+    toast((t) => (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{
+          background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+          padding: '8px',
+          borderRadius: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white'
+        }}>
+          <LogIn size={20} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <p style={{ margin: 0, fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>Login Required</p>
+          <p style={{ margin: 0, color: '#64748b', fontSize: '12px' }}>Please login to continue booking.</p>
+        </div>
+        <button
+          onClick={() => {
+            toast.dismiss(t.id);
+            navigate("/login");
+          }}
+          style={{
+            background: '#1e293b',
+            color: 'white',
+            border: 'none',
+            padding: '6px 14px',
+            borderRadius: '8px',
+            fontSize: '12px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+        >
+          Login
+        </button>
+      </div>
+    ), {
+      duration: 5000,
+      position: 'top-center',
+      style: {
+        minWidth: '350px',
+        borderRadius: '16px',
+        background: '#ffffff',
+        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+        padding: '16px',
+      },
+    });
+  };
+
   /* FETCH BOOKED SEATS */
   useEffect(() => {
     if (!event?._id || !isSeatBased) return;
@@ -174,6 +241,10 @@ const SeatLayout = ({ event, user }) => {
 
   /* TOGGLE SEAT */
   const toggleSeat = (seat) => {
+    if (!currentUser?._id) {
+      showLoginToast();
+      return;
+    }
     if (!event?._id || !isSeatBased) return;
     if (bookedSeats.includes(seat) || lockedSeats[seat]) return;
 
@@ -191,8 +262,18 @@ const SeatLayout = ({ event, user }) => {
     });
   };
 
-  const increaseTickets = () => setTicketCount((p) => p + 1);
+  const increaseTickets = () => {
+    if (!currentUser?._id) {
+      showLoginToast();
+      return;
+    }
+    setTicketCount((p) => p + 1);
+  };
   const decreaseTickets = () => {
+    if (!currentUser?._id) {
+      showLoginToast();
+      return;
+    }
     if (ticketCount > 1) setTicketCount((p) => p - 1);
   };
 
@@ -319,7 +400,7 @@ const SeatLayout = ({ event, user }) => {
     } catch (err) {
       console.error("Booking initiation error:", err);
       setIsProcessing(false);
-      
+
       // Use toast for error instead of alert if possible, or a cleaner alert
       toast.error(err.message || "Failed to start booking process. Please try again.");
     }
@@ -346,7 +427,7 @@ const SeatLayout = ({ event, user }) => {
 
                 {dynamicSeats.map((num) => {
                   const seatIndex = rowIndex * seatsPerRow + num;
-                  if (seatIndex > totalSeats) return <div key={num} className="seat-spacer" style={{width: '35px'}}></div>;
+                  if (seatIndex > totalSeats) return <div key={num} className="seat-spacer" style={{ width: '35px' }}></div>;
 
                   const seatId = `${row}${num}`;
                   const isLocked = lockedSeats[seatId];
@@ -390,10 +471,33 @@ const SeatLayout = ({ event, user }) => {
           </div>
         </div>
       ) : (
-        <div className="seat-left empty-view" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px' }}>
-          <div style={{ textAlign: 'center' }}>
-            <h2 style={{ fontSize: '24px', color: '#1e293b', marginBottom: '12px' }}>{event?.title}</h2>
-            <p style={{ color: '#64748b' }}>Select number of tickets in the summary section.</p>
+        <div className="seat-left empty-view" style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '400px',
+          background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+          border: '1px dashed #e2e8f0',
+          borderRadius: 'var(--border-radius)'
+        }}>
+          <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              background: '#f1f5f9',
+              borderRadius: '20px',
+              margin: '0 auto 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#0b0f5b'
+            }}>
+              <LogIn size={32} />
+            </div>
+            <h2 style={{ fontSize: '22px', color: '#0f172a', marginBottom: '12px', fontWeight: '800' }}>Confirm Your Attendance</h2>
+            <p style={{ color: '#64748b', fontSize: '15px', lineHeight: '1.6' }}>
+              Please select the number of tickets you'd like to book in the summary section on the right to proceed with your booking.
+            </p>
           </div>
         </div>
       )}
@@ -451,7 +555,6 @@ const SeatLayout = ({ event, user }) => {
         {seatPrice > 0 && (
           <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '16px', lineHeight: '1.4' }}>
             * <strong>Refund Policy:</strong> {event.refundPolicy || "100% refund within 2h of booking. Thereafter, 90% refund (>48h) or 50% refund (24-48h). Non-refundable if <24h."}
-            {event.refundPolicy ? event.refundPolicy : "Thereafter, 90% refund (>48h) or 50% refund (24-48h). Non-refundable if <24h."}
           </div>
         )}
 

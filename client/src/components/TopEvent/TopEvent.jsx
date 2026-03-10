@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_BASE_URL } from "../../config";
 import { getImageUrl } from "../../utils/imageUtils";
+import { LogIn } from "lucide-react";
+import toast from "react-hot-toast";
 import "./TopEvent.css";
 
 const TopEvent = () => {
@@ -144,7 +146,61 @@ const TopEvent = () => {
               <div className="card__actions">
                 <button
                   className="btn btn--primary"
-                  onClick={() => navigate(`/seats/top/${ev._id}`)}
+                  onClick={() => {
+                    const token = localStorage.getItem("token");
+                    if (!token) {
+                      toast((t) => (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{
+                            background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+                            padding: '8px',
+                            borderRadius: '10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white'
+                          }}>
+                            <LogIn size={20} />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <p style={{ margin: 0, fontWeight: '600', color: '#1e293b', fontSize: '14px' }}>Login Required</p>
+                            <p style={{ margin: 0, color: '#64748b', fontSize: '12px' }}>Please login to continue booking.</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              toast.dismiss(t.id);
+                              navigate("/login");
+                            }}
+                            style={{
+                              background: '#1e293b',
+                              color: 'white',
+                              border: 'none',
+                              padding: '6px 14px',
+                              borderRadius: '8px',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            Login
+                          </button>
+                        </div>
+                      ), {
+                        duration: 4000,
+                        position: 'top-center',
+                        style: {
+                          minWidth: '350px',
+                          borderRadius: '16px',
+                          background: '#ffffff',
+                          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+                          padding: '16px',
+                        },
+                      });
+                      return;
+                    }
+                    navigate(`/seats/top/${ev._id}`);
+                  }}
                 >
                   Book Now
                 </button>
