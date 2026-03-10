@@ -26,33 +26,43 @@ export const createEvent = async (req, res) => {
     let brochureUrl = req.body.brochure || null;
 
     if (req.files) {
-      if (req.files.image && req.files.image[0]) {
-        try {
-          const result = await cloudinary.uploader.upload(req.files.image[0].path, {
-            folder: "gogather/events",
-          });
-          imageUrl = result.secure_url;
-          if (fs.existsSync(req.files.image[0].path)) {
-            fs.unlinkSync(req.files.image[0].path);
+      const uploadPromises = [];
+
+      if (req.files.image?.[0]) {
+        uploadPromises.push((async () => {
+          try {
+            const result = await cloudinary.uploader.upload(req.files.image[0].path, {
+              folder: "gogather/events",
+            });
+            imageUrl = result.secure_url;
+            if (fs.existsSync(req.files.image[0].path)) {
+              fs.unlinkSync(req.files.image[0].path);
+            }
+          } catch (err) {
+            console.error("Cloudinary Image Upload Error:", err);
           }
-        } catch (uploadError) {
-          console.error("Cloudinary Image Upload Error:", uploadError);
-        }
+        })());
       }
 
-      if (req.files.brochure && req.files.brochure[0]) {
-        try {
-          const result = await cloudinary.uploader.upload(req.files.brochure[0].path, {
-            folder: "gogather/brochures",
-            resource_type: "auto" // Important for PDFs
-          });
-          brochureUrl = result.secure_url;
-          if (fs.existsSync(req.files.brochure[0].path)) {
-            fs.unlinkSync(req.files.brochure[0].path);
+      if (req.files.brochure?.[0]) {
+        uploadPromises.push((async () => {
+          try {
+            const result = await cloudinary.uploader.upload(req.files.brochure[0].path, {
+              folder: "gogather/brochures",
+              resource_type: "auto"
+            });
+            brochureUrl = result.secure_url;
+            if (fs.existsSync(req.files.brochure[0].path)) {
+              fs.unlinkSync(req.files.brochure[0].path);
+            }
+          } catch (err) {
+            console.error("Cloudinary Brochure Upload Error:", err);
           }
-        } catch (uploadError) {
-          console.error("Cloudinary Brochure Upload Error:", uploadError);
-        }
+        })());
+      }
+
+      if (uploadPromises.length > 0) {
+        await Promise.all(uploadPromises);
       }
     }
 
@@ -148,29 +158,20 @@ export const createEvent = async (req, res) => {
 
     // Send appropriate notifications based on event status
     if (event.status === "approved") {
-      // Event was auto-published because organizer is verified
       const organizerEmail = event.organizerDetails?.contactEmail;
       if (organizerEmail) {
-        console.log(`[EVENT] Notifying organizer (${organizerEmail}) that event "${event.title}" was auto-published`);
-        try {
-          await sendEventStatusUpdateNotification(organizerEmail, event.title, "approved");
-        } catch (emailErr) {
-          console.error("[EVENT] Organizer auto-publish notification failure:", emailErr.message);
-        }
+        console.log(`[EVENT] Background: Notifying organizer (${organizerEmail}) about auto-published event "${event.title}"`);
+        sendEventStatusUpdateNotification(organizerEmail, event.title, "approved")
+          .catch(err => console.error("[EVENT] Background update notification failure:", err.message));
       }
     } else {
-      // Event is pending, notify admin
       const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
-      console.log(`[EVENT] Notifying admin (${adminEmail}) about new event: ${event.title}`);
-      try {
-        await sendEventPendingNotification(
-          adminEmail,
-          { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
-          { title: event.title, location: event.location, date: event.date, month: event.month }
-        );
-      } catch (emailErr) {
-        console.error("[EVENT] Admin email notification failure:", emailErr.message);
-      }
+      console.log(`[EVENT] Background: Notifying admin (${adminEmail}) about new event: ${event.title}`);
+      sendEventPendingNotification(
+        adminEmail,
+        { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
+        { title: event.title, location: event.location, date: event.date, month: event.month }
+      ).catch(err => console.error("[EVENT] Background pending notification failure:", err.message));
     }
 
     res.status(201).json(event);
@@ -456,33 +457,43 @@ export const updateEvent = async (req, res) => {
 
     // Image & Brochure: if a new file uploaded, use it; else if field provided, use it; otherwise preserve existing
     if (req.files) {
-      if (req.files.image && req.files.image[0]) {
-        try {
-          const result = await cloudinary.uploader.upload(req.files.image[0].path, {
-            folder: "gogather/events",
-          });
-          event.image = result.secure_url;
-          if (fs.existsSync(req.files.image[0].path)) {
-            fs.unlinkSync(req.files.image[0].path);
+      const uploadPromises = [];
+
+      if (req.files.image?.[0]) {
+        uploadPromises.push((async () => {
+          try {
+            const result = await cloudinary.uploader.upload(req.files.image[0].path, {
+              folder: "gogather/events",
+            });
+            event.image = result.secure_url;
+            if (fs.existsSync(req.files.image[0].path)) {
+              fs.unlinkSync(req.files.image[0].path);
+            }
+          } catch (err) {
+            console.error("Cloudinary Update Image Error:", err);
           }
-        } catch (uploadError) {
-          console.error("Cloudinary Update Image Error:", uploadError);
-        }
+        })());
       }
 
-      if (req.files.brochure && req.files.brochure[0]) {
-        try {
-          const result = await cloudinary.uploader.upload(req.files.brochure[0].path, {
-            folder: "gogather/brochures",
-            resource_type: "auto"
-          });
-          event.brochure = result.secure_url;
-          if (fs.existsSync(req.files.brochure[0].path)) {
-            fs.unlinkSync(req.files.brochure[0].path);
+      if (req.files.brochure?.[0]) {
+        uploadPromises.push((async () => {
+          try {
+            const result = await cloudinary.uploader.upload(req.files.brochure[0].path, {
+              folder: "gogather/brochures",
+              resource_type: "auto"
+            });
+            event.brochure = result.secure_url;
+            if (fs.existsSync(req.files.brochure[0].path)) {
+              fs.unlinkSync(req.files.brochure[0].path);
+            }
+          } catch (err) {
+            console.error("Cloudinary Update Brochure Error:", err);
           }
-        } catch (uploadError) {
-          console.error("Cloudinary Update Brochure Error:", uploadError);
-        }
+        })());
+      }
+
+      if (uploadPromises.length > 0) {
+        await Promise.all(uploadPromises);
       }
     } else {
       if (otherData.image) event.image = otherData.image;
@@ -570,15 +581,12 @@ export const updateEvent = async (req, res) => {
 
         // Notify Admin about the edit/re-submission
         const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
-        try {
-          await sendEventPendingNotification(
-            adminEmail,
-            { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
-            { title: `${event.title} (Updated/Re-submitted)`, location: event.location, date: event.date, month: event.month }
-          );
-        } catch (emailErr) {
-          console.error("Non-blocking email notification failure in updateEvent:", emailErr.message);
-        }
+        console.log(`[EVENT] Background: Notifying admin about updated event: ${event.title}`);
+        sendEventPendingNotification(
+          adminEmail,
+          { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
+          { title: `${event.title} (Updated/Re-submitted)`, location: event.location, date: event.date, month: event.month }
+        ).catch(err => console.error("Background notification failure in updateEvent:", err.message));
       }
     } else if (otherData.status) {
       // Allow admins to update status directly if needed (though usually handled via admin routes)
