@@ -182,7 +182,8 @@ router.post("/verify-payment", async (req, res) => {
     const event = booking.eventId;
 
     try {
-      await sendEmail({
+      // 🚀 NON-BLOCKING: Send ticket email in the background to respond faster to the user
+      sendEmail({
         to: userEmail,
         subject: `Your Ticket for ${event?.title || "Event"} 🎫`,
         html: `
@@ -219,13 +220,13 @@ router.post("/verify-payment", async (req, res) => {
             </div>
           </div>
         `,
-      });
-      console.log(`Ticket email sent to ${userEmail} for booking ${bookingId}`);
-      res.json({ message: "Payment verified, professional ticket sent!", qrCode: qrCodeBase64, booking });
+      }, false); // Set blocking to false
+      console.log(`Ticket email initiated in background for ${userEmail} (booking ${bookingId})`);
+      res.json({ message: "Payment verified, professional ticket initiated in background!", qrCode: qrCodeBase64, booking });
     } catch (emailErr) {
-      console.error("Ticket email error:", emailErr);
+      console.error("Ticket email initialization error:", emailErr);
       res.status(500).json({
-        error: "Payment verified but ticket email failed to send. Please check your Render Environment Variables for EMAIL_PASS.",
+        error: "Payment verified but ticket email initialization failed. Please check your Render Environment Variables for EMAIL_PASS.",
         booking
       });
     }

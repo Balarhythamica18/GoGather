@@ -133,7 +133,7 @@ const PaymentPage = () => {
 
     for (let i = 0; i < steps.length; i++) {
       setProcessingStep(i);
-      await new Promise(r => setTimeout(r, 1200));
+      await new Promise(r => setTimeout(r, 400)); // Reduced from 1200ms
     }
 
     try {
@@ -150,7 +150,7 @@ const PaymentPage = () => {
       const verifyData = await verifyRes.json();
 
       setShowSuccess(true);
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise(r => setTimeout(r, 800)); // Reduced from 2000ms
 
       localStorage.removeItem("bookingData");
       navigate("/confirmation", { state: { booking: verifyData, isSimulated: true } });
