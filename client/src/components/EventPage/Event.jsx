@@ -325,9 +325,11 @@ const Event = () => {
                       (now < start ? "Book Now" :
                         (isClosed ? "Booking Closed" : "Book Now")));
 
+                  const hideBookBtn = event.isUpcoming || buttonLabel === "All Seats Are Booked";
+
                   return (
-                    <div className={`event-buttons ${event.isUpcoming ? "center-details" : ""}`}>
-                      {!event.isUpcoming && (
+                    <div className={`event-buttons ${hideBookBtn ? "center-details" : ""}`}>
+                      {!hideBookBtn && (
                         <button
                           className="btn book-btn"
                           disabled={!isBookingActive || noSeats || isEnded}
