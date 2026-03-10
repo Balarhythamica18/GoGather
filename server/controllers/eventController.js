@@ -206,19 +206,25 @@ export const getEventById = async (req, res) => {
 
 export const cleanupExpiredEvents = async () => {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Start of today
+    // Use IST offset (+5.5 hours) to ensure consistent date/time comparison for India-based events
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000;
+    const today = new Date(now.getTime() + istOffset);
 
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
+    const year = today.getUTCFullYear();
+    const month = String(today.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(today.getUTCDate()).padStart(2, "0");
     const currentMonthString = `${year}-${month}`;
+    const currentTimeString = today.getUTCHours().toString().padStart(2, "0") + ":" +
+      today.getUTCMinutes().toString().padStart(2, "0");
 
     // 1. Find expired events
     const expiredEvents = await Event.find({
+      status: { $ne: "completed" }, // Only process non-completed events
       $or: [
         { month: { $lt: currentMonthString } },
-        { month: currentMonthString, date: { $lt: day } }
+        { month: currentMonthString, date: { $lt: day } },
+        { month: currentMonthString, date: day, endTime: { $ne: "", $lt: currentTimeString } }
       ]
     });
 

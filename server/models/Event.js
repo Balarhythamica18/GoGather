@@ -30,7 +30,7 @@ const eventSchema = new mongoose.Schema(
     organizerDetails: organizerSchema,
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected"],
+      enum: ["pending", "approved", "rejected", "completed"],
       default: "pending",
     },
     // 🆕 CANCELLATION TRACKING FIELDS
