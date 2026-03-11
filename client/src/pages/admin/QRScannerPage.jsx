@@ -9,9 +9,13 @@ const QRScannerPage = () => {
     const [scanResult, setScanResult] = useState(null);
     const [error, setError] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isScanning, setIsScanning] = useState(true);
+    const [scanKey, setScanKey] = useState(0);
     const scannerRef = useRef(null);
 
     useEffect(() => {
+        if (!isScanning) return;
+
         const scanner = new Html5QrcodeScanner("reader", {
             fps: 10,
             qrbox: { width: 250, height: 250 },
@@ -20,14 +24,28 @@ const QRScannerPage = () => {
         scanner.render(onScanSuccess, onScanFailure);
 
         function onScanSuccess(decodedText) {
+            const rawText = decodedText.trim();
+
+            if (rawText.length === 24 && /^[0-9a-fA-F]{24}$/.test(rawText)) {
+                handleVerify(rawText);
+                scanner.clear();
+                setIsScanning(false);
+                return;
+            }
+
+            // 2. Fallback to JSON (Old format)
             try {
-                const data = JSON.parse(decodedText);
-                if (data.id) {
-                    handleVerify(data.id);
+                const data = JSON.parse(rawText);
+                if (data.id || data.bookingId) {
+                    handleVerify(data.id || data.bookingId);
                     scanner.clear();
+                    setIsScanning(false);
+                } else {
+                    setError("This doesn't look like a valid GoGather ticket.");
                 }
             } catch (err) {
                 console.error("Invalid QR Format", err);
+                setError("Unrecognized QR Code. Please ensure it's a valid ticket.");
             }
         }
 
@@ -38,7 +56,7 @@ const QRScannerPage = () => {
         return () => {
             scanner.clear().catch(err => console.error("Scanner cleanup failed", err));
         };
-    }, []);
+    }, [scanKey, isScanning]);
 
     const handleVerify = async (bookingId) => {
         setIsProcessing(true);
@@ -51,7 +69,10 @@ const QRScannerPage = () => {
             );
             setScanResult(res.data);
         } catch (err) {
-            setError(err.response?.data?.error || "Verification failed");
+            setError({
+                message: err.response?.data?.error || "Verification failed",
+                code: err.response?.data?.code || "UNKNOWN"
+            });
         } finally {
             setIsProcessing(false);
         }
@@ -60,7 +81,8 @@ const QRScannerPage = () => {
     const resetScanner = () => {
         setScanResult(null);
         setError(null);
-        window.location.reload(); // Simplest way to restart the library properly
+        setIsScanning(true);
+        setScanKey(prev => prev + 1);
     };
 
     return (
@@ -72,7 +94,7 @@ const QRScannerPage = () => {
                     <p>Scan the guest's QR code to grant access.</p>
                 </div>
 
-                {!scanResult && !error && (
+                {isScanning && !scanResult && !error && (
                     <div className="reader-wrapper">
                         <div id="reader"></div>
                     </div>
@@ -103,10 +125,18 @@ const QRScannerPage = () => {
 
                 {error && (
                     <div className="scan-result-overlay error">
-                        <AlertCircle size={32} style={{ marginBottom: '10px' }} />
-                        <h3>Access Denied</h3>
-                        <p>{error}</p>
-                        <button className="btn-reset" onClick={resetScanner} style={{ background: '#ef4444' }}>Retry</button>
+                        {error.code === "NOT_STARTED" ? (
+                            <Calendar size={32} style={{ marginBottom: '10px', color: '#f59e0b' }} />
+                        ) : error.code === "ALREADY_SCANNED" ? (
+                            <AlertCircle size={32} style={{ marginBottom: '10px', color: '#f59e0b' }} />
+                        ) : (
+                            <AlertCircle size={32} style={{ marginBottom: '10px' }} />
+                        )}
+                        <h3>{error.code === "ALREADY_SCANNED" ? "Ticket Used" : error.code === "NOT_STARTED" ? "Too Early" : "Access Denied"}</h3>
+                        <p>{error.message}</p>
+                        <button className="btn-reset" onClick={resetScanner} style={{ background: error.code === "NOT_STARTED" || error.code === "ALREADY_SCANNED" ? '#f59e0b' : '#ef4444' }}>
+                            {error.code === "ALREADY_SCANNED" ? "Scan Another" : "Retry"}
+                        </button>
                     </div>
                 )}
             </div>

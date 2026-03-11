@@ -157,13 +157,8 @@ router.post("/verify-payment", async (req, res) => {
     booking.paymentMethod = paymentMethod || "simulated";
     booking.status = "confirmed";
 
-    // Generate professional QR data
-    const qrData = JSON.stringify({
-      id: bookingId,
-      user: booking.userId,
-      event: booking.eventId?._id,
-      v: "1.0"
-    });
+    // Simplified QR for better scan reliability (Just the ID)
+    const qrData = bookingId;
     const qrCodeBase64 = await QRCode.toDataURL(qrData);
     booking.qrCode = qrCodeBase64;
 
@@ -273,7 +268,7 @@ router.patch("/verify-entry", async (req, res) => {
     const booking = await Booking.findById(bookingId).populate("eventId userId");
     if (!booking) return res.status(404).json({ error: "Invalid Ticket" });
     if (booking.status !== "confirmed") return res.status(400).json({ error: "Ticket not confirmed" });
-    if (booking.isUsed) return res.status(400).json({ error: "Already Scanned! 🚫" });
+    if (booking.isUsed) return res.status(400).json({ code: "ALREADY_SCANNED", error: "Already Scanned! 🚫", message: "This ticket has already been used for entry." });
 
     // Timing check: Open 1 hour before program starts
     const event = booking.eventId;
@@ -294,22 +289,39 @@ router.patch("/verify-entry", async (req, res) => {
         }
 
         if (foundMonth !== -1 && foundDay !== -1) {
-          const timeStr = event.time ? String(event.time) : "00:00";
-          const eventDateTime = new Date(foundYear, foundMonth, foundDay);
-          const timeParts = timeStr.match(/(\d{1,2}):(\d{2})/);
-          if (timeParts) {
-            eventDateTime.setHours(parseInt(timeParts[1]), parseInt(timeParts[2]), 0);
+          // Robust time parsing to handle dots e.g., "10.23 am" -> "10:23"
+          let timeStr = event.time ? String(event.time).trim().toLowerCase().replace('.', ':') : "00:00";
+          let hours = 0;
+          let minutes = 0;
+
+          const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/);
+          if (timeMatch) {
+            hours = parseInt(timeMatch[1], 10);
+            minutes = parseInt(timeMatch[2], 10);
+            const ampm = timeMatch[3];
+
+            if (ampm === "pm" && hours < 12) hours += 12;
+            if (ampm === "am" && hours === 12) hours = 0;
           }
 
-          const now = new Date();
-          const diffInMs = eventDateTime - now;
-          const oneHourInMs = 60 * 60 * 1000;
+          // 🕒 EXPLICIT IST FIX: Construct date in IST (+05:30)
+          // format: YYYY-MM-DDTHH:mm:00+05:30
+          const isoDate = `${foundYear}-${String(foundMonth + 1).padStart(2, '0')}-${String(foundDay).padStart(2, '0')}`;
+          const isoTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00+05:30`;
+          const eventDateTime = new Date(`${isoDate}T${isoTime}`);
 
-          if (diffInMs > oneHourInMs) {
-            return res.status(400).json({
-              error: "Entry Not Started! ⏳",
-              message: "Scanning opens 1 hour before the event starts."
-            });
+          if (!isNaN(eventDateTime.getTime())) {
+            const now = new Date(); // Server "now" is UTC, eventDateTime is IST -> Comparisons work correctly
+            const diffInMs = eventDateTime - now;
+            const thirtyMinsInMs = 30 * 60 * 1000;
+
+            if (diffInMs > thirtyMinsInMs) {
+              return res.status(400).json({
+                code: "NOT_STARTED",
+                error: "Entry Not Started! ⏳",
+                message: "Scanning opens 30 minutes before the event starts. Please wait until closer to the start time."
+              });
+            }
           }
         }
       } catch (err) {
@@ -579,6 +591,26 @@ router.delete("/:id", authMiddleware, async (req, res) => {
   } catch (err) {
     console.error("Delete booking error:", err);
     res.status(500).json({ error: "Failed to delete booking" });
+  }
+});
+
+// 7️⃣ Submit Rating for a Booking
+router.patch("/rate", authMiddleware, async (req, res) => {
+  const { bookingId, rating } = req.body;
+
+  try {
+    const booking = await Booking.findById(bookingId);
+    if (!booking) return res.status(404).json({ error: "Booking not found" });
+    if (booking.userId.toString() !== req.user.id) return res.status(403).json({ error: "Unauthorized" });
+
+    booking.rating = rating;
+    booking.ratingSubmitted = true;
+    await booking.save();
+
+    res.json({ message: "Rating submitted successfully ✅", booking });
+  } catch (err) {
+    console.error("Submit rating error:", err);
+    res.status(500).json({ error: "Failed to submit rating" });
   }
 });
 

@@ -434,39 +434,54 @@ textarea.premium-input-field {
 }
 
 /* =========================
-   MOBILE RESPONSIVENESS
+   FINAL RESPONSIVE TWEAKS
 ========================= */
-
-@media (max-width: 1100px) {
-  .add-event-form {
-    grid-template-columns: 1fr;
-  }
-
-  .form-right-col {
-    position: static;
-  }
-}
 
 @media (max-width: 768px) {
   .add-event-page {
-    padding: 40px 20px;
+    padding: 24px 16px;
   }
 
   .add-event-title {
     font-size: 28px;
   }
 
+  .form-premium-card {
+    padding: 24px;
+  }
+
   .form-grid-2 {
     grid-template-columns: 1fr;
+    gap: 0;
   }
 
   .session-setup-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .btn-add-circle {
-    grid-column: auto;
     width: 100%;
     border-radius: 12px;
+  }
+
+  .card-heading {
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+
+  .btn-publish-massive {
+    padding: 16px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .add-event-title {
+    font-size: 24px;
+  }
+
+  .back-link-btn {
+    font-size: 14px;
   }
 }

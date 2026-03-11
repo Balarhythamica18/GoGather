@@ -9,8 +9,11 @@ const QRScannerModal = ({ event, onClose }) => {
     const [scanResult, setScanResult] = useState(null);
     const [scanning, setScanning] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [scanKey, setScanKey] = useState(0);
 
     useEffect(() => {
+        if (!scanning) return;
+
         const scanner = new Html5QrcodeScanner(
             "reader",
             {
@@ -25,24 +28,28 @@ const QRScannerModal = ({ event, onClose }) => {
         scanner.render(onScanSuccess, onScanError);
 
         function onScanSuccess(decodedText) {
+            const rawText = decodedText.trim();
+
+            // 1. Try treating it as a plain 24-char ID (New simplified format)
+            if (rawText.length === 24 && /^[0-9a-fA-F]{24}$/.test(rawText)) {
+                handleVerification(rawText);
+                scanner.clear();
+                setScanning(false);
+                return;
+            }
+
+            // 2. Fallback to JSON (Old format)
             try {
-                const data = JSON.parse(decodedText);
+                const data = JSON.parse(rawText);
                 if (data.id) {
                     handleVerification(data.id);
                     scanner.clear();
                     setScanning(false);
                 } else {
-                    toast.error("Invalid QR Code Format");
+                    toast.error("This doesn't look like a GoGather ticket 🎫");
                 }
             } catch (err) {
-                // If not JSON, maybe it's just the ID
-                if (decodedText.length === 24) {
-                    handleVerification(decodedText);
-                    scanner.clear();
-                    setScanning(false);
-                } else {
-                    toast.error("Unrecognized QR Code");
-                }
+                toast.error("Unrecognized QR Code. Please ensure it's a valid GoGather ticket.");
             }
         }
 
@@ -53,7 +60,13 @@ const QRScannerModal = ({ event, onClose }) => {
         return () => {
             scanner.clear().catch(e => console.error("Scanner cleanup error", e));
         };
-    }, []);
+    }, [scanKey, scanning]);
+
+    const resetScanner = () => {
+        setScanResult(null);
+        setScanning(true);
+        setScanKey(prev => prev + 1);
+    };
 
     const handleVerification = async (bookingId) => {
         setLoading(true);
@@ -67,8 +80,9 @@ const QRScannerModal = ({ event, onClose }) => {
         } catch (err) {
             setScanResult({
                 success: false,
+                code: err.response?.data?.code || "UNKNOWN_ERROR",
                 message: err.response?.data?.error || "Verification Failed",
-                subMessage: err.response?.data?.message || "Please check the ticket details."
+                subMessage: err.response?.data?.message || err.response?.data?.error || "Please check the ticket details."
             });
         } finally {
             setLoading(false);
@@ -129,22 +143,24 @@ const QRScannerModal = ({ event, onClose }) => {
                                             <span style={styles.detailValue}>{new Date().toLocaleTimeString()}</span>
                                         </div>
                                     </div>
-                                    <button onClick={() => window.location.reload()} style={styles.nextBtn}>
+                                    <button onClick={resetScanner} style={styles.nextBtn}>
                                         Scan Next Ticket
                                     </button>
                                 </div>
                             ) : (
                                 <div style={styles.errorState}>
                                     <div style={styles.iconWrapperError}>
-                                        {scanResult.message?.includes("⏳") ? (
+                                        {scanResult.code === "NOT_STARTED" ? (
                                             <Clock size={80} color="#f59e0b" />
+                                        ) : scanResult.code === "ALREADY_SCANNED" ? (
+                                            <AlertCircle size={80} color="#f59e0b" />
                                         ) : (
                                             <AlertCircle size={80} color="#ef4444" />
                                         )}
                                     </div>
                                     <h3 style={styles.resultTitle}>{scanResult.message}</h3>
                                     <p style={styles.errorSub}>{scanResult.subMessage}</p>
-                                    <button onClick={() => window.location.reload()} style={styles.retryBtn}>
+                                    <button onClick={resetScanner} style={styles.retryBtn}>
                                         Return to Scanner
                                     </button>
                                 </div>

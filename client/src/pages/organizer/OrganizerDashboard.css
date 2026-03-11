@@ -741,6 +741,122 @@ textarea.premium-input {
 }
 
 /* =========================
+   RESPONSIVE DESIGN FIXES
+========================= */
+
+.mobile-toggle-box {
+  display: none;
+  cursor: pointer;
+  color: var(--primary);
+  background: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  margin-right: 16px;
+}
+
+@media (max-width: 1024px) {
+  .mobile-toggle-box {
+    display: flex;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .header-welcome {
+    display: flex;
+    align-items: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .tab-switcher {
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 16px;
+  }
+
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .events-filters {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .search-input-group,
+  .search-input-group input,
+  .status-filter-group,
+  .filter-select {
+    width: 100%;
+  }
+
+  .settings-card {
+    padding: 24px 20px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-welcome h1 {
+    font-size: 24px;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  .event-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================
    MODAL STYLES (Professional)
 ========================= */
 

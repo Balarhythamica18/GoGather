@@ -116,6 +116,22 @@ const MyBookings = () => {
     });
   };
 
+  const handleRatingSubmit = async (bookingId, rating) => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.patch(`${API_BASE_URL}/api/bookings/rate`, { bookingId, rating }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setRatingData({ bookingId, rating, submitted: true, showStarsOnly: false });
+      // Update local state to reflect the rating immediately
+      setBookings(prev => prev.map(b =>
+        b._id === bookingId ? { ...b, rating, ratingSubmitted: true } : b
+      ));
+    } catch (err) {
+      console.error("Submit rating error:", err);
+    }
+  };
+
   const getVibeDetails = (vibeId, category) => {
     const cat = category?.toLowerCase();
     const allVibes = {
@@ -423,16 +439,16 @@ const MyBookings = () => {
 
                       {booking.status !== 'cancelled' && isEnded && (
                         <div style={{ marginTop: '12px', padding: '12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                          {ratingData.bookingId === booking._id && ratingData.submitted ? (
-                            ratingData.showStarsOnly ? (
+                          {(booking.ratingSubmitted || (ratingData.bookingId === booking._id && ratingData.submitted)) ? (
+                            (booking.ratingSubmitted || ratingData.showStarsOnly) ? (
                               <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center' }}>
                                 {[1, 2, 3, 4, 5].map((s) => (
                                   <Star
                                     key={s}
                                     size={18}
                                     style={{
-                                      fill: s <= ratingData.rating ? '#eab308' : 'none',
-                                      color: s <= ratingData.rating ? '#eab308' : '#cbd5e1'
+                                      fill: s <= (booking.rating || ratingData.rating) ? '#eab308' : 'none',
+                                      color: s <= (booking.rating || ratingData.rating) ? '#eab308' : '#cbd5e1'
                                     }}
                                   />
                                 ))}
@@ -471,9 +487,7 @@ const MyBookings = () => {
                               </div>
                               {(ratingData.bookingId === booking._id && ratingData.rating > 0) && (
                                 <button
-                                  onClick={() => {
-                                    setRatingData(prev => ({ ...prev, submitted: true, showStarsOnly: false }));
-                                  }}
+                                  onClick={() => handleRatingSubmit(booking._id, ratingData.rating)}
                                   style={{
                                     marginTop: '4px',
                                     background: 'var(--primary-blue)',
@@ -550,14 +564,7 @@ const MyBookings = () => {
                 <div className="ticket-qr-section">
                   <div className="qr-placeholder" style={{ background: '#fff', padding: '16px', borderRadius: '12px', display: 'inline-block' }}>
                     <QRCodeSVG
-                      value={JSON.stringify({
-                        bookingId: selectedTicket._id,
-                        eventName: selectedTicket.event?.title,
-                        eventDate: selectedTicket.event?.date,
-                        eventTime: selectedTicket.event?.time,
-                        location: selectedTicket.event?.location,
-                        seats: selectedTicket.seats?.length ? selectedTicket.seats.join(", ") : `${selectedTicket.ticketCount} Tickets`
-                      })}
+                      value={selectedTicket._id}
                       size={160}
                       bgColor={"#ffffff"}
                       fgColor={"#1e293b"}
@@ -600,22 +607,6 @@ const MyBookings = () => {
                 <button
                   className="print-ticket-btn"
                   onClick={handlePrint}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '10px 20px',
-                    background: 'linear-gradient(135deg, #0b0f5b 0%, #0a0d4a 100%)',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontWeight: '700',
-                    fontSize: '0.9rem',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 12px rgba(11, 15, 91, 0.2)',
-                    transition: 'all 0.2s',
-                    marginBottom: '16px'
-                  }}
                 >
                   <Printer size={18} />
                   Download / Print Ticket

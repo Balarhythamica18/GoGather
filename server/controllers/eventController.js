@@ -212,33 +212,76 @@ export const cleanupExpiredEvents = async () => {
     const istOffset = 5.5 * 60 * 60 * 1000;
     const today = new Date(now.getTime() + istOffset);
 
-    const year = today.getUTCFullYear();
-    const month = String(today.getUTCMonth() + 1).padStart(2, "0");
-    const day = String(today.getUTCDate()).padStart(2, "0");
-    const currentMonthString = `${year}-${month}`;
-    const currentTimeString = today.getUTCHours().toString().padStart(2, "0") + ":" +
-      today.getUTCMinutes().toString().padStart(2, "0");
+    const currentYear = today.getUTCFullYear();
+    const currentMonthNum = today.getUTCMonth() + 1;
+    const currentDay = today.getUTCDate();
+    const currentMonthString = `${currentYear}-${String(currentMonthNum).padStart(2, "0")}`;
 
-    // 1. Find expired events
-    const expiredEvents = await Event.find({
-      status: { $ne: "completed" }, // Only process non-completed events
-      $or: [
-        { month: { $lt: currentMonthString } },
-        { month: currentMonthString, date: { $lt: day } },
-        { month: currentMonthString, date: day, endTime: { $ne: "", $lt: currentTimeString } }
-      ]
+    const currentHour = today.getUTCHours();
+    const currentMinute = today.getUTCMinutes();
+
+    // 1. Fetch all non-completed events to evaluate them in JS (safer than MongoDB string comparisons for mixed formats)
+    const activeEvents = await Event.find({ status: { $ne: "completed" } });
+    const expiredIds = [];
+
+    activeEvents.forEach(event => {
+      try {
+        if (!event.month) return; // Skip if malformed
+
+        let evYear, evMonth;
+        if (event.month.includes("-")) {
+          [evYear, evMonth] = event.month.split("-").map(Number);
+        } else {
+          // Fallback for old formats, assume it's valid for now
+          return;
+        }
+
+        const evDay = parseInt(event.date) || 0;
+
+        // Check if month is strictly in the past
+        if (evYear < currentYear || (evYear === currentYear && evMonth < currentMonthNum)) {
+          expiredIds.push(event._id);
+          return;
+        }
+
+        // Check if it's the current month, but the day is strictly in the past
+        if (evYear === currentYear && evMonth === currentMonthNum && evDay < currentDay) {
+          expiredIds.push(event._id);
+          return;
+        }
+
+        // Check if it's today, and the endTime has passed
+        if (evYear === currentYear && evMonth === currentMonthNum && evDay === currentDay) {
+          if (event.endTime) {
+            // endTime could be "14:30" or "02:30 PM" - try to parse basic 24h first
+            const timeMatch = event.endTime.match(/(\d+):(\d+)/);
+            if (timeMatch) {
+              let evHour = parseInt(timeMatch[1]);
+              const evMinute = parseInt(timeMatch[2]);
+
+              // Simple AM/PM adjustment if present
+              if (event.endTime.toLowerCase().includes('pm') && evHour < 12) evHour += 12;
+              if (event.endTime.toLowerCase().includes('am') && evHour === 12) evHour = 0;
+
+              if (evHour < currentHour || (evHour === currentHour && evMinute < currentMinute)) {
+                expiredIds.push(event._id);
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.error(`[CLEANUP] Error parsing date for event ${event._id}:`, e.message);
+      }
     });
 
-    if (expiredEvents.length > 0) {
-      const expiredIds = expiredEvents.map(e => e._id);
-
+    if (expiredIds.length > 0) {
       // 2. Instead of deleting, mark events as completed
       await Event.updateMany(
         { _id: { $in: expiredIds } },
         { $set: { status: "completed" } }
       );
 
-      console.log(`[CLEANUP] Automatically marked ${expiredEvents.length} expired events as COMPLETED. ✅`);
+      console.log(`[CLEANUP] Automatically marked ${expiredIds.length} expired events as COMPLETED. ✅`);
     } else {
       console.log(`[CLEANUP] No expired events found to remove. ✅`);
     }

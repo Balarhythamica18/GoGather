@@ -365,6 +365,30 @@
     padding: 0 24px 24px;
     display: flex;
     justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+.print-ticket-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #0b0f5b 0%, #0a0d4a 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(11, 15, 91, 0.2);
+    transition: all 0.2s;
+}
+
+.print-ticket-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(11, 15, 91, 0.3);
+    filter: brightness(1.1);
 }
 
 .security-badge {

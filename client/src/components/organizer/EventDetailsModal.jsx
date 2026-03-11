@@ -13,6 +13,8 @@ import {
     PieChart,
     QrCode
 } from "lucide-react";
+import toast from "react-hot-toast";
+import "./EventDetailsModal.css";
 
 const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
     const [attendees, setAttendees] = useState([]);
@@ -65,8 +67,8 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
     };
 
     return (
-        <div style={styles.overlay}>
-            <div style={styles.modal}>
+        <div style={styles.overlay} className="event-details-overlay">
+            <div style={styles.modal} className="event-details-modal">
                 <div style={styles.header}>
                     <div style={styles.headerTitle}>
                         <h2 style={styles.title}>{event.title}</h2>
@@ -77,12 +79,12 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
                     </button>
                 </div>
 
-                <div style={styles.content}>
+                <div style={styles.content} className="event-details-content">
                     {/* Left Column: Stats & Info */}
-                    <div style={styles.leftCol}>
+                    <div style={styles.leftCol} className="event-details-left">
                         <div style={styles.infoCard}>
                             <h3 style={styles.sectionTitle}><PieChart size={18} /> Capacity & Sales</h3>
-                            <div style={styles.statsGrid}>
+                            <div style={styles.statsGrid} className="event-details-stats">
                                 <div style={styles.statBox}>
                                     <span style={styles.statLabel}>Total Capacity</span>
                                     <span style={styles.statValue}>{event.capacity !== undefined ? event.capacity : "N/A"}</span>
@@ -125,18 +127,63 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
                                 </div>
                             </div>
                         )}
+                        {(() => {
+                            const isScanEnabled = () => {
+                                if (!event.date || !event.month || !event.time) return true; // Safety fallback
+                                try {
+                                    let foundMonth = -1;
+                                    let foundDay = -1;
+                                    let foundYear = 2026;
 
-                        <button
-                            style={styles.scannerBtn}
-                            onClick={() => onOpenScanner(event)}
-                        >
-                            <QrCode size={20} /> Open QR Scanner
-                        </button>
+                                    if (event.month.includes("-")) {
+                                        const [y, m] = event.month.split("-");
+                                        foundYear = parseInt(y);
+                                        foundMonth = parseInt(m) - 1;
+                                    }
+                                    const dayMatch = event.date.toString().match(/\d+/);
+                                    if (dayMatch) foundDay = parseInt(dayMatch[0]);
+
+                                    if (foundMonth !== -1 && foundDay !== -1) {
+                                        const timeStr = event.time ? String(event.time) : "00:00";
+                                        const [hours, minutes] = timeStr.match(/(\d{1,2}):(\d{2})/)?.slice(1) || ["0", "0"];
+
+                                        // 🕒 EXPLICIT IST FIX: Match backend logic
+                                        const isoDate = `${foundYear}-${String(foundMonth + 1).padStart(2, '0')}-${String(foundDay).padStart(2, '0')}`;
+                                        const isoTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00+05:30`;
+                                        const eventDateTime = new Date(`${isoDate}T${isoTime}`);
+
+                                        const now = new Date();
+                                        const diff = eventDateTime - now;
+                                        return diff <= 30 * 60 * 1000; // 30 minutes
+                                    }
+                                } catch (e) {
+                                    console.error("Error calculating scan window:", e);
+                                }
+                                return true;
+                            };
+
+                            const canScan = isScanEnabled();
+
+                            return (
+                                <button
+                                    style={{
+                                        ...styles.scannerBtn,
+                                        opacity: canScan ? 1 : 0.6,
+                                        cursor: canScan ? 'pointer' : 'not-allowed',
+                                        backgroundColor: canScan ? '#0b0f5b' : '#64748b'
+                                    }}
+                                    onClick={() => canScan ? onOpenScanner(event) : toast.error("Scanner opens 30 minutes before event starts.")}
+                                    disabled={!canScan}
+                                >
+                                    <QrCode size={20} /> {canScan ? "Open QR Scanner" : "Scanner Locked (Too Early)"}
+                                </button>
+                            );
+                        })()}
                     </div>
 
                     {/* Right Column: Attendees */}
-                    <div style={styles.rightCol}>
-                        <div style={styles.attendeeHeader}>
+                    <div style={styles.rightCol} className="event-details-right">
+                        <div style={styles.attendeeHeader} className="event-details-attendee-header">
                             <h3 style={styles.sectionTitle}><Users size={18} /> Attendees ({attendees.length})</h3>
                             <div style={styles.searchBox}>
                                 <Search size={16} color="#94a3b8" />
@@ -451,16 +498,16 @@ const styles = {
     checkInTime: {
         fontSize: '11px',
         fontWeight: '600',
-        color: '#0b0f5b',
-        backgroundColor: '#f1f5f9',
+        color: '#16a34a',
+        backgroundColor: '#dcfce7',
         padding: '2px 8px',
         borderRadius: '6px',
     },
     checkedInBadge: {
         fontSize: '10px',
         fontWeight: '700',
-        color: '#0b0f5b',
-        backgroundColor: '#f1f5f9',
+        color: '#16a34a',
+        backgroundColor: '#dcfce7',
         padding: '2px 8px',
         borderRadius: '10px',
         textTransform: 'uppercase',

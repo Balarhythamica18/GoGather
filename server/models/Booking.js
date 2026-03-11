@@ -70,6 +70,14 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       default: "", // "card", "gpay", "phonepe", "netbanking"
     },
+    rating: {
+      type: Number,
+      default: 0,
+    },
+    ratingSubmitted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

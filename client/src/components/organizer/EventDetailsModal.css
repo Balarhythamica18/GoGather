@@ -1,0 +1,45 @@
+/* Responsive Styles for EventDetailsModal */
+
+@media (max-width: 1024px) {
+    .event-details-modal {
+        max-width: 90% !important;
+        margin: 20px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .event-details-content {
+        grid-template-columns: 1fr !important;
+        padding: 24px !important;
+        gap: 24px !important;
+    }
+
+    .event-details-attendee-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .event-details-attendee-header>div {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .event-details-modal {
+        max-height: 95vh !important;
+    }
+
+    .event-details-content {
+        padding: 16px !important;
+        gap: 16px !important;
+    }
+
+    .event-details-stats {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 16px !important;
+    }
+
+    .event-details-stats>div:last-child {
+        grid-column: span 2 !important;
+    }
+}
