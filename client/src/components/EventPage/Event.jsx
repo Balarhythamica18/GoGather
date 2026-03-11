@@ -83,7 +83,15 @@ const Event = () => {
             .toLowerCase()
             .includes(appliedFilters.name.toLowerCase()) &&
           (appliedFilters.date === "" ||
-            event.date === appliedFilters.date) &&
+            (() => {
+              if (event.month && event.date) {
+                const [year, month] = event.month.split("-");
+                const day = String(event.date).padStart(2, "0");
+                const eventFullDate = `${year}-${month}-${day}`;
+                return eventFullDate === appliedFilters.date;
+              }
+              return false;
+            })()) &&
           (appliedFilters.category === "" ||
             event.category?.toLowerCase() ===
             appliedFilters.category.toLowerCase())
@@ -149,12 +157,11 @@ const Event = () => {
 
           <label>Date</label>
           <input
-            type="text"
+            type="date"
             value={filters.date}
             onChange={(e) =>
               setFilters({ ...filters, date: e.target.value })
             }
-            placeholder="Enter date (e.g 25)"
           />
 
           <label>Category</label>
