@@ -62,32 +62,74 @@ export const register = async (req, res) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "Email already exists" });
+      if (existingUser.isVerified) {
+        return res.status(400).json({ message: "Email already exists" });
+      } else {
+        // Handle re-registration for unverified users
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const userRole = role || "user";
+        
+        existingUser.name = name;
+        existingUser.password = hashedPassword;
+        existingUser.role = userRole;
+        existingUser.businessName = userRole === "organizer" ? businessName : "";
+        existingUser.businessWebsite = userRole === "organizer" ? businessWebsite : "";
+        existingUser.businessType = userRole === "organizer" ? businessType : "";
+        existingUser.phone = userRole === "organizer" ? phone : "";
+        
+        const otp = generateOTP();
+        const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        existingUser.otp = otp;
+        existingUser.otpExpires = otpExpires;
+        
+        await existingUser.save();
+        
+        // Log registration update
+        await logActivity({
+          action: "REGISTER_UPDATED",
+          description: `Unverified user registration updated: ${email} (${userRole})`,
+          user: existingUser._id,
+          metadata: { role: userRole }
+        });
+
+        // Send OTP email
+        const emailSent = await sendOTPEmail(email, name, otp);
+
+        return res.status(200).json({
+          message: emailSent 
+            ? "Registration updated. A new verification code has been sent to your email."
+            : "Registration updated, but failed to send OTP. Please try resending OTP.",
+          email,
+          isVerified: false,
+          role: userRole
+        });
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const userRole = role || "user";
+    const otp = generateOTP();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
     const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
       role: userRole,
-      isVerified: true,
+      isVerified: false,
+      otp,
+      otpExpires,
       isApprovedByAdmin: userRole === "organizer" ? false : true,
       // Professional Fields
       businessName: userRole === "organizer" ? businessName : "",
       businessWebsite: userRole === "organizer" ? businessWebsite : "",
-      businessType: userRole === "organizer" ? businessType : "",
+      businessType: userRole === "organizer" ? businessType : "" ,
       phone: userRole === "organizer" ? phone : ""
     });
 
-    // Send welcome email immediately
-    try {
-      await sendWelcomeEmail(email, name);
-    } catch (e) {
-      console.error("[REGISTER] Welcome email failed:", e.message);
-    }
+    // Send OTP email
+    const emailSent = await sendOTPEmail(email, name, otp);
 
     // Log registration
     await logActivity({
@@ -97,14 +139,12 @@ export const register = async (req, res) => {
       metadata: { role: userRole }
     });
 
-    const message = userRole === "organizer"
-      ? "Professional Registration Successful! Your account is awaiting admin approval. We will notify you once you can start publishing events."
-      : "Registration Successful. Welcome to GoGather!";
-
     res.status(201).json({
-      message,
+      message: emailSent 
+        ? "Registration successful! Please check your email for the verification code."
+        : "Registration successful, but failed to send OTP. Please try resending OTP.",
       email,
-      isVerified: true,
+      isVerified: false,
       role: userRole,
       isApprovedByAdmin: newUser.isApprovedByAdmin
     });
@@ -173,8 +213,11 @@ export const login = async (req, res) => {
     }
 
     if (!user.isVerified) {
-      user.isVerified = true;
-      await user.save();
+      return res.status(401).json({ 
+        message: "Email not verified. Please verify your email to login.", 
+        unverified: true, 
+        email: user.email 
+      });
     }
 
     const token = jwt.sign(
