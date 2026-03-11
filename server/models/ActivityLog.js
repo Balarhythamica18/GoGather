@@ -11,6 +11,7 @@ const ActivityLogSchema = new mongoose.Schema({
         required: true,
         enum: [
             "LOGIN",
+            "LOGOUT",
             "REGISTER",
             "ACCOUNT_DELETED",
             "EVENT_CREATED",
@@ -18,6 +19,7 @@ const ActivityLogSchema = new mongoose.Schema({
             "EVENT_DELETED",
             "BOOKING_CREATED",
             "BOOKING_CANCELLED",
+            "PROFILE_UPDATED",
             "OTHER"
         ]
     },

@@ -24,6 +24,7 @@ import bookingRoutes from "./routes/bookingRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
 import { containsHarmfulWords } from "./utils/moderation.js";
 import cloudinary from "./configs/cloudinary.js";
+import { logActivity } from "./services/activityLogService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -188,7 +189,15 @@ io.on("connection", (socket) => {
     socket.userId = userId;
     try {
       const User = (await import("./models/User.js")).default;
-      await User.findByIdAndUpdate(userId, { isOnline: true });
+      const user = await User.findByIdAndUpdate(userId, { isOnline: true });
+      if (user) {
+        await logActivity({
+          action: "LOGIN",
+          description: `User connected via socket: ${user.email}`,
+          user: userId,
+          metadata: { socketId: socket.id, method: "socket" }
+        });
+      }
       console.log(`User ${userId} is now online`);
     } catch (err) {
       console.error("Error updating online status:", err);
@@ -199,7 +208,15 @@ io.on("connection", (socket) => {
     if (socket.userId) {
       try {
         const User = (await import("./models/User.js")).default;
-        await User.findByIdAndUpdate(socket.userId, { isOnline: false });
+        const user = await User.findByIdAndUpdate(socket.userId, { isOnline: false });
+        if (user) {
+          await logActivity({
+            action: "LOGOUT",
+            description: `User disconnected via socket: ${user.email}`,
+            user: socket.userId,
+            metadata: { socketId: socket.id, method: "socket" }
+          });
+        }
       } catch (err) {
         console.error("Error updating offline status:", err);
       }

@@ -12,6 +12,7 @@ import ActivityLog from "../models/ActivityLog.js";
  * @param {String} [params.ipAddress] - Optional IP Address
  */
 export const logActivity = async ({ action, description, user, metadata = {}, ipAddress = null }) => {
+    console.log(`[ACTIVITY LOG ATTEMPT] Action: ${action}, Description: ${description}`);
     try {
         const logEntry = new ActivityLog({
             action,
@@ -22,7 +23,7 @@ export const logActivity = async ({ action, description, user, metadata = {}, ip
         });
 
         await logEntry.save();
-        console.log(`[ACTIVITY LOG] [${action}] ${description}`);
+        console.log(`[ACTIVITY LOG SUCCESS] [${action}] ${description}`);
     } catch (err) {
         // We intentionally catch and swallow this error so background logging
         // failures never break the primary API response for the user

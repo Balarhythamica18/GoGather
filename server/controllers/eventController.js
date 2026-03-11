@@ -663,6 +663,15 @@ export const updateEvent = async (req, res) => {
     }
 
     await event.save();
+
+    // Log event update
+    await logActivity({
+      action: "EVENT_UPDATED",
+      description: `Event updated: ${event.title}`,
+      user: req.user?.id,
+      metadata: { eventId: event._id, status: event.status }
+    });
+
     res.json(event);
   } catch (error) {
     console.error("Error updating event:", error);

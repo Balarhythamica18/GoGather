@@ -334,6 +334,18 @@ export const updateProfile = async (req, res) => {
 
     await user.save();
 
+    // Log profile update
+    await logActivity({
+      action: "PROFILE_UPDATED",
+      description: `User updated profile: ${user.email}`,
+      user: userId,
+      metadata: {
+        nameChanged,
+        emailChanged,
+        passwordChanged: !!password
+      }
+    });
+
     // Sync changes to existing events if name or email changed
     if (nameChanged || emailChanged) {
       try {
