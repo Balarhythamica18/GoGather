@@ -84,30 +84,73 @@
 
 .newsletter-form {
   display: flex;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 999px;
   overflow: hidden;
-  max-width: 360px;
+  max-width: 400px;
+  transition: all 0.3s ease;
+}
+
+.newsletter-form:focus-within {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
 }
 
 .newsletter-form input {
   flex: 1;
   border: none;
-  padding: 12px 16px;
+  background: transparent;
+  padding: 14px 20px;
   font-size: 14px;
+  color: #ffffff;
   outline: none;
+}
+
+.newsletter-form input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .newsletter-form button {
   border: none;
-  background: linear-gradient(180deg, #0b0f5b 0%, #0a0d4a 100%);
+  background: var(--primary-gradient, linear-gradient(135deg, #0b0f5b 0%, #1e3a8a 100%));
   color: #ffffff;
-  padding: 0 28px;
-  min-width: 140px;
-  font-size: 12px;
+  padding: 0 32px;
+  min-width: 150px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.newsletter-form button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(255, 255, 255, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.newsletter-form button:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.newsletter-form button:hover::before {
+  opacity: 1;
+}
+
+.newsletter-form button:active {
+  transform: scale(0.98);
 }
 
 .footer-bottom {
