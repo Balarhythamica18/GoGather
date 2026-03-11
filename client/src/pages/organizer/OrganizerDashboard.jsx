@@ -79,6 +79,11 @@ const OrganizerDashboard = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Delete Account State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -255,6 +260,24 @@ const OrganizerDashboard = () => {
     setSelectedEvent(event);
     setShowScanner(true);
     setShowDetails(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') return;
+
+    setDeleteLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_BASE_URL}/api/auth/delete-account`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      handleLogout();
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete account');
+      setDeleteLoading(false);
+      setShowDeleteModal(false);
+    }
   };
 
   return (
@@ -801,6 +824,29 @@ const OrganizerDashboard = () => {
                     <AlertCircle size={18} /> {settingsError}
                   </div>
                 )}
+
+                {/* Account Deletion Section */}
+                <div className="settings-card" style={{ marginTop: '32px', border: '1px solid #fee2e2' }}>
+                  <div className="settings-card-header">
+                    <div className="settings-icon-circle" style={{ background: '#fef2f2' }}>
+                      <AlertCircle size={20} color="#ef4444" />
+                    </div>
+                    <h3 style={{ color: '#ef4444' }}>Danger Zone</h3>
+                  </div>
+                  <div style={{ marginTop: '16px' }}>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '20px', lineHeight: '1.5' }}>
+                      Permanently delete your account, events, and bookings. This action cannot be undone.
+                    </p>
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      style={{ width: '100%', background: '#ef4444', color: 'white' }}
+                      onClick={() => setShowDeleteModal(true)}
+                    >
+                      Delete Account
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -820,6 +866,83 @@ const OrganizerDashboard = () => {
               <div className="modal-actions">
                 <button className="btn-cancel" onClick={() => { setShowConfirmation(false); setEventToDelete(null); }}>Cancel</button>
                 <button className="btn-delete" onClick={confirmDelete}>Delete Now</button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Account Deletion Modal */}
+      {
+        showDeleteModal && (
+          <div className="modal-overlay">
+            <div className="modal-content" style={{ maxWidth: '500px', padding: '32px' }}>
+              <div className="modal-icon-box" style={{ background: '#fef2f2' }}>
+                <AlertCircle color="#ef4444" size={36} />
+              </div>
+              <h2 className="modal-title" style={{ fontSize: '24px', color: '#0f172a' }}>Delete Account Permanently?</h2>
+
+              <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '12px', padding: '16px', margin: '24px 0', textAlign: 'left' }}>
+                <p style={{ color: '#991b1b', fontSize: '15px', fontWeight: '500', margin: 0 }}>
+                  ⚠️ Warning: You are about to permanently delete your organizer account.
+                </p>
+              </div>
+
+              <p className="modal-text" style={{ fontSize: '15px', color: '#475569', lineHeight: '1.6', textAlign: 'left' }}>
+                Deleting your account will:
+                <ul style={{ paddingLeft: '20px', marginTop: '12px', marginBottom: '20px' }}>
+                  <li>Permanently delete your profile and settings</li>
+                  <li>Permanently delete <strong>{stats.totalEvents} active and past events</strong> you have created</li>
+                  <li>Remove all associated booking records</li>
+                </ul>
+              </p>
+
+              <div style={{ textAlign: 'left', marginBottom: '8px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b' }}>
+                  To confirm, type "DELETE" below:
+                </label>
+                <input
+                  type="text"
+                  placeholder="DELETE"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    marginTop: '8px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    fontSize: '15px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#ef4444'}
+                  onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
+                />
+              </div>
+
+              <div className="modal-actions" style={{ marginTop: '24px' }}>
+                <button
+                  className="btn-cancel"
+                  onClick={() => { setShowDeleteModal(false); setDeleteConfirmText(""); }}
+                  style={{ flex: 1 }}
+                  disabled={deleteLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn-delete"
+                  onClick={handleDeleteAccount}
+                  style={{
+                    flex: 1,
+                    background: '#ef4444',
+                    opacity: deleteConfirmText === 'DELETE' && !deleteLoading ? 1 : 0.5,
+                    cursor: deleteConfirmText === 'DELETE' && !deleteLoading ? 'pointer' : 'not-allowed'
+                  }}
+                  disabled={deleteConfirmText !== 'DELETE' || deleteLoading}
+                >
+                  {deleteLoading ? 'Deleting...' : 'Delete Account'}
+                </button>
               </div>
             </div>
           </div>
