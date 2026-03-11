@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import { generateOTP, sendOTPEmail } from "../services/otpService.js";
 import { sendWelcomeEmail, sendLoginSuccessEmail } from "../services/welcomeService.js";
+import { logActivity } from "../services/activityLogService.js";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -20,9 +21,9 @@ const validatePassword = (password) => {
 =============================== */
 export const register = async (req, res) => {
   try {
-    const { 
+    const {
       name, email, password, confirmPassword, role,
-      businessName, businessWebsite, businessType, phone 
+      businessName, businessWebsite, businessType, phone
     } = req.body;
 
     if (!name || !email || !password || !confirmPassword) {
@@ -49,8 +50,8 @@ export const register = async (req, res) => {
       const personalEmailDomains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com"];
       const emailDomain = email.split("@")[1]?.toLowerCase();
       if (personalEmailDomains.includes(emailDomain)) {
-        return res.status(400).json({ 
-          message: "Organizers must register with a professional/business email address. Personal emails like @gmail.com are not allowed for organizers." 
+        return res.status(400).json({
+          message: "Organizers must register with a professional/business email address. Personal emails like @gmail.com are not allowed for organizers."
         });
       }
 
@@ -88,7 +89,15 @@ export const register = async (req, res) => {
       console.error("[REGISTER] Welcome email failed:", e.message);
     }
 
-    const message = userRole === "organizer" 
+    // Log registration
+    await logActivity({
+      action: "REGISTER",
+      description: `New user registered: ${email} (${userRole})`,
+      user: newUser._id,
+      metadata: { role: userRole }
+    });
+
+    const message = userRole === "organizer"
       ? "Professional Registration Successful! Your account is awaiting admin approval. We will notify you once you can start publishing events."
       : "Registration Successful. Welcome to GoGather!";
 
@@ -116,17 +125,17 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Email & password required" });
 
     let user = await User.findOne({ email });
-    
+
     // Auto-create or Update Demo Organizer for development
     const demoAccounts = [
       { email: "demo@company.com", password: "demo@123", name: "Demo Organization", businessName: "Demo Company" },
       { email: "test@company.com", password: "test@123", name: "Test Organizer", businessName: "Test Company" }
     ];
 
-    const matchedDemo = demoAccounts.find(acc => 
+    const matchedDemo = demoAccounts.find(acc =>
       email?.trim().toLowerCase() === acc.email && password === acc.password
     );
-    
+
     if (matchedDemo) {
       if (!user) {
         console.log(`[DEV] Creating default ${matchedDemo.email} organizer account...`);
@@ -201,6 +210,14 @@ export const login = async (req, res) => {
     const Booking = (await import("../models/Booking.js")).default;
     const hasBooked = await Booking.exists({ userId: user._id, status: "confirmed" });
 
+    // Log login
+    await logActivity({
+      action: "LOGIN",
+      description: `User logged in: ${user.email}`,
+      user: user._id,
+      metadata: { role: user.role }
+    });
+
     res.json({
       token,
       user: {
@@ -266,7 +283,7 @@ export const updateProfile = async (req, res) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const { 
+    const {
       email, name, password, currentPassword,
       businessName, businessWebsite, businessType, phone, location, businessDescription
     } = req.body;
@@ -375,6 +392,13 @@ export const deleteAccount = async (req, res) => {
 
     // 3. Delete the User
     await User.findByIdAndDelete(userId);
+
+    // 4. Log the deletion anonymously (since user no longer exists)
+    await logActivity({
+      action: "ACCOUNT_DELETED",
+      description: `User account deleted: ${user.email} (${user.role})`,
+      metadata: { deletedUserId: userId, role: user.role, email: user.email }
+    });
 
     res.json({ message: "Account deleted permanently ✅. We're sad to see you go!" });
 
@@ -506,8 +530,8 @@ export const googleLogin = async (req, res) => {
         const personalEmailDomains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com"];
         const emailDomain = email.split("@")[1]?.toLowerCase();
         if (personalEmailDomains.includes(emailDomain)) {
-          return res.status(400).json({ 
-            message: "Organizers must use a professional/business email address. This Google account uses a personal email domain." 
+          return res.status(400).json({
+            message: "Organizers must use a professional/business email address. This Google account uses a personal email domain."
           });
         }
       }

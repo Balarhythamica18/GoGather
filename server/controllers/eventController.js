@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import Booking from "../models/Booking.js";
 import { sendEventPendingNotification, sendEventStatusUpdateNotification } from "../services/notificationService.js";
 import { handleEventCancellation, notifyOrganizerOfCancellation } from "../services/eventCancellationService.js";
+import { logActivity } from "../services/activityLogService.js";
 import cloudinary from "../configs/cloudinary.js";
 import fs from "fs";
 
@@ -173,6 +174,14 @@ export const createEvent = async (req, res) => {
         { title: event.title, location: event.location, date: event.date, month: event.month }
       ).catch(err => console.error("[EVENT] Background pending notification failure:", err.message));
     }
+
+    // Log event creation
+    await logActivity({
+      action: "EVENT_CREATED",
+      description: `Event created: ${event.title}`,
+      user: event.organizer,
+      metadata: { eventId: event._id, status: event.status }
+    });
 
     res.status(201).json(event);
   } catch (error) {
@@ -427,6 +436,14 @@ export const deleteEvent = async (req, res) => {
         );
       }
 
+      // Log event deletion with cancellation
+      await logActivity({
+        action: "EVENT_DELETED",
+        description: `Event deleted (with ${activeBookings} active bookings): ${event.title}`,
+        user: req.user?.id,
+        metadata: { eventId: event._id, cancellationResult }
+      });
+
       return res.json({
         message: `Event deleted successfully. ${cancellationResult.emailsSent} cancellation notifications sent to affected users.`,
         cancellationDetails: cancellationResult,
@@ -435,6 +452,15 @@ export const deleteEvent = async (req, res) => {
     } else {
       // No bookings, safe to delete
       await Event.findByIdAndDelete(req.params.id);
+
+      // Log simple event deletion
+      await logActivity({
+        action: "EVENT_DELETED",
+        description: `Event deleted (no active bookings): ${event.title}`,
+        user: req.user?.id,
+        metadata: { eventId: event._id }
+      });
+
       res.json({ message: "Event deleted" });
     }
   } catch (error) {
