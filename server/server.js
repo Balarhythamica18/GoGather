@@ -109,9 +109,9 @@ app.post("/api/contact", async (req, res) => {
   }
 
   try {
-    // 1️⃣ Email to Team (Blocking)
+    // 1️⃣ Email to Team (Non-Blocking)
     console.log(`[CONTACT] Attempting to notify admin: ${adminEmail}`);
-    await sendEmail({
+    sendEmail({
       from: `"GoGather Contact Form" <${adminEmail}>`,
       replyTo: email,
       to: adminEmail,
@@ -125,7 +125,7 @@ app.post("/api/contact", async (req, res) => {
         <p><strong>Message:</strong></p>
         <p>${message}</p>
       `
-    }, true);
+    }, false);
 
     // 2️⃣ Confirmation Email to User (Non-Blocking)
     console.log(`[CONTACT] Attempting to send confirmation to user: ${email}`);
