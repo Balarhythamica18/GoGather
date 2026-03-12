@@ -79,6 +79,8 @@ const PaymentPage = () => {
 
   // Card State
   const [cardData, setCardData] = useState({ number: "", expiry: "", cvc: "", name: "" });
+  const [upiId, setUpiId] = useState("");
+  const [upiError, setUpiError] = useState("");
 
   const stored = JSON.parse(localStorage.getItem("bookingData") || "null");
   const bookingData = location.state?.bookingData || stored;
@@ -322,9 +324,34 @@ const PaymentPage = () => {
                   <label>Pay with UPI VPA</label>
                   <div className="vpa-field">
                     <Smartphone size={18} className="v-icon" />
-                    <input type="text" placeholder="yourname@upi" />
-                    <button className="vpa-btn">Pay Now</button>
+                    <input 
+                      type="text" 
+                      placeholder="yourname@upi" 
+                      value={upiId}
+                      onChange={(e) => {
+                        setUpiId(e.target.value);
+                        if (upiError) setUpiError("");
+                      }}
+                      className={upiError ? "error-border" : ""}
+                    />
+                    <button 
+                      className="vpa-btn"
+                      onClick={() => {
+                        const upiRegex = /^[\w.-]+@[\w.-]+$/;
+                        if (!upiId) {
+                          setUpiError("UPI ID is required");
+                        } else if (!upiRegex.test(upiId)) {
+                          setUpiError("Please enter a valid UPI ID (e.g. name@bank)");
+                        } else {
+                          setUpiError("");
+                          finalizePayment("upi");
+                        }
+                      }}
+                    >
+                      Pay Now
+                    </button>
                   </div>
+                  {upiError && <p className="upi-error-hint animate-fade-in">{upiError}</p>}
                 </div>
 
                 <div className="sep">

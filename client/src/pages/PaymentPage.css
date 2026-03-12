@@ -279,6 +279,22 @@
     background: #0b0f5b;
 }
 
+.upi-error-hint {
+    color: #ef4444;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-top: 8px;
+    margin-left: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.error-border {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+
 .sep {
     display: flex;
     align-items: center;

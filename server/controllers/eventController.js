@@ -116,20 +116,15 @@ export const createEvent = async (req, res) => {
         if (user) {
           eventData.organizerDetails.name = user.name || eventData.organizerDetails.name;
           eventData.organizerDetails.contactEmail = user.email || eventData.organizerDetails.contactEmail;
-
-          // Auto-approve events if organizer is verified by admin
-          if (user.isApprovedByAdmin) {
-            eventData.status = "approved";
-          } else {
-            eventData.status = "pending";
-          }
         }
+        // Auto-approve all events as requested (no admin flow needed)
+        eventData.status = "approved";
       } catch (e) {
         console.error("Could not fetch user to populate organizerDetails:", e.message);
-        eventData.status = "pending";
+        eventData.status = "approved";
       }
     } else {
-      eventData.status = "pending";
+      eventData.status = "approved";
     }
 
     // Remove old organizer fields
@@ -643,20 +638,9 @@ export const updateEvent = async (req, res) => {
     if (otherData.organizerEmail) event.organizerDetails.contactEmail = otherData.organizerEmail;
     if (otherData.organizerPhone) event.organizerDetails.contactPhone = otherData.organizerPhone;
 
-    // Reset status to pending if an organizer edits the event (unless it was already approved)
+    // Keep event status as approved when edited by organizer
     if (req.user?.role !== "admin") {
-      if (event.status !== "approved") {
-        event.status = "pending";
-
-        // Notify Admin about the edit/re-submission
-        const adminEmail = process.env.ADMIN_EMAIL || "gogatherticketbooking@gmail.com";
-        console.log(`[EVENT] Background: Notifying admin about updated event: ${event.title}`);
-        sendEventPendingNotification(
-          adminEmail,
-          { name: event.organizerDetails.name, email: event.organizerDetails.contactEmail },
-          { title: `${event.title} (Updated/Re-submitted)`, location: event.location, date: event.date, month: event.month }
-        ).catch(err => console.error("Background notification failure in updateEvent:", err.message));
-      }
+      event.status = "approved";
     } else if (otherData.status) {
       // Allow admins to update status directly if needed (though usually handled via admin routes)
       event.status = otherData.status;
