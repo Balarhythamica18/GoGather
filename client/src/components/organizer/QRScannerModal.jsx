@@ -108,6 +108,14 @@ const QRScannerModal = ({ event, onClose }) => {
                         <span>Validating for: <strong>{event.title}</strong></span>
                     </div>
 
+                    <div style={styles.timingInfo}>
+                        <Clock size={20} color="#f59e0b" />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={styles.timingLabel}>Access Window</span>
+                            <span style={styles.timingValue}>Scanning starts 30 minutes before <strong>{event.time || "the event"}</strong></span>
+                        </div>
+                    </div>
+
                     {scanning && !scanResult ? (
                         <div style={styles.scannerContainer}>
                             <div id="reader" style={styles.reader}></div>
@@ -264,6 +272,30 @@ const styles = {
         color: '#475569',
         marginBottom: '32px',
         border: '1px solid #f1f5f9',
+    },
+    timingInfo: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        padding: '16px',
+        backgroundColor: '#fffbeb',
+        borderRadius: '16px',
+        fontSize: '14px',
+        fontWeight: '600',
+        color: '#b45309',
+        marginBottom: '32px',
+        border: '1px solid #fef3c7',
+    },
+    timingLabel: {
+        fontSize: '11px',
+        fontWeight: '800',
+        color: '#92400e',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+    },
+    timingValue: {
+        fontSize: '14px',
+        color: '#b45309',
     },
     scannerContainer: {
         display: 'flex',

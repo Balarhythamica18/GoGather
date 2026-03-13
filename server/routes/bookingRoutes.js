@@ -316,10 +316,18 @@ router.patch("/verify-entry", async (req, res) => {
             const thirtyMinsInMs = 30 * 60 * 1000;
 
             if (diffInMs > thirtyMinsInMs) {
+              // Calculate exact opening time in IST (+05:30)
+              const openAt = new Date(eventDateTime.getTime() - thirtyMinsInMs);
+              const openAtIST = openAt.toLocaleTimeString('en-IN', {
+                timeZone: 'Asia/Kolkata',
+                hour: '2-digit',
+                minute: '2-digit'
+              });
+
               return res.status(400).json({
                 code: "NOT_STARTED",
                 error: "Entry Not Started! ⏳",
-                message: "Scanning opens 30 minutes before the event starts. Please wait until closer to the start time."
+                message: `Scanning opens 30 minutes before the event. For this event, scanning begins at ${openAtIST}.`
               });
             }
           }

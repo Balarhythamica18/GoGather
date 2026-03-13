@@ -23,22 +23,15 @@ const proMailerUrl = process.env.PROMAILER_API_URL;
 const proMailerApiKey = process.env.PROMAILER_API_KEY;
 const proMailerSmtpId = process.env.PROMAILER_SMTP_ID;
 
-// Brevo SMTP Config (Prioritize SMTP as requested)
+// Brevo SMTP Config (Fallback if API fails)
 const brevoHost = process.env.BREVO_SMTP_HOST || "smtp-relay.brevo.com";
 const brevoPort = parseInt(process.env.BREVO_SMTP_PORT) || 587;
+const brevoUser = process.env.BREVO_SMTP_USER;
+const brevoKey = process.env.BREVO_SMTP_KEY;
 
-// Detect Brevo user/key from various possible env vars
-let brevoUser = process.env.BREVO_SMTP_USER || process.env.EMAIL_USER;
-let brevoKey = process.env.BREVO_SMTP_KEY || process.env.EMAIL_PASS;
-
-// Special check: If BREVO_API_KEY looks like an SMTP key, use it
-if (brevoApiKey && brevoApiKey.startsWith("xsmtpsib-")) {
-    brevoKey = brevoApiKey;
-}
-
-// Brevo Transporter (Primary SMTP)
+// Brevo Transporter (Fallback)
 let brevoTransporter = null;
-if (brevoUser && (brevoUser.includes("brevo") || process.env.EMAIL_SERVICE === "brevo")) {
+if (brevoUser && brevoKey) {
     brevoTransporter = nodemailer.createTransport({
         host: brevoHost,
         port: brevoPort,
@@ -89,7 +82,7 @@ if (brevoTransporter) {
 }
 
 /**
- * Sends an email using Brevo SMTP (Primary), Brevo API (Secondary), Resend API (Tertiary), or Gmail SMTP (Last Fallback).
+ * Sends an email using Brevo API (Primary), Resend API (Secondary), Brevo SMTP (Tertiary), or Gmail SMTP (Last Fallback).
  * 
  * @param {Object} options - Email options (to, subject, html, replyTo, etc.)
  * @param {boolean} blocking - If true, awaits the sendMail call. Default: true.
@@ -103,30 +96,48 @@ export const sendEmail = async (options, blocking = true) => {
 
     // Note: ProMailer attempted but unreliable with SMTP connections
     // Fallback chain will handle all email delivery
-
+    
     // Fallback methods grouped into a helper so background tasks can call them too
     const executeFallbackMethods = async (mailOptions, blockingFlag, recipient) => {
-        // 1. Try Brevo SMTP (Primary for robustness)
-        if (brevoTransporter) {
-            try {
-                if (blockingFlag) {
-                    const info = await brevoTransporter.sendMail(mailOptions);
-                    console.log(`[EMAIL SUCCESS (BREVO-SMTP)] Sent to ${recipient}. MessageID: ${info.messageId}`);
-                    return info;
-                } else {
-                    brevoTransporter.sendMail(mailOptions)
-                        .then(info => console.log(`[EMAIL SUCCESS (BREVO-SMTP-BG)] Sent to ${recipient}. MessageID: ${info.messageId}`))
-                        .catch(error => console.error(`[EMAIL ERROR (BREVO-SMTP-BG)] Failed to send to ${recipient}:`, error.message));
-                    return;
+        // 2. Try Resend API (Secondary)
+        if (resendApiKey) {
+            const sendViaApi = async () => {
+                try {
+                    const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
+                    const response = await axios.post('https://api.resend.com/emails', {
+                        from: fromEmail,
+                        to: mailOptions.to,
+                        subject: mailOptions.subject,
+                        html: mailOptions.html,
+                        reply_to: mailOptions.replyTo || mailOptions.reply_to
+                    }, {
+                        headers: {
+                            'Authorization': `Bearer ${resendApiKey}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    console.log(`[EMAIL SUCCESS (RESEND-API)] Sent to ${recipient}. ID: ${response.data.id}`);
+                    return response.data;
+                } catch (error) {
+                    const errorMsg = error.response?.data?.message || error.message;
+                    console.error(`[EMAIL ERROR (RESEND-API)] Failed to send to ${recipient}:`, errorMsg);
+                    if (!brevoTransporter && !emailPass) {
+                        if (blockingFlag) throw new Error(`Email delivery failed: ${errorMsg}`);
+                    }
                 }
-            } catch (error) {
-                console.error(`[EMAIL ERROR (BREVO-SMTP)] Failed to send to ${recipient}:`, error.message);
-                // If SMTP fails, we'll continue to API methods
+            };
+
+            if (blockingFlag) {
+                const result = await sendViaApi();
+                if (result) return result;
+            } else {
+                sendViaApi();
+                return;
             }
         }
 
-        // 2. Try Brevo API (Secondary)
-        if (brevoApiKey && !brevoApiKey.startsWith("xsmtpsib-")) {
+        // 3. Try Brevo API (Tertiary)
+        if (brevoApiKey) {
             try {
                 const brevoPayload = {
                     sender: {
@@ -157,50 +168,40 @@ export const sendEmail = async (options, blocking = true) => {
                             'Content-Type': 'application/json'
                         }
                     })
-                        .then(response => console.log(`[EMAIL SUCCESS (BREVO-API-BG)] Sent to ${recipient}. MessageID: ${response.data.messageId}`))
-                        .catch(error => console.error(`[EMAIL ERROR (BREVO-API-BG)] Failed to send to ${recipient}:`, error.response?.data?.message || error.message));
+                    .then(response => console.log(`[EMAIL SUCCESS (BREVO-API-BG)] Sent to ${recipient}. MessageID: ${response.data.messageId}`))
+                    .catch(error => console.error(`[EMAIL ERROR (BREVO-API-BG)] Failed to send to ${recipient}:`, error.response?.data?.message || error.message));
                     return;
                 }
             } catch (error) {
                 console.error(`[EMAIL ERROR (BREVO-API)] Failed to send to ${recipient}:`, error.response?.data?.message || error.message);
-            }
-        }
-
-        // 3. Try Resend API (Tertiary)
-        if (resendApiKey) {
-            const sendViaApi = async () => {
-                try {
-                    const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-                    const response = await axios.post('https://api.resend.com/emails', {
-                        from: fromEmail,
-                        to: mailOptions.to,
-                        subject: mailOptions.subject,
-                        html: mailOptions.html,
-                        reply_to: mailOptions.replyTo || mailOptions.reply_to
-                    }, {
-                        headers: {
-                            'Authorization': `Bearer ${resendApiKey}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    console.log(`[EMAIL SUCCESS (RESEND-API)] Sent to ${recipient}. ID: ${response.data.id}`);
-                    return response.data;
-                } catch (error) {
-                    const errorMsg = error.response?.data?.message || error.message;
-                    console.error(`[EMAIL ERROR (RESEND-API)] Failed to send to ${recipient}:`, errorMsg);
+                if (!brevoTransporter && !emailPass) {
+                    if (blockingFlag) throw error;
                 }
-            };
-
-            if (blockingFlag) {
-                const result = await sendViaApi();
-                if (result) return result;
-            } else {
-                sendViaApi();
-                return;
             }
         }
 
-        // 4. Try Gmail SMTP (Last Fallback)
+        // 4. Try Brevo SMTP (Quaternary)
+        if (brevoTransporter) {
+            try {
+                if (blockingFlag) {
+                    const info = await brevoTransporter.sendMail(mailOptions);
+                    console.log(`[EMAIL SUCCESS (BREVO-SMTP)] Sent to ${recipient}. MessageID: ${info.messageId}`);
+                    return info;
+                } else {
+                    brevoTransporter.sendMail(mailOptions)
+                        .then(info => console.log(`[EMAIL SUCCESS (BREVO-SMTP-BG)] Sent to ${recipient}. MessageID: ${info.messageId}`))
+                        .catch(error => console.error(`[EMAIL ERROR (BREVO-SMTP-BG)] Failed to send to ${recipient}:`, error.message));
+                    return;
+                }
+            } catch (error) {
+                console.error(`[EMAIL ERROR (BREVO-SMTP)] Failed to send to ${recipient}:`, error.message);
+                if (!emailPass) {
+                    if (blockingFlag) throw error;
+                }
+            }
+        }
+
+        // 5. Try Gmail SMTP (Last Fallback)
         if (emailPass) {
             try {
                 if (blockingFlag) {
@@ -219,11 +220,11 @@ export const sendEmail = async (options, blocking = true) => {
             }
         } else {
             console.error("[EMAIL ERROR] No delivery method configured or all methods failed.");
-            if (blockingFlag) throw new Error("Email delivery failed after trying all methods.");
+            if (blockingFlag) throw new Error("Email configuration missing or invalid");
         }
     };
 
-    // Execute fallback normally
+    // Execute fallback normally for blocking calls that failed ProMailer/Brevo API synchronously
     return await executeFallbackMethods(mailOptions, blocking, options.to);
 };
 

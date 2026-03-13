@@ -10,6 +10,7 @@
     .chatbot-container {
         bottom: 20px;
         right: 20px;
+        max-width: calc(100vw - 40px);
     }
 }
 

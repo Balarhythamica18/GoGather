@@ -128,8 +128,8 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
                             </div>
                         )}
                         {(() => {
-                            const isScanEnabled = () => {
-                                if (!event.date || !event.month || !event.time) return true; // Safety fallback
+                            const getScanInfo = () => {
+                                if (!event.date || !event.month || !event.time) return { canScan: true, openTime: null };
                                 try {
                                     let foundMonth = -1;
                                     let foundDay = -1;
@@ -144,39 +144,74 @@ const EventDetailsModal = ({ event, onClose, onOpenScanner }) => {
                                     if (dayMatch) foundDay = parseInt(dayMatch[0]);
 
                                     if (foundMonth !== -1 && foundDay !== -1) {
-                                        const timeStr = event.time ? String(event.time) : "00:00";
-                                        const [hours, minutes] = timeStr.match(/(\d{1,2}):(\d{2})/)?.slice(1) || ["0", "0"];
+                                        // Robust parsing matching backend verify-entry
+                                        let timeStr = event.time ? String(event.time).trim().toLowerCase().replace('.', ':') : "00:00";
+                                        let hours = 0;
+                                        let minutes = 0;
 
-                                        // 🕒 EXPLICIT IST FIX: Match backend logic
+                                        const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/);
+                                        if (timeMatch) {
+                                            hours = parseInt(timeMatch[1], 10);
+                                            minutes = parseInt(timeMatch[2], 10);
+                                            const ampm = timeMatch[3];
+                                            if (ampm === "pm" && hours < 12) hours += 12;
+                                            if (ampm === "am" && hours === 12) hours = 0;
+                                        }
+
                                         const isoDate = `${foundYear}-${String(foundMonth + 1).padStart(2, '0')}-${String(foundDay).padStart(2, '0')}`;
                                         const isoTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00+05:30`;
                                         const eventDateTime = new Date(`${isoDate}T${isoTime}`);
 
-                                        const now = new Date();
-                                        const diff = eventDateTime - now;
-                                        return diff <= 30 * 60 * 1000; // 30 minutes
+                                        if (!isNaN(eventDateTime.getTime())) {
+                                            const canScan = (eventDateTime - new Date()) <= 30 * 60 * 1000;
+                                            const openAt = new Date(eventDateTime.getTime() - 30 * 60 * 1000);
+                                            const isToday = new Date().toDateString() === openAt.toDateString();
+                                            const openTime = openAt.toLocaleString('en-IN', {
+                                                timeZone: 'Asia/Kolkata',
+                                                month: isToday ? undefined : 'short',
+                                                day: isToday ? undefined : 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                hour12: true
+                                            });
+                                            return { canScan, openTime };
+                                        }
                                     }
                                 } catch (e) {
                                     console.error("Error calculating scan window:", e);
                                 }
-                                return true;
+                                return { canScan: true, openTime: null };
                             };
 
-                            const canScan = isScanEnabled();
+                            const { canScan, openTime } = getScanInfo();
 
                             return (
-                                <button
-                                    style={{
-                                        ...styles.scannerBtn,
-                                        opacity: canScan ? 1 : 0.6,
-                                        cursor: canScan ? 'pointer' : 'not-allowed',
-                                        backgroundColor: canScan ? '#0b0f5b' : '#64748b'
-                                    }}
-                                    onClick={() => canScan ? onOpenScanner(event) : toast.error("Scanner opens 30 minutes before event starts.")}
-                                    disabled={!canScan}
-                                >
-                                    <QrCode size={20} /> {canScan ? "Open QR Scanner" : "Scanner Locked (Too Early)"}
-                                </button>
+                                <div style={{ width: '100%' }}>
+                                    <button
+                                        style={{
+                                            ...styles.scannerBtn,
+                                            opacity: canScan ? 1 : 0.6,
+                                            cursor: canScan ? 'pointer' : 'not-allowed',
+                                            backgroundColor: canScan ? '#0b0f5b' : '#64748b',
+                                            marginBottom: !canScan ? '8px' : '0'
+                                        }}
+                                        onClick={() => canScan ? onOpenScanner(event) : toast.error(`Scanner opens 30 minutes before event starts (at ${openTime}).`)}
+                                        disabled={!canScan}
+                                    >
+                                        <QrCode size={20} /> {canScan ? "Open QR Scanner" : "Scanner Locked"}
+                                    </button>
+                                    {!canScan && openTime && (
+                                        <p style={{
+                                            fontSize: '12px',
+                                            color: '#64748b',
+                                            textAlign: 'center',
+                                            fontWeight: '600',
+                                            margin: 0
+                                        }}>
+                                            Scanner opens at {openTime}
+                                        </p>
+                                    )}
+                                </div>
                             );
                         })()}
                     </div>

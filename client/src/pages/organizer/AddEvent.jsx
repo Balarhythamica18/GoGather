@@ -267,14 +267,28 @@ const AddEvent = () => {
                     .add-event-header {
                         margin-bottom: 24px !important;
                     }
+                    .add-event-session-grid, .add-event-tier-grid {
+                        grid-template-columns: 1fr !important;
+                        gap: 12px !important;
+                    }
+                    .add-event-highlight-input-group {
+                        flex-direction: column !important;
+                    }
+                    .add-event-highlight-input-group button {
+                        width: 100% !important;
+                    }
                 }
 
                 @media (max-width: 480px) {
                     .add-event-page {
                         padding: 16px 10px !important;
+                        overflow-x: hidden; /* Prevent horizontal scroll on the page level */
                     }
                     .preview-wrapper, .upload-placeholder {
                         height: 200px !important;
+                    }
+                    .add-event-title {
+                        font-size: 22px !important;
                     }
                 }
 
@@ -382,7 +396,7 @@ const AddEvent = () => {
 
                                 <div style={styles.inputGroup}>
                                     <label style={styles.label}>Key Highlights</label>
-                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                    <div style={{ display: 'flex', gap: '8px' }} className="add-event-highlight-input-group">
                                         <input
                                             placeholder="e.g. VIP Seating, Free Parking..."
                                             style={styles.input}
@@ -507,7 +521,7 @@ const AddEvent = () => {
 
                                 <div style={styles.inputGroup}>
                                     <label style={styles.label}>Event Sessions (Optional)</label>
-                                    <div style={styles.sessionGrid}>
+                                    <div style={styles.sessionGrid} className="add-event-session-grid">
                                         <input
                                             placeholder="Session Title"
                                             style={styles.input}
@@ -585,7 +599,7 @@ const AddEvent = () => {
 
                                 <div style={styles.inputGroup}>
                                     <label style={styles.label}>Applied Refund Tiers (System Logic)</label>
-                                    <div style={styles.tierGrid}>
+                                    <div style={styles.tierGrid} className="add-event-tier-grid">
                                         <div style={styles.tierInputWrapper}>
                                             <span style={styles.tierLabel}>Before (hours)</span>
                                             <input

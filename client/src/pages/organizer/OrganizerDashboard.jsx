@@ -26,7 +26,8 @@ import {
   Globe,
   Briefcase,
   Phone,
-  AlignLeft
+  AlignLeft,
+  QrCode
 } from "lucide-react";
 import StatCard from "../../components/organizer/StatCard";
 import EventDetailsModal from "../../components/organizer/EventDetailsModal";
@@ -83,6 +84,113 @@ const OrganizerDashboard = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const getScanOpeningTime = (event) => {
+    if (!event.date || !event.month || !event.time) return null;
+    try {
+      let foundMonth = -1;
+      let foundDay = -1;
+      let foundYear = new Date().getFullYear();
+
+      if (event.month && event.month.includes("-")) {
+        const [y, m] = event.month.split("-");
+        foundYear = parseInt(y);
+        foundMonth = parseInt(m) - 1;
+      } else {
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        months.forEach((m, i) => {
+          if (event.month?.toLowerCase().includes(m.toLowerCase())) foundMonth = i;
+        });
+      }
+
+      const dayMatch = event.date.toString().match(/\d+/);
+      if (dayMatch) foundDay = parseInt(dayMatch[0]);
+
+      if (foundMonth !== -1 && foundDay !== -1) {
+        let timeStr = event.time ? String(event.time).trim().toLowerCase().replace('.', ':') : "00:00";
+        let hours = 0;
+        let minutes = 0;
+
+        const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/);
+        if (timeMatch) {
+          hours = parseInt(timeMatch[1], 10);
+          minutes = parseInt(timeMatch[2], 10);
+          const ampm = timeMatch[3];
+          if (ampm === "pm" && hours < 12) hours += 12;
+          if (ampm === "am" && hours === 12) hours = 0;
+        }
+
+        const isoDate = `${foundYear}-${String(foundMonth + 1).padStart(2, '0')}-${String(foundDay).padStart(2, '0')}`;
+        const isoTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00+05:30`;
+        const eventDateTime = new Date(`${isoDate}T${isoTime}`);
+
+        if (!isNaN(eventDateTime.getTime())) {
+          const openAt = new Date(eventDateTime.getTime() - 30 * 60 * 1000);
+          const isToday = new Date().toDateString() === openAt.toDateString();
+          return openAt.toLocaleString('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            month: isToday ? undefined : 'short',
+            day: isToday ? undefined : 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Error getting scan opening time:", e);
+    }
+    return null;
+  };
+
+  const isScanEnabled = (event) => {
+    if (!event.date || !event.month || !event.time) return true;
+    try {
+      let foundMonth = -1;
+      let foundDay = -1;
+      let foundYear = new Date().getFullYear();
+
+      if (event.month && event.month.includes("-")) {
+        const [y, m] = event.month.split("-");
+        foundYear = parseInt(y);
+        foundMonth = parseInt(m) - 1;
+      } else {
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        months.forEach((m, i) => {
+          if (event.month?.toLowerCase().includes(m.toLowerCase())) foundMonth = i;
+        });
+      }
+
+      const dayMatch = event.date.toString().match(/\d+/);
+      if (dayMatch) foundDay = parseInt(dayMatch[0]);
+
+      if (foundMonth !== -1 && foundDay !== -1) {
+        let timeStr = event.time ? String(event.time).trim().toLowerCase().replace('.', ':') : "00:00";
+        let hours = 0;
+        let minutes = 0;
+
+        const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/);
+        if (timeMatch) {
+          hours = parseInt(timeMatch[1], 10);
+          minutes = parseInt(timeMatch[2], 10);
+          const ampm = timeMatch[3];
+          if (ampm === "pm" && hours < 12) hours += 12;
+          if (ampm === "am" && hours === 12) hours = 0;
+        }
+
+        const isoDate = `${foundYear}-${String(foundMonth + 1).padStart(2, '0')}-${String(foundDay).padStart(2, '0')}`;
+        const isoTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00+05:30`;
+        const eventDateTime = new Date(`${isoDate}T${isoTime}`);
+
+        if (!isNaN(eventDateTime.getTime())) {
+          return (eventDateTime - new Date()) <= 30 * 60 * 1000;
+        }
+      }
+    } catch (e) {
+      console.error("Error calculating scan window:", e);
+    }
+    return true;
+  };
 
   const fetchData = async () => {
     try {
@@ -456,6 +564,58 @@ const OrganizerDashboard = () => {
                                         <span>{event.location}</span>
                                       </div>
                                     </div>
+
+                                    {/* Quick Scan Button */}
+                                    {(() => {
+                                      const canScan = isScanEnabled(event);
+                                      const openTime = getScanOpeningTime(event);
+                                      return (
+                                        <div style={{ width: '100%', marginBottom: '16px' }}>
+                                          <button
+                                            className={`quick-scan-btn ${!canScan ? 'locked' : ''}`}
+                                            style={{
+                                              width: '100%',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              justifyContent: 'center',
+                                              gap: '8px',
+                                              padding: '12px',
+                                              borderRadius: '12px',
+                                              border: 'none',
+                                              marginBottom: !canScan ? '8px' : '0',
+                                              fontSize: '14px',
+                                              fontWeight: '700',
+                                              cursor: canScan ? 'pointer' : 'not-allowed',
+                                              background: canScan ? 'var(--primary-gradient)' : '#94a3b8',
+                                              color: '#fff',
+                                              transition: 'var(--transition)'
+                                            }}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              if (canScan) {
+                                                handleOpenScanner(event);
+                                              } else {
+                                                toast.error(`Scanner opens 30 minutes before start${openTime ? ` (at ${openTime})` : ''}.`);
+                                              }
+                                            }}
+                                          >
+                                            <QrCode size={18} />
+                                            {canScan ? "Open QR Scanner" : "Scanner Locked"}
+                                          </button>
+                                          {!canScan && openTime && (
+                                            <p style={{
+                                              fontSize: '11px',
+                                              color: 'var(--text-muted)',
+                                              textAlign: 'center',
+                                              fontWeight: '600',
+                                              margin: 0
+                                            }}>
+                                              Scanner opens at {openTime}
+                                            </p>
+                                          )}
+                                        </div>
+                                      );
+                                    })()}
                                     <div className="card-footer-premium">
                                       <div className="price-tag">
                                         {event.price ? `₹${event.price.toLocaleString()}` : <span className="free">Free</span>}
@@ -533,6 +693,7 @@ const OrganizerDashboard = () => {
                                         <span>{event.location}</span>
                                       </div>
                                     </div>
+
                                     <div className="card-footer-premium">
                                       <div className="price-tag">
                                         {event.price ? `₹${event.price.toLocaleString()}` : <span className="free">Free</span>}
